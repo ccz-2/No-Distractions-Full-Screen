@@ -3,12 +3,12 @@
 	"cursor_idle_timer": 10000,
 	"last_toggle": "full_screen",
 	"stay_on_top": false,
-    "answer_button_border_color": "rgba(110, 110, 110, 0.8)",
+    "answer_button_border_color": "rgba(180, 180, 180, 0.8)",
 	"fullscreen_hotkey": "F11",
 	"lock_answer_bar_hotkey": "Ctrl+L",
 	"answer_bar_locked": true,
 	"answer_bar_posX": 0,
 	"answer_bar_posY": 0,
-	"rendering_pause": 50,
+	"rendering_pause": 300,
 	"do_not_show_warnings": false
 }

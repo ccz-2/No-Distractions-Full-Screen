@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.0 2/27/2020
+# v3.1 2/27/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -25,7 +25,6 @@
 from aqt.qt import *
 from aqt import *
 from aqt.webview import AnkiWebView
-from aqt.reviewer import Reviewer
 from aqt.deckbrowser import DeckBrowser
 from anki.hooks import *
 from anki.utils import isMac, isWin
@@ -97,25 +96,25 @@ def padCards():
     mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
 
 #CSS/JS injection
-def reviewer_wrapper(*args):
+def reviewer_wrapper(func):
     reformat = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read()
     draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
     hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
     pad_cards = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
     interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
 
-    config = mw.addonManager.getConfig(__name__)
-    op = config['answer_button_opacity']
-    cursorIdleTimer = config['cursor_idle_timer']
-    color = config['answer_button_border_color']
-
-    mw.reviewer.bottom.web.eval(interact)
-    mw.reviewer.bottom.web.eval(draggable)
-    mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {reformat}")
-    mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
-
-    mw.reviewer.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
-    mw.reviewer.web.eval(pad_cards)
+    def _initReviewerWeb(*args):
+        config = mw.addonManager.getConfig(__name__)
+        op = config['answer_button_opacity']
+        cursorIdleTimer = config['cursor_idle_timer']
+        color = config['answer_button_border_color']
+        func()
+        mw.reviewer.bottom.web.eval(interact)
+        mw.reviewer.bottom.web.eval(draggable)
+        mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {reformat}")
+        mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
+        mw.reviewer.web.eval(pad_cards)
+    return _initReviewerWeb
 
 #Passes touchevents (except touchcancel) and mousemovements to bottom; will trigger bottom to grab events
 class eventPassThroughFilter(QObject):
@@ -187,11 +186,9 @@ def toggle():
             softwareRendering()
             og_adjustHeightToFit = mw.reviewer.bottom.web.adjustHeightToFit
             og_window_state = mw.windowState()
-            og_reviewer = Reviewer._initWeb #stores initial reviewer before wrap
             og_window_flags = mw.windowFlags() #stores initial flags
-
-            Reviewer._initWeb = wrap(og_reviewer, reviewer_wrapper) #tried to use triggers instead but is called prematurely upon suspend/bury
-
+            og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
+            mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
             mw.reviewer.bottom.web.adjustHeightToFit = adjustHeightToFit_override #disables adjustheighttofit
             mw.reviewer.bottom.web.setFixedSize(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX) #resets fixed minimums
 
@@ -228,7 +225,7 @@ def toggle():
             ndfs_enabled = False
             ndfs_inReview = False
             mw.removeEventFilter(loseFocusEventFilter)
-            Reviewer._initWeb = og_reviewer #reassigns initial constructor
+            mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
             mw.setWindowState(og_window_state)
             mw.reviewer.bottom.web.adjustHeightToFit = og_adjustHeightToFit
             mw.mainLayout.removeWidget(fs_window)
@@ -254,6 +251,7 @@ def toggle():
         def unpause():
             mw.setUpdatesEnabled(True)
         QTimer.singleShot(pause, unpause)
+
 ndfs_inReview = False
 def updateBottom(*args):
     global ndfs_inReview
@@ -264,12 +262,7 @@ def updateBottom(*args):
         mw.reviewer.bottom.web.eval(f"updatePos({posX}, {posY});")
         mw.reviewer.bottom.web.eval("activateHover();")
         padCards()
-
-        if lockDrag.isChecked():
-            mw.reviewer.bottom.web.eval("disable_drag();")
-        else:
-           mw.reviewer.bottom.web.eval("enable_drag();")
-
+        setLock()
         if mw.isFullScreen():
            mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
 
@@ -277,7 +270,9 @@ def resetPos():
     config['answer_bar_posX'] = 0
     config['answer_bar_posY']  = 0
     mw.addonManager.writeConfig(__name__, config)
+    mw.reviewer.bottom.web.eval(f"updatePos(0, 0);")
 
+#mw.reset() triggers this as well
 def stateChange(new_state, old_state, *args):
     #print(str(old_state) + " -> " + str(new_state))
     global ndfs_inReview
@@ -301,18 +296,27 @@ def on_context_menu_event(web, menu):
     else:
         menu.removeAction(lockDrag)
 
+#Qt inverts current selection before triggering
 def toggleBar():
+    setLock()
     config = mw.addonManager.getConfig(__name__)
-    updateBottom()
     config['answer_bar_locked'] = lockDrag.isChecked()
     mw.addonManager.writeConfig(__name__, config)
 
+def setLock():
+    global ndfs_inReview
+    if ndfs_inReview:
+        if lockDrag.isChecked():
+            mw.reviewer.bottom.web.eval("disable_drag();")
+        else:
+            mw.reviewer.bottom.web.eval("enable_drag();")
+    
 #Format changes when not in review
 addHook("afterStateChange", stateChange)
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
-addHook("showQuestion", updateBottom)
-addHook("showAnswer", updateBottom)
-addHook("revertedCard", updateBottom)
+#addHook("showQuestion", updateBottom)
+#addHook("showAnswer", updateBottom)
+#addHook("revertedCard", updateBottom)
 
 def toggle_full_screen():
     config = mw.addonManager.getConfig(__name__)
@@ -400,7 +404,7 @@ enable_cursor_hide.setChecked(True)
 menu.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(user_settings)
 
-def linkHandler_wrapper(self, url):
+def linkHandler_wrapper(url):
     global posX
     global posY
     if "cursor_hide" in url and ndfs_inReview:
@@ -427,16 +431,15 @@ def linkHandler_wrapper(self, url):
         config['answer_bar_posY']  = posY
         mw.addonManager.writeConfig(__name__, config)
     else:
-        origLinkHandler(self, url)
-origLinkHandler = Reviewer._linkHandler
-Reviewer._linkHandler = linkHandler_wrapper #custom wrapper
+        origLinkHandler(url)
+origLinkHandler = mw.reviewer._linkHandler
+mw.reviewer._linkHandler = linkHandler_wrapper #custom wrapper
 
 class loseFocus(QObject):
     def eventFilter(self, obj, event):
         if ndfs_inReview:
             if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
                 mw.reviewer.bottom.web.eval(f"show_mouse('{event.type()}');")
-                mw.reviewer.web.eval(f"show_mouse('{event.type()}');")
             elif event.type() == QEvent.WindowActivate:
                 mw.reviewer.bottom.web.eval(f"countDown('{event.type()}');")
         return False
