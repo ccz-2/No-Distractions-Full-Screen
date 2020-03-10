@@ -1,34 +1,29 @@
 //var op = .5; //Defined in python
-$( document ).ready(function() {
-  console.log("Loaded - inject?")
-  if (!$("#NDFullScreenInjected").length) {
-    console.log("injected")
-    $('head').append(`
-    <div id="NDFullScreenInjected"></div>
+console.log("appended")
+$('head').append(`
+<div id="NDFullScreenInjected"></div>
 
-    <style>
-    table:not([id="innertable"]){
-      opacity:` + op + `;
-    }
+<style>
+table:not([id="innertable"]){
+  opacity:` + op + `;
+}
 
-    table:not([id="innertable"]):hover {
-      opacity: 1;
-    }
+table:not([id="innertable"]):hover {
+  opacity: 1;
+}
 
-    button[onclick*="edit"],
-    button[onclick*="more"] {
-      visibility: hidden;
-    }
+button[onclick*="edit"],
+button[onclick*="more"] {
+  visibility: hidden;
+}
 
-    table:not([id="innertable"]) {
-      padding: 0px;
-      border-radius: 5px;
-      background-color: rgba(100, 100, 100, 0.8);
-    }
+table:not([id="innertable"]) {
+  padding: 0px;
+  border-radius: 5px;
+  background-color: rgba(100, 100, 100, 0.8);
+}
 
-    body, #outer{
-      background: transparent !important;
-      border-top-color: transparent !important;
-    }</style> `);
-  }
-});
+body, #outer{
+  background: transparent !important;
+  border-top-color: transparent !important;
+}</style> `);
