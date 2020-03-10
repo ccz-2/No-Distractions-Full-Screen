@@ -36,6 +36,7 @@ reformat = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read
 hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
 pad_cards = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
 update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
+jquery_ui = open(os.path.join(os.path.dirname(__file__), 'jquery-ui.js')).read()
 
 #sets up menu to display previous settings
 def recheckBoxes():
@@ -93,6 +94,8 @@ def user_settings():
 
 #CSS/JS injection
 def reviewer_wrapper(*args):
+    global defaultZoom
+
     reformat = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read()
     iframe = open(os.path.join(os.path.dirname(__file__), 'iFrame.js')).read()
 
@@ -102,26 +105,46 @@ def reviewer_wrapper(*args):
     cursorIdleTimer = config['cursor_idle_timer']
     color = config['answer_button_border_color']
 
+    mw.reviewer.web.eval(jquery_ui)
     mw.reviewer.bottom.web.eval(f"{reformat}")
     mw.reviewer.web.eval(f"var height = {height}; {pad_cards}")
 
-    mw.reviewer.web.eval(f"var op = {op}; var color = '{color}'; {iframe}") #construct iframe for bottom
+    mw.reviewer.web.eval(f"var topBar = 30; var defaultZoom = {defaultZoom}; var op = {op}; var color = '{color}'; {iframe}") #construct iframe for bottom
     mw.reviewer.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
 
 def updateiFrame(html):
     global ndfs_inReview
+    global defaultZoom
+    global answerLocked
+    update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
+    html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
+    mw.reviewer.web.eval(f"var defaultZoom = {defaultZoom}; var url = `{html}`; {update}")
+    if answerLocked:
+        mw.reviewer.web.eval("$( document ).ready(function() { topBar = 0;});")
+        #mw.reviewer.web.eval("document.getElementById('bottomiFrame').contentWindow.resize();")
+        #mw.reviewer.web.eval("autoResize('bottomiFrame')")
+        
+            
+    else:
+        mw.reviewer.web.eval("$( document ).ready(function() { topBar = 30;});")
+        #mw.reviewer.web.eval("document.getElementById('bottomiFrame').contentWindow.resize();")
+        #mw.reviewer.web.eval("autoResize('bottomiFrame')")
+
+
+def updateBottom(*args):
     if ndfs_enabled:
-        update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
-        html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
-        mw.reviewer.web.eval(f"var url = `{html}`; {update}")
+        mw.reviewer.bottom.web.evalWithCallback("""
+            (function(){
+                 return document.documentElement.outerHTML
+             }())
+        """, updateiFrame)
 
-def udpateBottom(*args):
-    mw.reviewer.bottom.web.evalWithCallback("""
-        (function(){
-             return document.documentElement.outerHTML
-         }())
-    """, updateiFrame)
+defaultZoom = 1
+def getDefaultZoom(z):
+    global defaultZoom
+    defaultZoom = z
 
+mw.reviewer.bottom.web.evalWithCallback('(function(){return window.devicePixelRatio}())', getDefaultZoom) #fetched early since async
 
 #PyQt manipulation
 ndfs_enabled = False
@@ -136,14 +159,17 @@ def toggle():
         config = mw.addonManager.getConfig(__name__)
         window_flags_set = False
 
+        global defaultZoom
+        
         if not ndfs_enabled:
             ndfs_enabled = True
             og_window_state = mw.windowState()
             og_reviewer = Reviewer._initWeb #stores initial reviewer before wrap
             og_window_flags = mw.windowFlags() #stores initial flags
 
+            mw.web.setZoomFactor(1); #resets zoom - is bug with viewer (FS squares zoom value)
             Reviewer._initWeb = wrap(og_reviewer, reviewer_wrapper) #tried to use triggers instead but is called prematurely upon suspend/bury
-            
+
             if config['last_toggle'] == 'full_screen':
                 if isMac: #kicks out of OSX maximize
                     mw.showNormal()
@@ -164,7 +190,7 @@ def toggle():
             mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
             fs_layout.addWidget(mw.reviewer.bottom.web,2,1,Qt.AlignBottom)
 
-            #mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
+            mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
             mw.toolbar.web.hide()
             mw.reviewer.bottom.web.hide() #Unhidden in hook
 
@@ -191,22 +217,59 @@ def toggle():
                 mw.show()
             mw.reset()
 
+ndfs_inReview = False
 def stateChange(new_state, old_state, *args):
     #aqt.utils.showText(str(old_state) + " -> " + str(new_state))
     global ndfs_inReview
     if 'review' in new_state.lower() and ndfs_enabled:
         ndfs_inReview = True
+        mw.web.setZoomFactor(1)
         mw.reviewer.bottom.web.hide() #show!
-    elif ndfs_enabled:
+    else:
         ndfs_inReview = False
         QGuiApplication.restoreOverrideCursor()
         QGuiApplication.restoreOverrideCursor() #need to call twice
-        mw.reviewer.bottom.web.hide()
+        mw.reviewer.bottom.web.show()
 
+def on_context_menu_event(web, menu):
+    global ndfs_inReview
+    global answerLocked
+    print(ndfs_inReview)
+    if ndfs_inReview:
+        menu.addAction(toggle_bar)
+        toggle_bar.setVisible(True)
+        if answerLocked:
+            toggle_bar.setChecked(True)
+        else:
+            toggle_bar.setChecked(False)
+    else:
+        print(ndfs_inReview)
+        toggle_bar.setVisible(False)
+   
 #Format changes when not in review
 addHook("afterStateChange", stateChange)
-addHook("showQuestion", udpateBottom)
-addHook("showAnswer", udpateBottom)
+addHook("showQuestion", updateBottom)
+addHook("showAnswer", updateBottom)
+addHook("revertedCard", updateBottom)
+addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
+
+answerLocked = True
+old_zoom = 1
+def toggleBar():
+    global answerLocked
+    global old_zoom
+    if answerLocked:
+        answerLocked = False
+        old_zoom = mw.web.zoomFactor()
+        mw.web.setZoomFactor(1)
+        toggle_bar.setChecked(False)
+        updateBottom()
+
+    else:
+        answerLocked = True
+        toggle_bar.setChecked(True)
+        mw.web.setZoomFactor(1);
+        updateBottom()
 
 def toggle_full_screen():
     config = mw.addonManager.getConfig(__name__)
@@ -225,6 +288,10 @@ def toggle_window():
     windowed.setShortcut(shortcut)
     fullscreen.setShortcut('')
     toggle()
+
+toggle_bar = QAction('Lock Answer Bar', mw)
+toggle_bar.setCheckable(True)
+toggle_bar.triggered.connect(toggleBar)
 
 #add menus
 try:

@@ -44,7 +44,7 @@ function moving() {
 $(function hide_lose_focus() {
     var focused = false
     var count = 1;
-    setInterval(function(){ loseFocus(); }, 50);
+    setInterval(function(){ loseFocus(); }, 100);
     function loseFocus() {
         if (document.hasFocus()) {
             if (!focused) {
