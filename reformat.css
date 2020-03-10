@@ -7,6 +7,10 @@ button[onclick*="more"] {
   visibility: hidden;
 }
 
+* {
+	cursor: none !important;
+}
+
 /*.nobold,
 .stattxt {
   text-shadow: 2px 2px 5px #000000, 2px -2px 5px #000000, -2px -2px 5px #000000, -2px 2px 5px #000000;

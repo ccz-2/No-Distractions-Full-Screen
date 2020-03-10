@@ -1,0 +1,28 @@
+/*stuff*/
+<script>
+var cursorIdleTimer = 100;
+$(function hide_cursor() {
+    if (cursorIdleTimer >= 0){
+        var cursorHidden = true;
+        $('*').css({cursor: 'none'});
+        var timer;
+        $(document).mousemove(function () {
+            timer = setTimeout(function () {
+                $('*').css({cursor: 'none'});
+                cursorHidden = true;
+                console.log("hide "+timer);
+                clearTimeout(timer);
+                }, cursorIdleTimer)
+            if (!cursorHidden) {
+                clearTimeout(timer);
+                console.log("clearTimer ");
+                return
+            } else {
+                $('*').css({cursor: 'default'});
+                console.log("show Cursor ");
+                cursorHidden = false;
+            }
+        });
+    }
+});
+</script>
