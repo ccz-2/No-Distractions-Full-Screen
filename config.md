@@ -1,7 +1,6 @@
-### NDFS v3.2.2 Config:
-The most useful config is outlined below (Modifying other values may have unintended consequences - please click "Restore Defaults" if having issues)  
-Unless otherwise stated, changes are effective immediately  
-Note: Changing settings through menu buttons will override respective values  
+### NDFS v3.2.3 Config:
+The most useful config is outlined below. (Modifying other values may have unintended consequences - please click "Restore Defaults" if having issues.)  
+All changes are effective immediately. Note: Changing settings through menu buttons will override respective values.  
 
 -   `answer_button_border_color`: Color of border around answer buttons  
   Accepts HTML color codes. For help, see: [Color Picker](https://www.hexcolortool.com/#6e6e6e,0.8)  
@@ -15,12 +14,10 @@ Note: Changing settings through menu buttons will override respective values
 -   `fullscreen_hotkey`: Keybinding that toggles fullscreen/windowed mode  
   Examples:  `F11`,  `Ctrl+F`,  `Shift+D`,  `P`  
   For more details, see: [QKeySequence](https://doc.qt.io/qtforpython/PySide2/QtGui/QKeySequence.html?highlight=qkeysequence#PySide2.QtGui.QKeySequence)  
-  **Must restart to take effect**
 
--   `ignore_scroll_on_answer_buttons`: If `true`, scrolling on answer buttons scrolls the card instead. Useful for mouse users.
+-   `ignore_scroll_on_answer_buttons`: If `true`, scrolling on answer buttons scrolls the card instead. Allows scrolling cards without moving mouse.
 
 -   `lock_answer_bar_hotkey`: Keybinding that toggles whether the answer bar should be draggable  
-  **Must restart to take effect**
 
--   `rendering_delay`: Milliseconds to wait before screen render is displayed. Helps reduce flickering and artifacts when toggling fullscreen/windowed.  
+-   `rendering_delay`: Milliseconds to wait before window is updated with layout changes. Helps reduce flickering and artifacts when toggling fullscreen/windowed.  
   Can be adjusted depending on your machine and preferences. Higher values = cleaner transitions, but less responsive toggling
