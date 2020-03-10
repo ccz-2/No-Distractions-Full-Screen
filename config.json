@@ -3,5 +3,6 @@
 	"cursor_idle_timer": 10000,
 	"last_toggle": "full_screen",
 	"stay_on_top": false,
-        "answer_button_border_color": "rgba(110, 110, 110, 0.8)"
+        "answer_button_border_color": "rgba(110, 110, 110, 0.8)",
+	"hotkey": "F11"
 }

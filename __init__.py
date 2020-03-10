@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v2.3.3 2/10/2020
+# v2.3.4 2/10/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -28,7 +28,7 @@ from aqt.qt import *
 from aqt import *
 from aqt.reviewer import Reviewer
 from anki.hooks import *
-
+from anki.utils import isMac, isWin
 #read files
 reformat = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read()
 hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
@@ -41,6 +41,7 @@ def recheckBoxes():
     cursorIdleTimer = config['cursor_idle_timer']
     last_toggle = config['last_toggle']
     onTop = config['stay_on_top']
+    shortcut = config['hotkey']
 
     if op == 1:
         mouseover_default.setChecked(True)
@@ -53,10 +54,10 @@ def recheckBoxes():
         enable_cursor_hide.setChecked(True)
 
     if last_toggle == 'windowed':
-        windowed.setShortcut('F11')
+        windowed.setShortcut(shortcut)
         fullscreen.setShortcut('')
     else:
-        fullscreen.setShortcut('F11')
+        fullscreen.setShortcut(shortcut)
         windowed.setShortcut('')
 
     if onTop == True:
@@ -107,19 +108,22 @@ def toggle():
         global config
         global fs_window
         global og_window_flags
+        global og_window_state
         global window_flags_set
         config = mw.addonManager.getConfig(__name__)
         window_flags_set = False
 
         if not ndfs_enabled:   
             ndfs_enabled = True
-            mw.showNormal()
+            og_window_state = mw.windowState()
             og_reviewer = Reviewer._initWeb #stores initial reviewer before wrap
             og_window_flags = mw.windowFlags() #stores initial flags
 
             Reviewer._initWeb = wrap(og_reviewer, reviewer_wrapper) #tried to use triggers instead but is called prematurely upon suspend/bury
             
             if config['last_toggle'] == 'full_screen':
+                if isMac: #kicks out of OSX maximize
+                    mw.showNormal()
                 mw.showFullScreen()
             if config['stay_on_top'] and not mw.isFullScreen():
                 mw.setWindowFlags(og_window_flags | Qt.WindowStaysOnTopHint)
@@ -147,7 +151,7 @@ def toggle():
         else:
             ndfs_enabled = False
             Reviewer._initWeb = og_reviewer #reassigns initial constructor
-            mw.showNormal()
+            mw.setWindowState(og_window_state)
             mw.mainLayout.removeWidget(fs_window)
             mw.mainLayout.addWidget(mw.toolbar.web)
             mw.mainLayout.addWidget(mw.reviewer.web)
@@ -181,16 +185,18 @@ addHook("afterStateChange", stateChange)
 def toggle_full_screen():
     config = mw.addonManager.getConfig(__name__)
     config['last_toggle'] = 'full_screen'
+    shortcut = config['hotkey']
     mw.addonManager.writeConfig(__name__, config)
-    fullscreen.setShortcut('F11')
+    fullscreen.setShortcut(shortcut)
     windowed.setShortcut('')
     toggle()
 
 def toggle_window():
     config = mw.addonManager.getConfig(__name__)
     config['last_toggle'] = 'windowed'
+    shortcut = config['hotkey']
     mw.addonManager.writeConfig(__name__, config)
-    windowed.setShortcut('F11')
+    windowed.setShortcut(shortcut)
     fullscreen.setShortcut('')
     toggle()
 
