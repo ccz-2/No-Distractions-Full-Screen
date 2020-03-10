@@ -1,4 +1,4 @@
-### NDFS v3.1.1 Config:
+### NDFS v3.1.2 Config:
 The most useful config is outlined below (Modifying other values may have unintended consequences - please click "Restore Defaults" if having issues)  
 Unless otherwise stated, changes are effective immediately  
 Note: Changing settings through menu buttons will override respective values  

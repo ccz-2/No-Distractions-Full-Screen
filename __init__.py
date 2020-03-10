@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.1.1 2/28/2020
+# v3.1.2 2/28/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -21,7 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+from aqt.reviewer import Reviewer
 from aqt.qt import *
 from aqt import *
 from aqt.webview import AnkiWebView
@@ -403,7 +403,7 @@ enable_cursor_hide.setChecked(True)
 menu.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(user_settings)
 
-def linkHandler_wrapper(url):
+def linkHandler_wrapper(self, url):
     global posX
     global posY
     if "cursor_hide" in url and ndfs_inReview:
@@ -430,9 +430,9 @@ def linkHandler_wrapper(url):
         config['answer_bar_posY']  = posY
         mw.addonManager.writeConfig(__name__, config)
     else:
-        origLinkHandler(url)
-origLinkHandler = mw.reviewer._linkHandler
-mw.reviewer._linkHandler = linkHandler_wrapper #custom wrapper
+        origLinkHandler(self, url)
+origLinkHandler = Reviewer._linkHandler
+Reviewer._linkHandler = linkHandler_wrapper #custom wrapper
 
 class loseFocus(QObject):
     def eventFilter(self, obj, event):
