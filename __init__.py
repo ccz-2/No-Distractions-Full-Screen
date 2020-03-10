@@ -30,6 +30,7 @@ from aqt.webview import AnkiWebView
 from aqt.reviewer import Reviewer
 from anki.hooks import *
 from anki.utils import isMac, isWin
+import math
 #read files
 reformat = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read()
 hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
@@ -89,6 +90,32 @@ def user_settings():
 
     mw.addonManager.writeConfig(__name__, config)
 
+
+def resizeEvent_overload(event):
+    mw.reviewer.web.resize(mw.size())
+    print('hi')
+
+mw.reviewer.web.resizeEvent = resizeEvent_overload
+
+def resizeBottom(*args):
+    mw.reviewer.bottom.web.adjustHeightToFit()
+    bottomAdjustWidthToFit()
+
+#Adapted from _onHeight in webview.py
+def onWidth(qvar):
+        if qvar is None:
+            return
+
+        scaleFactor = mw.reviewer.bottom.web.zoomFactor()
+        if scaleFactor == 1:
+            scaleFactor = mw.pm.uiScale()
+
+        width = math.ceil(qvar * scaleFactor)
+        mw.reviewer.bottom.web.setFixedWidth(width)
+
+def bottomAdjustWidthToFit():
+    mw.reviewer.bottom.web.evalWithCallback('getMinWidth();', onWidth)
+
 #CSS/JS injection
 def reviewer_wrapper(*args):
     height = mw.reviewer.bottom.web.height() #passed to js to calc card padding
@@ -110,12 +137,14 @@ def toggle():
         global fs_window
         global og_window_flags
         global og_window_state
+        global og_resizeEvent
         global window_flags_set
         config = mw.addonManager.getConfig(__name__)
         window_flags_set = False
 
         if not ndfs_enabled:   
             ndfs_enabled = True
+            og_resizeEvent = mw.reviewer.web.resizeEvent
             og_window_state = mw.windowState()
             og_reviewer = Reviewer._initWeb #stores initial reviewer before wrap
             og_window_flags = mw.windowFlags() #stores initial flags
@@ -141,12 +170,23 @@ def toggle():
 
             mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
             fs_layout.addWidget(mw.reviewer.bottom.web,2,1,Qt.AlignBottom)
-            mw.reviewer.bottom.web.setAttribute(Qt.WA_NoSystemBackground, True)
 
-            mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
+            #mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
             mw.toolbar.web.hide()
 
             mw.mainLayout.addWidget(fs_window)
+
+            mw.test =  QDockWidget("hi1")
+            mw.test.setWidget(mw.reviewer.bottom.web)
+            mw.test.setAllowedAreas(Qt.TopDockWidgetArea | Qt.BottomDockWidgetArea)
+            mw.test.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetVerticalTitleBar)
+            mw.addDockWidget(Qt.BottomDockWidgetArea, mw.test)
+
+            mw.test.setObjectName('hi1')
+            mw.test.setStyleSheet("QDockWidget#"+str(mw.test.objectName())+" {background-color:transparent}")
+            #mw.setStyleSheet("QMainWindow::separator{height: 0px;}")
+            mw.test.setAttribute(Qt.WA_TranslucentBackground);
+
             mw.reset()
 
             if config['cursor_idle_timer'] >= 0:
@@ -156,10 +196,12 @@ def toggle():
             mw.removeEventFilter(loseFocusEventFilter)
             Reviewer._initWeb = og_reviewer #reassigns initial constructor
             mw.setWindowState(og_window_state)
+            mw.reviewer.web.resizeEvent = og_resizeEvent
             mw.mainLayout.removeWidget(fs_window)
             mw.mainLayout.addWidget(mw.toolbar.web)
             mw.mainLayout.addWidget(mw.reviewer.web)
-            mw.mainLayout.addWidget(mw.reviewer.bottom.web)            
+            mw.mainLayout.addWidget(mw.reviewer.bottom.web)
+            mw.removeDockWidget(mw.test)       
             mw.toolbar.web.show()
             mw.menuBar().setMaximumHeight(9999)
 
@@ -182,9 +224,6 @@ def stateChange(new_state, old_state, *args):
         mw.reviewer.web.eval(f"show_mouse('{str(new_state)}');")   
         QGuiApplication.restoreOverrideCursor()
         QGuiApplication.restoreOverrideCursor() #need to call twice
-
-#Format changes when not in review
-addHook("afterStateChange", stateChange)
 
 def toggle_full_screen():
     config = mw.addonManager.getConfig(__name__)
@@ -213,6 +252,12 @@ except AttributeError:
         mw.form.menuTools.menuAction(),
         mw.addon_view_menu
     )
+
+#Format changes when not in review
+addHook("afterStateChange", stateChange)
+addHook("showQuestion", resizeBottom)
+addHook("showAnswer", resizeBottom)
+addHook("revertedCard", resizeBottom)
 
 menu = QMenu(('Full Screen'), mw)
 mw.addon_view_menu.addMenu(menu)
