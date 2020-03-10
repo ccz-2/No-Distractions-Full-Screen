@@ -1,7 +1,7 @@
 //No Distractions Full Screen v2.3.3
 //var op = 0.5; //Defined in python
 //var color = 'rgba(110, 110, 200, 0.8)';
-console.log("appended")
+//console.log("appended")
 $('head').append(`
 <div id="NDFullScreenInjected"></div>
 

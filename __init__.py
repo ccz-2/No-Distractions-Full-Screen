@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v2.3.4 2/10/2020
+# v2.3.5 2/20/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -26,6 +26,7 @@
 
 from aqt.qt import *
 from aqt import *
+from aqt.webview import AnkiWebView
 from aqt.reviewer import Reviewer
 from anki.hooks import *
 from anki.utils import isMac, isWin
@@ -136,20 +137,23 @@ def toggle():
             fs_layout.setContentsMargins(QMargins(0,0,0,0))
             fs_layout.setSpacing(0)
             fs_layout.addWidget(mw.toolbar.web,1,1)#,Qt.AlignTop) #need to add or breaks (garbagecollected)
-
             fs_layout.addWidget(mw.reviewer.web,2,1)
 
             mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
             fs_layout.addWidget(mw.reviewer.bottom.web,2,1,Qt.AlignBottom)
+            mw.reviewer.bottom.web.setAttribute(Qt.WA_NoSystemBackground, True)
 
             mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
             mw.toolbar.web.hide()
-            mw.reviewer.bottom.web.hide()
 
             mw.mainLayout.addWidget(fs_window)
             mw.reset()
+
+            if config['cursor_idle_timer'] >= 0:
+                mw.installEventFilter(loseFocusEventFilter)
         else:
             ndfs_enabled = False
+            mw.removeEventFilter(loseFocusEventFilter)
             Reviewer._initWeb = og_reviewer #reassigns initial constructor
             mw.setWindowState(og_window_state)
             mw.mainLayout.removeWidget(fs_window)
@@ -168,16 +172,16 @@ def toggle():
             mw.reset()
 
 def stateChange(new_state, old_state, *args):
-    #aqt.utils.showText(str(old_state) + " -> " + str(new_state))
+    #print(str(old_state) + " -> " + str(new_state))
     global ndfs_inReview
     if 'review' in new_state.lower() and ndfs_enabled:
         ndfs_inReview = True
-        mw.reviewer.bottom.web.show()
     elif ndfs_enabled:
         ndfs_inReview = False
+        mw.reviewer.bottom.web.eval(f"show_mouse('{str(new_state)}');") #resets timers
+        mw.reviewer.web.eval(f"show_mouse('{str(new_state)}');")   
         QGuiApplication.restoreOverrideCursor()
         QGuiApplication.restoreOverrideCursor() #need to call twice
-        mw.reviewer.bottom.web.hide()
 
 #Format changes when not in review
 addHook("afterStateChange", stateChange)
@@ -256,10 +260,10 @@ enable_cursor_hide.triggered.connect(user_settings)
 try:
     #For Anki v2.1.20 (uses new hook)
     def hide_cursor_hook(handled, msg, context):
-        if msg == "cursor_hide" and ndfs_inReview:
+        if "cursor_hide" in msg and ndfs_inReview:
             QGuiApplication.setOverrideCursor(Qt.BlankCursor)
             return True, None
-        elif msg == "cursor_show":
+        elif "cursor_show" in msg:
             QGuiApplication.restoreOverrideCursor()
             QGuiApplication.restoreOverrideCursor() #need to call twice
             return True, None
@@ -268,12 +272,29 @@ try:
     gui_hooks.webview_did_receive_js_message.append(hide_cursor_hook)
 except:
     def linkHandler_wrapper(self, url):
-        if url == "cursor_hide" and ndfs_inReview:
+        if "cursor_hide" in url and ndfs_inReview:
             QGuiApplication.setOverrideCursor(Qt.BlankCursor)
-        elif url == "cursor_show":
+        elif "cursor_show" in url:
             QGuiApplication.restoreOverrideCursor()
             QGuiApplication.restoreOverrideCursor() #need to call twice
-    Reviewer._linkHandler = wrap(Reviewer._linkHandler, linkHandler_wrapper, pos = 'before')
+        else:
+            origLinkHandler(self, url)
+    origLinkHandler = Reviewer._linkHandler
+    Reviewer._linkHandler = linkHandler_wrapper #custom wrapper
+
+class loseFocus(QObject):
+    def eventFilter(self, obj, event):
+        if ndfs_inReview:
+            if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
+                mw.reviewer.bottom.web.eval(f"show_mouse('{event.type()}');")
+                mw.reviewer.web.eval(f"show_mouse('{event.type()}');")     
+            elif event.type() == QEvent.WindowActivate:
+                mw.reviewer.bottom.web.eval(f"countDown('{event.type()}');")
+            #if event.type() not in [77, 129, 173]:
+            #    print(event.type())
+        return QObject.eventFilter(self, obj, event)
+
+loseFocusEventFilter = loseFocus()
 
 menu.addSeparator()
 menu.addAction(enable_cursor_hide)
