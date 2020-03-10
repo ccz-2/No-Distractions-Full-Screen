@@ -1,39 +1,137 @@
 # No Distractions Full Screen
 # Made by Quip13 (random.emailforcrap@gmail.com) <- its real :)
-# v2.0 2/1/2020
+# v2.1.1 2/4/2020
 
 from aqt.qt import *
 from aqt import mw
 from aqt.reviewer import Reviewer
 from anki.hooks import addHook
+import time
 
-def reformat_screen_css():
-    if mw.isFullScreen():
-        mw.reviewer.bottom.web.eval(f"$('button[onclick*=\"edit\"], button[onclick*=\"more\"]').css({{'visibility': 'hidden'}});") #removes edit, more buttons
-        #mw.reviewer.bottom.web.eval(f"$('.nobold, .stattxt').css({{'text-shadow':'2px 2px 5px #000000, 2px -2px 5px #000000, -2px -2px 5px #000000, -2px 2px 5px #000000'}});") #adds shadow to text
-        mw.reviewer.bottom.web.eval(f"$('body, #outer').css({{'background':'transparent', 'border-top-color':'transparent'}});") #removes gradient coloring
-        mw.reviewer.bottom.web.eval(f"$('table:not([id=\"innertable\"]').css({{'padding':'0px','border-radius':'5px','background-color':'rgba(100,100,100,0.8)'}});") #adds box around buttons
+#read files
+reformat_css = open(os.path.join(os.path.dirname(__file__), 'reformat.css')).read()
+hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
+config = mw.addonManager.getConfig(__name__)
 
-def toggle_full_screen():
-    if not mw.isFullScreen():
-        mw.setWindowState(mw.windowState() | Qt.WindowFullScreen)
-        mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
-        mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
-        mw.toolbar.web.setFixedHeight(0) #Removes Decks Add etc.
-        mw.mainLayout.removeWidget(mw.reviewer.bottom.web) #Removes bottom bar from layout (makes it float)
-        reformat_screen_css()
+#sets up menu to display previous settings
+def recheckBoxes():
+    op = config['answer_button_opacity']
+    cursorIdleTimer = config['cursor_idle_timer']
+    if op == 1:
+        mouseover_default.setChecked(True)
+    elif op == 0:
+        mouseover_hidden.setChecked(True)
     else:
-        mw.setWindowState(mw.windowState() ^ Qt.WindowFullScreen)
-        mw.reset()
-        mw.menuBar().setMaximumHeight(9999)
-        mw.toolbar.web.adjustHeightToFit()
-        mw.mainLayout.addWidget(mw.reviewer.bottom.web)
+        mouseover_translucent.setChecked(True)
+    if cursorIdleTimer >= 0:
+        enable_cursor_hide.setChecked(True)
+
+#updates settings on menu action
+def user_settings():
+    if mouseover_default.isChecked():
+        op = 1
+    if mouseover_hidden.isChecked():
+        op = 0
+    if mouseover_translucent.isChecked():
+        op = .5
+    config['answer_button_opacity'] = op
+
+    if enable_cursor_hide.isChecked():
+        cursorIdleTimer = 10000
+    if not enable_cursor_hide.isChecked():
+        cursorIdleTimer = -1
+    config['cursor_idle_timer'] = cursorIdleTimer
+
+    mw.addonManager.writeConfig(__name__, config)
+
+#injects CSS and JS into widgets
+def reformat_screen():
+    config = mw.addonManager.getConfig(__name__) #in case config manually updated
+    op = config['answer_button_opacity']
+    cursorIdleTimer = config['cursor_idle_timer']
+    if mw.isFullScreen():
+        mw.reviewer.bottom.web.eval(f"$('head').append(`<style>{reformat_css}</style>`);")
+        mw.reviewer.bottom.web.eval(f"$('head').append(`<style>table:not([id=\"innertable\"]){{opacity: {op};}}</style>`);")
+        mw.reviewer.bottom.web.eval(f"$('head').append(`<script>var cursorIdleTimer = {cursorIdleTimer};{hide_cursor}</script>`);")
+        mw.reviewer.web.eval(f"$('head').append(`<script>var cursorIdleTimer = {cursorIdleTimer};{hide_cursor}</script>`);")
+
+#PyQt manipulation
+def toggle_full_screen():
+        if not mw.isFullScreen():
+            mw.showFullScreen()
+            mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
+            mw.toolbar.web.setFixedHeight(0) #Removes Decks Add etc.
+            mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
+            mw.mainLayout.removeWidget(mw.reviewer.bottom.web) #Removes bottom bar from layout (makes it float)
+            reformat_screen()
+        elif mw.isFullScreen():
+            mw.showNormal()
+            mw.reset()
+            mw.menuBar().setMaximumHeight(9999)
+            mw.toolbar.web.adjustHeightToFit()
+            mw.mainLayout.addWidget(mw.reviewer.bottom.web)
+
+# Limits full screen to just review
+def stateChange(new_state, *args):
+    if new_state == 'review':
+        fullscreen.setDisabled(False)
+        fullscreen.setText('Toggle Full Screen')
+    elif new_state != 'review':
+        if mw.isFullScreen():
+            toggle_full_screen()
+        fullscreen.setDisabled(True)
+        fullscreen.setText('Toggle Full Screen (Only in review)')
 
 #reformat css when bottom refreshes
-addHook("showQuestion", reformat_screen_css)
-addHook("showAnswer", reformat_screen_css)
+addHook("showQuestion", reformat_screen)
+addHook("showAnswer", reformat_screen)
 
-action = QAction("Toggle Full Screen", mw)
-action.setShortcut("F11")
-action.triggered.connect(toggle_full_screen)
-mw.form.menuTools.addAction(action)
+#end full screen when review ends
+addHook("afterStateChange", stateChange)
+
+#add menus
+try:
+    mw.addon_view_menu
+except AttributeError:
+    mw.addon_view_menu = QMenu(('View'), mw)
+    mw.form.menubar.insertMenu(
+        mw.form.menuTools.menuAction(),
+        mw.addon_view_menu
+    )
+
+mw.submenu = QMenu(('Full Screen'), mw)
+mw.addon_view_menu.addMenu(mw.submenu)
+
+fullscreen = QAction('Toggle Full Screen (Only in review)', mw)
+fullscreen.triggered.connect(toggle_full_screen)
+fullscreen.setShortcut('F11')
+fullscreen.setDisabled(True) #re-enabled when state == review
+mw.submenu.addAction(fullscreen)
+
+mw.submenu.addSeparator()
+
+mouseover = QActionGroup(mw)
+
+mouseover_default = QAction('Do Not Hide Answer Buttons', mouseover)
+mouseover_default.setCheckable(True)
+mw.submenu.addAction(mouseover_default)
+mouseover_default.triggered.connect(user_settings)
+
+mouseover_hidden = QAction('Hide Answer Buttons Until Mouseover', mouseover)
+mouseover_hidden.setCheckable(True)
+mw.submenu.addAction(mouseover_hidden)
+mouseover_hidden.triggered.connect(user_settings)
+
+mouseover_translucent = QAction('Translucent Answer Buttons Until Mouseover', mouseover)
+mouseover_translucent.setCheckable(True)
+mw.submenu.addAction(mouseover_translucent)
+mouseover_translucent.triggered.connect(user_settings)
+
+mw.submenu.addSeparator()
+
+enable_cursor_hide = QAction('Enable Idle Cursor Hide', mw)
+enable_cursor_hide.setCheckable(True)
+mw.submenu.addAction(enable_cursor_hide)
+enable_cursor_hide.triggered.connect(user_settings)
+
+recheckBoxes()

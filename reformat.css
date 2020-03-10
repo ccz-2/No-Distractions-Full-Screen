@@ -1,0 +1,24 @@
+table:not([id="innertable"]):hover {
+  opacity: 1;
+}
+
+button[onclick*="edit"],
+button[onclick*="more"] {
+  visibility: hidden;
+}
+
+/*.nobold,
+.stattxt {
+  text-shadow: 2px 2px 5px #000000, 2px -2px 5px #000000, -2px -2px 5px #000000, -2px 2px 5px #000000;
+}*/
+
+table:not([id="innertable"]) {
+  padding: 0px;
+  border-radius: 5px;
+  background-color: rgba(100, 100, 100, 0.8);
+}
+
+body, #outer{
+  background: transparent !important;
+  border-top-color: transparent !important;
+}
