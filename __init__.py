@@ -250,12 +250,10 @@ def toggle():
                 mw.show()
             mw.reset()
 
-        #def test():
-        #    mw.setUpdatesEnabled(True)
-        #QTimer.singleShot(0, test);
         pause = config['rendering_pause']
-        mw.reviewer.bottom.web.eval(f"setTimeout(function(){{pycmd('NDFSready');}}, {pause});") #waits arbitrary amount before drawing mw to reduce rendering artifacts
-
+        def unpause():
+            mw.setUpdatesEnabled(True)
+        QTimer.singleShot(pause, unpause)
 ndfs_inReview = False
 def updateBottom(*args):
     global ndfs_inReview
@@ -420,8 +418,6 @@ def linkHandler_wrapper(self, url):
         eventPassThrough.bottomActive = True
         for i in mw.reviewer.web.findChildren(QWidget):
             QApplication.sendEvent(i, QTouchEvent(QEvent.TouchCancel)) #cancels touchstart event in reviewer
-    elif "NDFSready" in url:
-        mw.setUpdatesEnabled(True)
     elif "draggable_pos" in url:
         pos = url.split(": ")[1]
         pos = pos.split(", ")
