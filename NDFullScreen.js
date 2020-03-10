@@ -1,5 +1,6 @@
-//No Distractions Full Screen v2.3.2
-//var op = .5; //Defined in python
+//No Distractions Full Screen v2.3.3
+//var op = 0.5; //Defined in python
+//var color = 'rgba(110, 110, 200, 0.8)';
 console.log("appended")
 $('head').append(`
 <div id="NDFullScreenInjected"></div>
@@ -21,7 +22,7 @@ button[onclick*="more"] {
 table:not([id="innertable"]) {
   padding: 0px;
   border-radius: 5px;
-  background-color: rgba(110, 110, 110, 0.8); 
+  background-color: ` + color + `; 
 }
 
 body, #outer{
