@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2 2/29/2020
+# v3.2.1 3/1/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -113,7 +113,7 @@ def toggle():
             og_window_state = mw.windowState()
             og_window_flags = mw.windowFlags() #stores initial flags
             og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
-
+            setupEventFilters()
             if config['last_toggle'] == 'full_screen':
                 if isMac: #kicks out of OSX maximize
                     mw.showNormal()
@@ -250,8 +250,15 @@ def checkSoftwareRendering():
 
 
 ########## EventFilters ##########
-reviewer_QWidget = mw.reviewer.web.findChildren(QWidget)[0] #undocumented method to get underlying event-handling widget of QWebView *may break in future Qt releases
-bottom_QWidget = mw.reviewer.bottom.web.findChildren(QWidget)[0]
+def setupEventFilters(): #if called too soon will throw error on linux machines
+    global reviewer_QWidget
+    global bottom_eventFilter_obj
+    global bottom_QWidget
+    global reviewer_eventFilter_obj
+    reviewer_QWidget = mw.reviewer.web.findChildren(QWidget)[0] #undocumented method to get underlying event-handling widget of QWebView *may break in future Qt releases
+    bottom_eventFilter_obj = bottom_eventFilter(reviewer_QWidget)
+    bottom_QWidget = mw.reviewer.bottom.web.findChildren(QWidget)[0]
+    reviewer_eventFilter_obj = reviewer_eventFilter(bottom_QWidget)
 
 #Intercepts events on reviewer for routing (touch handling + mouse hover events)
 class reviewer_eventFilter(QObject):
@@ -267,7 +274,7 @@ class reviewer_eventFilter(QObject):
             if self.bottomActive:
                 return True #event only sent to bottom
         return False #event is sent to reviewer
-reviewer_eventFilter_obj = reviewer_eventFilter(bottom_QWidget)
+
 
 #Intercepts events on bottom for routing (passes scrolling to bottom)
 class bottom_eventFilter(QObject):
@@ -279,7 +286,7 @@ class bottom_eventFilter(QObject):
             QApplication.sendEvent(self.reviewer_QWidget, event) #reviewer gets event
             return True #event is only sent to reviewer
         return False #event is only sent to bottom
-bottom_eventFilter_obj = bottom_eventFilter(reviewer_QWidget)
+
 
 #Intercepts events to detect when focus is lost to show mouse cursor
 class loseFocus(QObject):
@@ -409,7 +416,6 @@ def user_settings():
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
-
 
 
 
