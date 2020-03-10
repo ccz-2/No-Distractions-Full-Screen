@@ -1,3 +1,4 @@
+//No Distractions Full Screen v2.2.3
 //var cursorIdleTimer = 5000; //Defined in python
 $(function hide_cursor() {
     if (cursorIdleTimer >= 0){
@@ -16,13 +17,11 @@ $(function hide_cursor() {
                 console.log("cursor_hide");
                 cursorHidden = true;
                 }, cursorIdleTimer);
-            if (cursorHidden) {
-                //$('*').css({cursor: 'default'});
+
                 pycmd("cursor_show");
                 console.log("cursor_show");
                 cursorHidden = false;
                 return
-            }
         });
     }
 });

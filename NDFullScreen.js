@@ -1,3 +1,4 @@
+//No Distractions Full Screen v2.2.3
 //var op = .5; //Defined in python
 console.log("appended")
 $('head').append(`

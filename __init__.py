@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v2.2.2 2/9/2020
+# v2.2.3 2/9/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -35,8 +35,9 @@ config = mw.addonManager.getConfig(__name__)
 
 #sets up menu to display previous settings
 def recheckBoxes():
+    config = mw.addonManager.getConfig(__name__)
     op = config['answer_button_opacity']
-    cursorIdleTimer = config['cursor_idle_timer (v2.1.20+)']
+    cursorIdleTimer = config['cursor_idle_timer']
     if op == 1:
         mouseover_default.setChecked(True)
     elif op == 0:
@@ -60,13 +61,14 @@ def user_settings():
         cursorIdleTimer = 10000
     if not enable_cursor_hide.isChecked():
         cursorIdleTimer = -1
-    config['cursor_idle_timer (v2.1.20+)'] = cursorIdleTimer
+    config['cursor_idle_timer'] = cursorIdleTimer
     mw.addonManager.writeConfig(__name__, config)
 
 #appends CSS and JS into widgets
 def reviewer_wrapper(*args):
+    config = mw.addonManager.getConfig(__name__)
     op = config['answer_button_opacity']
-    cursorIdleTimer = config['cursor_idle_timer (v2.1.20+)']
+    cursorIdleTimer = config['cursor_idle_timer']
     mw.reviewer.bottom.web.eval(f"var op = {op}; {reformat}")
     mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
     mw.reviewer.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
@@ -79,7 +81,7 @@ def toggle_full_screen():
         if first_time:
             og_reviewer = Reviewer._initWeb #stores initial reviewer on first toggle
         if not mw.isFullScreen():
-            Reviewer._initWeb = wrap(Reviewer._initWeb, reviewer_wrapper) #tried to use triggers instead but is called prematurely upon suspend/bury
+            Reviewer._initWeb = wrap(og_reviewer, reviewer_wrapper) #tried to use triggers instead but is called prematurely upon suspend/bury
             mw.showFullScreen()
             mw.reset()
             mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
@@ -153,10 +155,9 @@ mouseover_translucent.triggered.connect(user_settings)
 enable_cursor_hide = QAction('Enable Idle Cursor Hide', mw)
 enable_cursor_hide.setCheckable(True)
 enable_cursor_hide.triggered.connect(user_settings)
-recheckBoxes()
 
-#Only works after 2.1.20 due to hook
 try:
+    #For Anki v2.1.20 (uses new hook)
     def hide_cursor_hook(handled, msg, context):
         if msg == "cursor_hide":
             QGuiApplication.setOverrideCursor(Qt.BlankCursor)
@@ -167,10 +168,17 @@ try:
             return True, None
         else:
             return handled
-
     gui_hooks.webview_did_receive_js_message.append(hide_cursor_hook)
-
-    mw.submenu.addSeparator()
-    mw.submenu.addAction(enable_cursor_hide)
 except:
-    pass
+    def linkHandler_wrapper(self, url):
+        if url == "cursor_hide":
+            QGuiApplication.setOverrideCursor(Qt.BlankCursor)
+        elif url == "cursor_show":
+            QGuiApplication.restoreOverrideCursor()
+            QGuiApplication.restoreOverrideCursor() #need to call twice
+    Reviewer._linkHandler = wrap(Reviewer._linkHandler, linkHandler_wrapper, pos = 'before')
+
+mw.submenu.addSeparator()
+mw.submenu.addAction(enable_cursor_hide)
+
+recheckBoxes()
