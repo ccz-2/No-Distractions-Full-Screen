@@ -89,6 +89,26 @@ def user_settings():
 
     mw.addonManager.writeConfig(__name__, config)
 
+
+new_bottom = AnkiWebView()
+new_bottom.show()
+
+def updateiFrame(html):
+    print(html)
+    new_bottom.stdHtml(html)
+
+def updateBottom(*args):
+    if ndfs_enabled:
+        mw.reviewer.bottom.web.evalWithCallback("""
+            (function(){
+                 return document.documentElement.outerHTML
+             }())
+        """, updateiFrame)
+
+addHook("showQuestion", updateBottom)
+addHook("showAnswer", updateBottom)
+addHook("revertedCard", updateBottom)
+
 #CSS/JS injection
 def reviewer_wrapper(*args):
     height = mw.reviewer.bottom.web.height() #passed to js to calc card padding
@@ -141,10 +161,14 @@ def toggle():
 
             mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
             fs_layout.addWidget(mw.reviewer.bottom.web,2,1,Qt.AlignBottom)
-            mw.reviewer.bottom.web.setAttribute(Qt.WA_NoSystemBackground, True)
+
+            
+            #fs_layout.addWidget(new_bottom,3,1)
 
             mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
             mw.toolbar.web.hide()
+
+            #mw.reviewer.bottom.web.setAttribute(Qt.WA_NoSystemBackground, True)
 
             mw.mainLayout.addWidget(fs_window)
             mw.reset()
@@ -172,14 +196,12 @@ def toggle():
             mw.reset()
 
 def stateChange(new_state, old_state, *args):
-    #print(str(old_state) + " -> " + str(new_state))
+    #aqt.utils.showText(str(old_state) + " -> " + str(new_state))
     global ndfs_inReview
     if 'review' in new_state.lower() and ndfs_enabled:
         ndfs_inReview = True
     elif ndfs_enabled:
         ndfs_inReview = False
-        mw.reviewer.bottom.web.eval(f"show_mouse('{str(new_state)}');") #resets timers
-        mw.reviewer.web.eval(f"show_mouse('{str(new_state)}');")   
         QGuiApplication.restoreOverrideCursor()
         QGuiApplication.restoreOverrideCursor() #need to call twice
 
@@ -285,13 +307,11 @@ except:
 class loseFocus(QObject):
     def eventFilter(self, obj, event):
         if ndfs_inReview:
-            if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
+            if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]:
                 mw.reviewer.bottom.web.eval(f"show_mouse('{event.type()}');")
                 mw.reviewer.web.eval(f"show_mouse('{event.type()}');")     
             elif event.type() == QEvent.WindowActivate:
-                mw.reviewer.bottom.web.eval(f"countDown('{event.type()}');")
-            #if event.type() not in [77, 129, 173]:
-            #    print(event.type())
+                mw.reviewer.web.eval(f"countDown('{event.type()}');")
         return QObject.eventFilter(self, obj, event)
 
 loseFocusEventFilter = loseFocus()

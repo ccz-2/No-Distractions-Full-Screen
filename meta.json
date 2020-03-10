@@ -1,0 +1,1 @@
+{"name": "No Distractions Full Screen Clean review interface", "mod": 1581385256, "min_point_version": 15, "max_point_version": 20, "branch_index": 0, "config": {"answer_button_opacity": 1, "cursor_idle_timer": 10000, "last_toggle": "windowed", "stay_on_top": false, "answer_button_border_color": "rgba(110, 110, 110, 0.8)", "hotkey": "F11"}}
