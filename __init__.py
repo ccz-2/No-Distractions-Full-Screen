@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.1.2 2/28/2020
+# v3.2 2/29/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -28,7 +28,320 @@ from aqt.webview import AnkiWebView
 from aqt.deckbrowser import DeckBrowser
 from anki.hooks import *
 from anki.utils import isMac, isWin
-import random
+
+########## Wrappers ##########
+#monkey patched function to disable height adjustment
+def adjustHeightToFit_override(*args):
+    return
+
+#CSS/JS injection
+def reviewer_wrapper(func):
+    NDFullScreen = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read()
+    draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
+    hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
+    card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
+    interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
+    def _initReviewerWeb(*args):
+        config = mw.addonManager.getConfig(__name__)
+        op = config['answer_button_opacity']
+        cursorIdleTimer = config['cursor_idle_timer']
+        color = config['answer_button_border_color']
+        func()
+        mw.reviewer.bottom.web.eval(interact)
+        mw.reviewer.bottom.web.eval(draggable)
+        mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {NDFullScreen}")
+        mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
+        mw.reviewer.web.eval(card_padding)
+    return _initReviewerWeb
+
+def linkHandler_wrapper(self, url):
+    global posX
+    global posY
+    if "NDFS-cursor_hide" == url and ndfs_inReview:
+        QGuiApplication.setOverrideCursor(Qt.BlankCursor)
+    elif "NDFS-cursor_show" == url:
+        QGuiApplication.restoreOverrideCursor()
+        QGuiApplication.restoreOverrideCursor() #need to call twice
+    elif "NDFS-hover_out" == url and ndfs_inReview:
+        mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        reviewer_eventFilter_obj.bottomActive = False
+    elif "NDFS-hover_in" == url:
+        mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+        reviewer_eventFilter_obj.bottomActive = True
+    elif "NDFS-touchstart" == url:
+        reviewer_eventFilter_obj.bottomActive = True
+        touchCancelEvent = QTouchEvent(QEvent.TouchCancel)
+        touchCancelEvent.NDFS = True #flags event so that it is only sent to reviewer in eventListener
+        QApplication.sendEvent(reviewer_QWidget, touchCancelEvent) #cancels initial touchstart event in reviewer, since further touch events are passed to bottom only
+    elif "NDFS-draggable_pos" in url:
+        pos = url.split(": ")[1]
+        pos = pos.split(", ")
+        posX = pos[0]
+        posY = pos[1]
+        config = mw.addonManager.getConfig(__name__)
+        config['answer_bar_posX'] = posX
+        config['answer_bar_posY']  = posY
+        mw.addonManager.writeConfig(__name__, config)
+    else:
+        origLinkHandler(self, url)
+origLinkHandler = Reviewer._linkHandler
+Reviewer._linkHandler = linkHandler_wrapper
+
+
+
+
+
+########## PyQt manipulation ##########
+ndfs_enabled = False
+ndfs_inReview = False
+def toggle():
+        global ndfs_enabled
+        global ndfs_inReview
+        global og_adjustHeightToFit
+        global og_reviewer
+        global og_window_flags
+        global og_window_state
+        global window_flags_set
+        global fs_window
+        config = mw.addonManager.getConfig(__name__)
+
+        if not ndfs_enabled:
+            ndfs_enabled = True
+            window_flags_set = False
+            checkSoftwareRendering()
+            og_adjustHeightToFit = mw.reviewer.bottom.web.adjustHeightToFit
+            og_window_state = mw.windowState()
+            og_window_flags = mw.windowFlags() #stores initial flags
+            og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
+
+            if config['last_toggle'] == 'full_screen':
+                if isMac: #kicks out of OSX maximize
+                    mw.showNormal()
+                mw.showFullScreen()
+            if config['stay_on_top'] and not mw.isFullScreen():
+                mw.setWindowFlags(og_window_flags | Qt.WindowStaysOnTopHint)
+                window_flags_set = True
+                mw.show()
+            mw.setUpdatesEnabled(False) #pauses updates to screen
+            mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
+            mw.reviewer.bottom.web.adjustHeightToFit = adjustHeightToFit_override #disables adjustheighttofit
+            mw.reviewer.bottom.web.setFixedSize(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX) #resets fixed minimums
+
+            #Builds new widget for window
+            fs_window = QWidget()
+            fs_layout = QGridLayout(fs_window)
+            fs_layout.setContentsMargins(QMargins(0,0,0,0))
+            fs_layout.setSpacing(0)
+            fs_layout.addWidget(mw.toolbar.web,0,0)#,Qt.AlignTop) #need to add or breaks (garbagecollected)
+            fs_layout.addWidget(mw.reviewer.web,0,0)
+            fs_layout.addWidget(mw.reviewer.bottom.web,0,0)
+            mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
+            mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+            mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
+            mw.toolbar.web.hide()
+            mw.mainLayout.addWidget(fs_window)
+            mw.reset()
+
+            if config['cursor_idle_timer'] >= 0:
+                mw.installEventFilter(loseFocusEventFilter)
+            if config['ignore_scroll_on_answer_buttons']:
+                bottom_QWidget.installEventFilter(bottom_eventFilter_obj)
+            reviewer_QWidget.installEventFilter(reviewer_eventFilter_obj)
+
+        else:
+            ndfs_enabled = False
+            ndfs_inReview = False
+            if window_flags_set: #helps prevent annoying flickering when toggling
+                mw.setWindowFlags(og_window_flags) #reassigns initial flags
+                window_flags_set = False
+                mw.show()
+            mw.setUpdatesEnabled(False) #pauses updates to screen
+
+            mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
+            mw.setWindowState(og_window_state)
+            mw.reviewer.bottom.web.adjustHeightToFit = og_adjustHeightToFit
+            mw.mainLayout.removeWidget(fs_window)
+            mw.mainLayout.addWidget(mw.toolbar.web)
+            mw.mainLayout.addWidget(mw.reviewer.web)
+            mw.mainLayout.addWidget(mw.reviewer.bottom.web)            
+            mw.toolbar.web.show()
+            mw.menuBar().setMaximumHeight(9999)
+            
+            QGuiApplication.restoreOverrideCursor()
+            QGuiApplication.restoreOverrideCursor() #need to call twice
+            mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, False)
+
+            mw.removeEventFilter(loseFocusEventFilter)
+            reviewer_QWidget.removeEventFilter(reviewer_eventFilter_obj)
+            bottom_QWidget.removeEventFilter(bottom_eventFilter_obj)
+
+            mw.reset()
+
+        delay = config['rendering_delay']
+        def unpause():
+            mw.setUpdatesEnabled(True)
+        QTimer.singleShot(delay, unpause)
+
+def updateBottom(*args):
+    if ndfs_inReview:
+        config = mw.addonManager.getConfig(__name__)
+        posX = config['answer_bar_posX']
+        posY = config['answer_bar_posY']
+        mw.reviewer.bottom.web.eval(f"updatePos({posX}, {posY});")
+        mw.reviewer.bottom.web.eval("activateHover();")
+        padCards()
+        setLock()
+        if mw.isFullScreen():
+           mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
+
+#mw.reset() triggers this
+def stateChange(new_state, old_state, *args):
+    #print(str(old_state) + " -> " + str(new_state))
+    global ndfs_inReview
+    global ndfs_enabled
+    if 'review' in new_state.lower() and ndfs_enabled:
+        ndfs_inReview = True
+        mw.reviewer.bottom.web.show()
+        updateBottom()
+    elif ndfs_enabled:
+        ndfs_inReview = False
+        mw.reviewer.bottom.web.hide()
+        QGuiApplication.restoreOverrideCursor()
+        QGuiApplication.restoreOverrideCursor()
+        QGuiApplication.restoreOverrideCursor()
+        QGuiApplication.restoreOverrideCursor() #twice still bugs out - needs 4 (?)
+
+def padCards():
+    def padCardsCallback(height):
+        mw.reviewer.web.eval(f"calcPadding({height});")
+    mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
+
+def checkSoftwareRendering():
+    try:
+        software1 = (os.environ["QT_XCB_FORCE_SOFTWARE_OPENGL"] == '1')
+    except:
+        software1 = False
+    try:
+        software2 = (os.environ["QT_OPENGL"] =='software')
+    except:
+        software2 = False
+    try:
+        software3 = os.environ.get("ANKI_SOFTWAREOPENGL")
+    except:
+        software3 = False
+
+    if software1 or software2 or software3:
+        config = mw.addonManager.getConfig(__name__)
+        if config['do_not_show_warnings']:
+            return
+        msgBox = QMessageBox(QMessageBox.Warning, 'No Distractions Full Screen', 'Software Rendering was detected!\nThis may cause artifacts with the No Distractions Full Screen addon and is not recommended.\nPlease switch to hardware acceleration via Anki Preferences if possible.');
+        msgBox.setInformativeText("(If screen is frozen, try resizing the window as a workaround)");
+        msgBox.setStandardButtons(QMessageBox.Ok);
+        msgBox.setDefaultButton(QMessageBox.Ok);
+        doNotShowAgain = QCheckBox('Do not show again')
+        msgBox.setCheckBox(doNotShowAgain)
+        msgBox.exec();
+        if doNotShowAgain.isChecked():
+            config['do_not_show_warnings'] = True
+            mw.addonManager.writeConfig(__name__, config)
+
+
+
+
+
+########## EventFilters ##########
+reviewer_QWidget = mw.reviewer.web.findChildren(QWidget)[0] #undocumented method to get underlying event-handling widget of QWebView *may break in future Qt releases
+bottom_QWidget = mw.reviewer.bottom.web.findChildren(QWidget)[0]
+
+#Intercepts events on reviewer for routing (touch handling + mouse hover events)
+class reviewer_eventFilter(QObject):
+    def __init__(self, bottomQWidget):
+        QObject.__init__(self)
+        self.bottomActive = False
+        self.bottom_QWidget = bottomQWidget
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.TouchCancel and hasattr(event, 'NDFS'): #checks tag to see if event is sent by linkhandler
+            return False #event only sent to reviewer
+        if event.type() in [QEvent.MouseMove, QEvent.TouchBegin, QEvent.TouchEnd, QEvent.TouchUpdate, QEvent.TouchCancel]: #mousemove event will trigger js hover event
+            QApplication.sendEvent(self.bottom_QWidget, event) #bottom gets event
+            if self.bottomActive:
+                return True #event only sent to bottom
+        return False #event is sent to reviewer
+reviewer_eventFilter_obj = reviewer_eventFilter(bottom_QWidget)
+
+#Intercepts events on bottom for routing (passes scrolling to bottom)
+class bottom_eventFilter(QObject):
+    def __init__(self, reviewerQWidget):
+        QObject.__init__(self)
+        self.reviewer_QWidget = reviewerQWidget
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Wheel:
+            QApplication.sendEvent(self.reviewer_QWidget, event) #reviewer gets event
+            return True #event is only sent to reviewer
+        return False #event is only sent to bottom
+bottom_eventFilter_obj = bottom_eventFilter(reviewer_QWidget)
+
+#Intercepts events to detect when focus is lost to show mouse cursor
+class loseFocus(QObject):
+    def eventFilter(self, obj, event):
+        if ndfs_inReview:
+            if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
+                mw.reviewer.bottom.web.eval(f"show_mouse('{event.type()}');")
+            elif event.type() == QEvent.WindowActivate:
+                mw.reviewer.bottom.web.eval(f"countDown('{event.type()}');")
+        return False
+loseFocusEventFilter = loseFocus()
+
+
+
+
+
+########## Menu actions ##########
+def resetPos():
+    config = mw.addonManager.getConfig(__name__)
+    config['answer_bar_posX'] = 0
+    config['answer_bar_posY'] = 0
+    mw.addonManager.writeConfig(__name__, config)
+    updateBottom()
+
+def on_context_menu_event(web, menu):
+    if ndfs_inReview:
+        menu.addAction(lockDrag)
+    else:
+        menu.removeAction(lockDrag)
+
+#Qt inverts selection before triggering
+def toggleBar():
+    setLock()
+    config = mw.addonManager.getConfig(__name__)
+    config['answer_bar_locked'] = lockDrag.isChecked()
+    mw.addonManager.writeConfig(__name__, config)
+
+def setLock():
+    if ndfs_inReview:
+        if lockDrag.isChecked():
+            mw.reviewer.bottom.web.eval("disable_drag();")
+        else:
+            mw.reviewer.bottom.web.eval("enable_drag();")
+
+def toggle_full_screen():
+    config = mw.addonManager.getConfig(__name__)
+    config['last_toggle'] = 'full_screen'
+    shortcut = config['fullscreen_hotkey']
+    mw.addonManager.writeConfig(__name__, config)
+    fullscreen.setShortcut(shortcut)
+    windowed.setShortcut('')
+    toggle()
+
+def toggle_window():
+    config = mw.addonManager.getConfig(__name__)
+    config['last_toggle'] = 'windowed'
+    shortcut = config['fullscreen_hotkey']
+    mw.addonManager.writeConfig(__name__, config)
+    windowed.setShortcut(shortcut)
+    fullscreen.setShortcut('')
+    toggle()
+
 #sets up menu to display previous settings
 def recheckBoxes():
     config = mw.addonManager.getConfig(__name__)
@@ -89,254 +402,19 @@ def user_settings():
 
     mw.addonManager.writeConfig(__name__, config)
 
-def padCardsCallback(height):
-    mw.reviewer.web.eval(f"calcPadding({height});")
-
-def padCards():
-    mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
-
-#CSS/JS injection
-def reviewer_wrapper(func):
-    reformat = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read()
-    draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
-    hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
-    pad_cards = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
-    interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
-
-    def _initReviewerWeb(*args):
-        config = mw.addonManager.getConfig(__name__)
-        op = config['answer_button_opacity']
-        cursorIdleTimer = config['cursor_idle_timer']
-        color = config['answer_button_border_color']
-        func()
-        mw.reviewer.bottom.web.eval(interact)
-        mw.reviewer.bottom.web.eval(draggable)
-        mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {reformat}")
-        mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
-        mw.reviewer.web.eval(pad_cards)
-    return _initReviewerWeb
-
-#Passes touchevents (except touchcancel) and mousemovements to bottom; will trigger bottom to grab events
-class eventPassThroughFilter(QObject):
-    def __init__(self):
-        QObject.__init__(self)
-        self.bottomActive = False
-    def eventFilter(self, obj, event):
-        if event.type() in [QEvent.MouseMove, QEvent.TouchBegin, QEvent.TouchEnd, QEvent.TouchUpdate]: #TouchCancel omitted - to be passed to reviewer
-            for i in mw.reviewer.bottom.web.findChildren(QWidget): #Need to access underlying QQuickWidget for mouse events
-                QApplication.sendEvent(i, event)
-            if self.bottomActive:
-                return True     
-        return False
-
-eventPassThrough = eventPassThroughFilter()
 
 
-def softwareRendering():
-    try:
-        software1 = (os.environ["QT_XCB_FORCE_SOFTWARE_OPENGL"] == '1')
-    except:
-        software1 = False
-    try:
-        software2 = (os.environ["QT_OPENGL"] =='software')
-    except:
-        software2 = False
-    try:
-        software3 = os.environ.get("ANKI_SOFTWAREOPENGL")
-    except:
-        software3 = False
 
-    if software1 or software2 or software3:
-        config = mw.addonManager.getConfig(__name__)
-        if config['do_not_show_warnings']:
-            return
-        msgBox = QMessageBox(QMessageBox.Warning, 'No Distractions Full Screen', 'Software Rendering was detected!\nThis may cause artifacts with the No Distractions Full Screen addon and is not recommended.\nPlease switch to hardware acceleration via Anki Preferences if possible.');
-        msgBox.setInformativeText("(If screen is frozen, try resizing the window as a workaround)");
-        msgBox.setStandardButtons(QMessageBox.Ok);
-        msgBox.setDefaultButton(QMessageBox.Ok);
-        doNotShowAgain = QCheckBox('Do not show again')
-        msgBox.setCheckBox(doNotShowAgain)
-        msgBox.exec();
-        if doNotShowAgain.isChecked():
-            config['do_not_show_warnings'] = True
-            mw.addonManager.writeConfig(__name__, config)
 
-#monkey patched function to disable height adjustment
-def adjustHeightToFit_override(*args):
-    return
-
-#PyQt manipulation
-ndfs_enabled = False
-window_flags_set = False
-def toggle():
-        global ndfs_enabled
-        global ndfs_inReview
-        global og_adjustHeightToFit
-        global og_reviewer
-        global config
-        global fs_window
-        global og_window_flags
-        global og_window_state
-        global window_flags_set
-        config = mw.addonManager.getConfig(__name__)
-
-        if not ndfs_enabled:
-            ndfs_enabled = True
-            softwareRendering()
-            og_adjustHeightToFit = mw.reviewer.bottom.web.adjustHeightToFit
-            og_window_state = mw.windowState()
-            og_window_flags = mw.windowFlags() #stores initial flags
-            og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
-
-            if config['last_toggle'] == 'full_screen':
-                if isMac: #kicks out of OSX maximize
-                    mw.showNormal()
-                mw.showFullScreen()
-            if config['stay_on_top'] and not mw.isFullScreen():
-                mw.setWindowFlags(og_window_flags | Qt.WindowStaysOnTopHint)
-                window_flags_set = True
-                mw.show()
-            mw.setUpdatesEnabled(False)
-            mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
-            mw.reviewer.bottom.web.adjustHeightToFit = adjustHeightToFit_override #disables adjustheighttofit
-            mw.reviewer.bottom.web.setFixedSize(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX) #resets fixed minimums
-
-            #Builds new widget for window
-            fs_window = QWidget()
-            fs_layout = QGridLayout(fs_window)
-            fs_layout.setContentsMargins(QMargins(0,0,0,0))
-            fs_layout.setSpacing(0)
-            fs_layout.addWidget(mw.toolbar.web,0,0)#,Qt.AlignTop) #need to add or breaks (garbagecollected)
-            fs_layout.addWidget(mw.reviewer.web,0,0)
-            fs_layout.addWidget(mw.reviewer.bottom.web,0,0)
-            mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
-            mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-            mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
-            mw.toolbar.web.hide()
-            mw.mainLayout.addWidget(fs_window)
-            mw.reset()
-            if config['cursor_idle_timer'] >= 0:
-                mw.installEventFilter(loseFocusEventFilter)
-
-            for i in mw.reviewer.web.findChildren(QWidget): #Stupid Qt workaround to grab events
-                i.installEventFilter(eventPassThrough)
-
-        else:
-            ndfs_enabled = False
-            ndfs_inReview = False
-            if window_flags_set: #helps prevent annoying flickering when toggling
-                mw.setWindowFlags(og_window_flags) #reassigns initial flags
-                window_flags_set = False
-                mw.show()
-            mw.setUpdatesEnabled(False)
-            mw.removeEventFilter(loseFocusEventFilter)
-            mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
-            mw.setWindowState(og_window_state)
-            mw.reviewer.bottom.web.adjustHeightToFit = og_adjustHeightToFit
-            mw.mainLayout.removeWidget(fs_window)
-            mw.mainLayout.addWidget(mw.toolbar.web)
-            mw.mainLayout.addWidget(mw.reviewer.web)
-            mw.mainLayout.addWidget(mw.reviewer.bottom.web)            
-            mw.toolbar.web.show()
-            mw.menuBar().setMaximumHeight(9999)
-            QGuiApplication.restoreOverrideCursor()
-            QGuiApplication.restoreOverrideCursor() #need to call twice
-            mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, False)
-            for i in mw.reviewer.web.findChildren(QWidget):
-                i.removeEventFilter(eventPassThrough)
-            mw.reset()
-
-        delay = config['rendering_delay']
-        def unpause():
-            mw.setUpdatesEnabled(True)
-        QTimer.singleShot(delay, unpause)
-
-ndfs_inReview = False
-def updateBottom(*args):
-    global ndfs_inReview
-    if ndfs_inReview:
-        config = mw.addonManager.getConfig(__name__)
-        posX = config['answer_bar_posX']
-        posY = config['answer_bar_posY']
-        mw.reviewer.bottom.web.eval(f"updatePos({posX}, {posY});")
-        mw.reviewer.bottom.web.eval("activateHover();")
-        padCards()
-        setLock()
-        if mw.isFullScreen():
-           mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
-
-def resetPos():
-    config['answer_bar_posX'] = 0
-    config['answer_bar_posY']  = 0
-    mw.addonManager.writeConfig(__name__, config)
-    mw.reviewer.bottom.web.eval(f"updatePos(0, 0);")
-
-#mw.reset() triggers this as well
-def stateChange(new_state, old_state, *args):
-    #print(str(old_state) + " -> " + str(new_state))
-    global ndfs_inReview
-    global ndfs_enabled
-    if 'review' in new_state.lower() and ndfs_enabled:
-        ndfs_inReview = True
-        mw.reviewer.bottom.web.show()
-        updateBottom()
-    elif ndfs_enabled:
-        ndfs_inReview = False
-        mw.reviewer.bottom.web.hide()
-        QGuiApplication.restoreOverrideCursor()
-        QGuiApplication.restoreOverrideCursor()
-        QGuiApplication.restoreOverrideCursor()
-        QGuiApplication.restoreOverrideCursor() #twice still bugs out - needs 4 (?)
-
-def on_context_menu_event(web, menu):
-    global ndfs_inReview
-    if ndfs_inReview:
-        menu.addAction(lockDrag)
-    else:
-        menu.removeAction(lockDrag)
-
-#Qt inverts current selection before triggering
-def toggleBar():
-    setLock()
-    config = mw.addonManager.getConfig(__name__)
-    config['answer_bar_locked'] = lockDrag.isChecked()
-    mw.addonManager.writeConfig(__name__, config)
-
-def setLock():
-    global ndfs_inReview
-    if ndfs_inReview:
-        if lockDrag.isChecked():
-            mw.reviewer.bottom.web.eval("disable_drag();")
-        else:
-            mw.reviewer.bottom.web.eval("enable_drag();")
-    
-#Format changes when not in review
+########## Hooks ##########
 addHook("afterStateChange", stateChange)
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
-#addHook("showQuestion", updateBottom)
-#addHook("showAnswer", updateBottom)
-#addHook("revertedCard", updateBottom)
 
-def toggle_full_screen():
-    config = mw.addonManager.getConfig(__name__)
-    config['last_toggle'] = 'full_screen'
-    shortcut = config['fullscreen_hotkey']
-    mw.addonManager.writeConfig(__name__, config)
-    fullscreen.setShortcut(shortcut)
-    windowed.setShortcut('')
-    toggle()
-    
 
-def toggle_window():
-    config = mw.addonManager.getConfig(__name__)
-    config['last_toggle'] = 'windowed'
-    shortcut = config['fullscreen_hotkey']
-    mw.addonManager.writeConfig(__name__, config)
-    windowed.setShortcut(shortcut)
-    fullscreen.setShortcut('')
-    toggle()
 
-#add menus
+
+
+########## Menu setup ##########
 try:
     mw.addon_view_menu
 except AttributeError:
@@ -402,47 +480,5 @@ enable_cursor_hide.setCheckable(True)
 enable_cursor_hide.setChecked(True)
 menu.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(user_settings)
-
-def linkHandler_wrapper(self, url):
-    global posX
-    global posY
-    if "cursor_hide" in url and ndfs_inReview:
-        QGuiApplication.setOverrideCursor(Qt.BlankCursor)
-    elif "cursor_show" in url:
-        QGuiApplication.restoreOverrideCursor()
-        QGuiApplication.restoreOverrideCursor() #need to call twice
-    elif "hover_out" in url and ndfs_inReview:
-        mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-        eventPassThrough.bottomActive = False
-    elif "hover_in" in url:
-        mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, False)
-        eventPassThrough.bottomActive = True
-    elif "touchstart" in url:
-        eventPassThrough.bottomActive = True
-        for i in mw.reviewer.web.findChildren(QWidget):
-            QApplication.sendEvent(i, QTouchEvent(QEvent.TouchCancel)) #cancels touchstart event in reviewer
-    elif "draggable_pos" in url:
-        pos = url.split(": ")[1]
-        pos = pos.split(", ")
-        posX = pos[0]
-        posY = pos[1]
-        config['answer_bar_posX'] = posX
-        config['answer_bar_posY']  = posY
-        mw.addonManager.writeConfig(__name__, config)
-    else:
-        origLinkHandler(self, url)
-origLinkHandler = Reviewer._linkHandler
-Reviewer._linkHandler = linkHandler_wrapper #custom wrapper
-
-class loseFocus(QObject):
-    def eventFilter(self, obj, event):
-        if ndfs_inReview:
-            if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
-                mw.reviewer.bottom.web.eval(f"show_mouse('{event.type()}');")
-            elif event.type() == QEvent.WindowActivate:
-                mw.reviewer.bottom.web.eval(f"countDown('{event.type()}');")
-        return False
-
-loseFocusEventFilter = loseFocus()
 
 recheckBoxes()

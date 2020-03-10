@@ -1,21 +1,19 @@
-//No Distractions Full Screen v2.3.5
+//No Distractions Full Screen v3.2
 //var cursorIdleTimer = 500; //Defined in python
 
 var cursorHidden = false;
 var timer;
 
 function hide_mouse(debug) {
-  pycmd("cursor_hide");
-  //console.log("cursor_hide: "  + debug);
-  //$('*').css({cursor: 'none'});
+  pycmd("NDFS-cursor_hide");
+  //console.log("NDFS-cursor_hide: "  + debug);
   cursorHidden = true;
 }
 
 function show_mouse(debug) {
   clearTimeout(timer);
-  pycmd("cursor_show");
-  //console.log("cursor_show: " + debug);
-  //$('*').css({cursor: 'default'});
+  pycmd("NDFS-cursor_show");
+  //console.log("NDFS-cursor_show: " + debug);
   cursorHidden = false;
 }
 

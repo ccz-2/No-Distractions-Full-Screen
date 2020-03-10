@@ -10,5 +10,6 @@
 	"answer_bar_posX": 0,
 	"answer_bar_posY": 0,
 	"rendering_delay": 300,
-	"do_not_show_warnings": false
+	"do_not_show_warnings": false,
+	"ignore_scroll_on_answer_buttons": true
 }

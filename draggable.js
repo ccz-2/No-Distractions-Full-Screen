@@ -1,16 +1,37 @@
-//No Distractions Full Screen v3.1
+//No Distractions Full Screen v3.2
 //Uses interact.js
-//var posX = 50;
-//var posY = 50;
 
 var target;
 var currX;
 var currY;
 var currLock;
+var currHover;
+var currDrag = false;
 
 function getTarget(){
   target = document.querySelector('table:not([id="innertable"])');
 }
+
+//called when screen updates
+var timeout = false;
+$("body").on('DOMSubtreeModified', 'td#middle', function() {
+  getTarget();
+  if(target != null && !timeout){
+    timeout = true;
+    updatePos(currX, currY);
+    activateHover();
+    if (currLock){
+      disable_drag();
+    }
+    else {
+      enable_drag();    
+    }
+    if (currHover){
+      fade_in(target);
+    }
+    setTimeout(function(){ timeout = false; }, 5); //prevents overzealous updates, since selector grabs multiple events per card change
+  }
+});
 
 //moves target to within window boundaries
 function fitInWindow() {
@@ -36,7 +57,7 @@ function fitInWindow() {
   }
 }
 
-$( window ).resize(function() {
+$(window).resize(function() {
   fitInWindow();
 });
 
@@ -49,25 +70,7 @@ function updatePos(x, y){
   currY = y;
 }
 
-var timeout = false;
-$("body").on('DOMSubtreeModified', 'td#middle', function() {
-  getTarget();
-  if(target != null && !timeout){
-    timeout = true;
-    updatePos(currX, currY);
-    activateHover();
-    if (currLock){
-      disable_drag();
-    }
-    else {
-      enable_drag();    
-    }
-    setTimeout(function(){ timeout = false; }, 5); //prevents overzealous updates, since selector grabs multiple events per card change
-  }
-});
-
 function enable_drag(){
-// target elements with the "draggable" class
   getTarget()
   fitInWindow()
   if (!interact.isSet(target)){
@@ -90,9 +93,9 @@ function enable_drag(){
                   el = el.offsetParent;
               } while( el );
                 return {
-                  x: offsetLeft, //snap targets
+                  x: offsetLeft, //snap target
                   y: offsetTop,
-                  range: 50,
+                  range: 50, //snap 'stickiness'
                 }
               }
                 ],
@@ -102,13 +105,17 @@ function enable_drag(){
               })
         ],
         autoScroll: false,
+        onstart: function() {
+          currDrag = true;
+        },
         onmove: dragMoveListener,
         onend: function (event) {
           var x = event.target.getAttribute('data-x');
           var y = event.target.getAttribute('data-y');
-          pycmd("draggable_pos: " + x + ", " + y);
+          pycmd("NDFS-draggable_pos: " + x + ", " + y);
           currX = x;
           currY = y;
+          currDrag = false;
         }
       })
   }
@@ -146,63 +153,59 @@ function activateHover(){
   $(target).on({
       mouseenter: function(){
         //console.log('hover_in')
-        pycmd('hover_in');
+        pycmd('NDFS-hover_in');
         fade_in(target);
       },
       mouseleave: function(){
         //console.log('hover_out')
-        pycmd('hover_out');
+        pycmd('NDFS-hover_out');
         fade_out(target)
       },
       touchstart: function(){
         //console.log('touchstart')
-        pycmd('touchstart');
+        pycmd('NDFS-touchstart');
         fade_in(target);
       },
       touchend: function(){
         //console.log('touchend')
-        //pycmd('touchend');
         fade_out(target)
-        setTimeout(function(){pycmd('hover_out');}, 50); //undos automatic mouseenter at end of touchend
-      }
-  });
-  $('#canvas').on({
-      mousedown: function(){
-        mousedown = true;
-      },
-      mouseup: function(){
-        mousedown = false;
+        setTimeout(function(){pycmd('NDFS-hover_out');}, 50); //undos automatic mouseenter at end of touchend
       }
   });
 }
 
 function enable_bottomHover(){
-    getTarget();
-  $( "#bottomHover" ).hover(
-    function() {
+  getTarget();
+  $("#bottomHover").on({
+    mouseenter: function(){
       fade_in(target);
-    }, function() {
-      fade_out(target)
+    },
+    mouseleave: function(){
+      fade_out(target);
     }
-  );
+  });
 }
 
 function fade_in(target){
-  $(target).css('animation-direction','normal');
-  $(target).addClass('fade-in');
-  $(target).css('opacity','1');  
-  $(target).on("animationend", function(){
-    $(this).removeClass('fade-in');
-    });
+  if (!currDrag) { //prevents changes when dragging
+    $(target).css('animation-direction','normal');
+    $(target).addClass('fade-in');
+    $(target).css('opacity','1');  
+    $(target).on("animationend", function(){
+      $(this).removeClass('fade-in');
+      });
+    currHover = true;
+  }
 }
 
 function fade_out(target){
-  if (!mousedown) { //prevents fanding out when dragging
+  if (!currDrag) { //prevents changes when dragging
     $(target).css('animation-direction','reverse');
     $(target).addClass('fade-in');
     $(target).css('opacity','');  
     $(target).on("animationend", function(){
       $(this).removeClass('fade-in');
       });
+    currHover = false;
   }
 }

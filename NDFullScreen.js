@@ -1,7 +1,12 @@
-//No Distractions Full Screen v3.0
-
+//No Distractions Full Screen v3.2
 //var op = 0.5; //Defined in python
-//var color = 'rgba(110, 110, 200, 0.8)';
+//var color = 'rgba(110, 110, 200, 0.8)'; //Defined in python
+
+function getHeight() {
+  height = $('table:not([id="innertable"])').height();
+  return height
+}
+
 $("button[onclick*='edit'],button[onclick*='more']").remove()
 $('body').wrap(`<div id="canvas"></div>`)
 $('body').append(`
@@ -76,8 +81,3 @@ table {
 }
 
 </style> `);
-
-function getHeight() {
-  height = $('table:not([id="innertable"])').height();
-  return height
-}
