@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2.3 3/8/2020
+# v3.2.4 3/8/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -92,7 +92,7 @@ Reviewer._linkHandler = linkHandler_wrapper
 
 
 ########## PyQt manipulation ##########
-def setupWeb(): #can be accomplished by just calling mw.reset(), but this also cycles to next card, since Reviewer.shwow() calls nextCard()
+def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since also cycles to next card, since Reviewer.show() calls nextCard()
 	if mw.state == 'review':
 		try:
 			reviewState = mw.reviewer.state
@@ -136,21 +136,21 @@ def toggle():
 
 			mw.setUpdatesEnabled(False) #pauses drawing to screen to prevent flickering
 			if config['last_toggle'] == 'full_screen': #Fullscreen mode
-				if isMac: #kicks out of OSX maximize
+				if isMac: #kicks out of OSX maximize if on
 					mw.showNormal()
 					mw.showFullScreen()
-				if isWin: #Grpahical issues on windows when using inbuilt method
-					mw.setWindowFlags(og_window_flags | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+				if isWin: #Graphical issues on windows when using inbuilt method
+					mw.setWindowFlags(og_window_flags | Qt.FramelessWindowHint)
 					window_flags_set = True
 					og_geometry = mw.geometry()
 					try:
 						screenSize = mw.screen().geometry()
-					except: #uses deprecated functions for legacy clients e.g. v2.1.15
+					except: #uses deprecated functions for legacy client support e.g. v2.1.15
 						screenNum = mw.app.desktop().screenNumber(mw.pos())
 						screenSize = mw.app.desktop().screenGeometry(screenNum)
 					mw.setGeometry(screenSize.x()-1,screenSize.y(),screenSize.width()+1, screenSize.height()) #Qt bug where if exactly screen size, will cause graphical glitches, so slightly bigger
 					mw.show()
-				else:
+				else: #Linux
 					mw.showFullScreen()
 				isFullscreen = True
 			elif config['stay_on_top']: #Windowed mode options
@@ -186,6 +186,8 @@ def toggle():
 		else:
 			ndfs_enabled = False
 			ndfs_inReview = False
+			mw.setUpdatesEnabled(False) #pauses updates to screen
+
 			if isFullscreen and isWin:
 				mw.setGeometry(og_geometry)
 			if window_flags_set: #helps prevent annoying flickering when toggling
@@ -193,7 +195,6 @@ def toggle():
 				window_flags_set = False
 				mw.show()
 			isFullscreen = False
-			mw.setUpdatesEnabled(False) #pauses updates to screen
 
 			mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
 			mw.setWindowState(og_window_state)
@@ -203,7 +204,7 @@ def toggle():
 			mw.mainLayout.addWidget(mw.reviewer.web)
 			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
 			mw.toolbar.web.show()
-			mw.menuBar().setMaximumHeight(9999)
+			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
 			
 			QGuiApplication.restoreOverrideCursor()
 			QGuiApplication.restoreOverrideCursor() #need to call twice
@@ -219,6 +220,7 @@ def toggle():
 		def unpause():
 			mw.setUpdatesEnabled(True)
 		QTimer.singleShot(delay, unpause)
+
 def updateBottom(*args):
 	if ndfs_inReview:
 		config = mw.addonManager.getConfig(__name__)
@@ -312,7 +314,7 @@ class reviewer_eventFilter(QObject):
 		return False #event is sent to reviewer
 
 
-#Intercepts events on bottom for routing (passes scrolling to bottom)
+#Intercepts events on bottom for routing (passes scrolling to reviewer)
 class bottom_eventFilter(QObject):
 	def __init__(self, reviewerQWidget):
 		QObject.__init__(self)
