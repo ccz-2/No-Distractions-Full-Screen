@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.1 2/27/2020
+# v3.1.1 2/28/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -180,7 +180,6 @@ def toggle():
         global window_flags_set
         config = mw.addonManager.getConfig(__name__)
 
-        mw.setUpdatesEnabled(False)
         if not ndfs_enabled:
             ndfs_enabled = True
             softwareRendering()
@@ -188,9 +187,6 @@ def toggle():
             og_window_state = mw.windowState()
             og_window_flags = mw.windowFlags() #stores initial flags
             og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
-            mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
-            mw.reviewer.bottom.web.adjustHeightToFit = adjustHeightToFit_override #disables adjustheighttofit
-            mw.reviewer.bottom.web.setFixedSize(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX) #resets fixed minimums
 
             if config['last_toggle'] == 'full_screen':
                 if isMac: #kicks out of OSX maximize
@@ -200,6 +196,10 @@ def toggle():
                 mw.setWindowFlags(og_window_flags | Qt.WindowStaysOnTopHint)
                 window_flags_set = True
                 mw.show()
+            mw.setUpdatesEnabled(False)
+            mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
+            mw.reviewer.bottom.web.adjustHeightToFit = adjustHeightToFit_override #disables adjustheighttofit
+            mw.reviewer.bottom.web.setFixedSize(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX) #resets fixed minimums
 
             #Builds new widget for window
             fs_window = QWidget()
@@ -224,6 +224,11 @@ def toggle():
         else:
             ndfs_enabled = False
             ndfs_inReview = False
+            if window_flags_set: #helps prevent annoying flickering when toggling
+                mw.setWindowFlags(og_window_flags) #reassigns initial flags
+                window_flags_set = False
+                mw.show()
+            mw.setUpdatesEnabled(False)
             mw.removeEventFilter(loseFocusEventFilter)
             mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
             mw.setWindowState(og_window_state)
@@ -236,21 +241,15 @@ def toggle():
             mw.menuBar().setMaximumHeight(9999)
             QGuiApplication.restoreOverrideCursor()
             QGuiApplication.restoreOverrideCursor() #need to call twice
-
             mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, False)
             for i in mw.reviewer.web.findChildren(QWidget):
                 i.removeEventFilter(eventPassThrough)
-
-            if window_flags_set: #helps prevent annoying flickering when toggling
-                mw.setWindowFlags(og_window_flags) #reassigns initial flags
-                window_flags_set = False
-                mw.show()
             mw.reset()
 
-        pause = config['rendering_pause']
+        delay = config['rendering_delay']
         def unpause():
             mw.setUpdatesEnabled(True)
-        QTimer.singleShot(pause, unpause)
+        QTimer.singleShot(delay, unpause)
 
 ndfs_inReview = False
 def updateBottom(*args):
