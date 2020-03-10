@@ -40,7 +40,7 @@ def recheckBoxes():
     config = mw.addonManager.getConfig(__name__)
     op = config['answer_button_opacity']
     cursorIdleTimer = config['cursor_idle_timer']
-    display_mode = config['display_mode']
+    last_toggle = config['last_toggle']
     onTop = config['stay_on_top']
 
     if op == 1:
@@ -53,11 +53,12 @@ def recheckBoxes():
     if cursorIdleTimer >= 0:
         enable_cursor_hide.setChecked(True)
 
-    if display_mode == 'windowed':
-        windowed.setChecked(True)
+    if last_toggle == 'windowed':
+        windowed.setShortcut('F11')
+        fullscreen.setShortcut('')
     else:
-        fs.setChecked(True)
-        keep_on_top.setEnabled(False)
+        fullscreen.setShortcut('F11')
+        windowed.setShortcut('')
 
     if onTop == True:
         keep_on_top.setChecked(True)
@@ -78,15 +79,6 @@ def user_settings():
         cursorIdleTimer = -1
     config['cursor_idle_timer'] = cursorIdleTimer
 
-    if fs.isChecked():
-        display_mode = 'full_screen'
-        keep_on_top.setEnabled(False) #greys out windowed options
-    else:
-        display_mode = 'windowed'
-        keep_on_top.setEnabled(True) #greys out windowed options
-
-    config['display_mode'] = display_mode
-
     if keep_on_top.isChecked():
         onTop = True
     else:
@@ -106,10 +98,8 @@ def reviewer_wrapper(*args):
     mw.reviewer.web.eval(f"var height = {height}; {pad_cards}")
 
 #PyQt manipulation
-first_time = True
 ndfs_enabled = False
-def toggle_full_screen():
-        global first_time
+def toggle():
         global ndfs_enabled
         global og_reviewer
         global config
@@ -124,7 +114,7 @@ def toggle_full_screen():
 
             Reviewer._initWeb = wrap(og_reviewer, reviewer_wrapper) #tried to use triggers instead but is called prematurely upon suspend/bury
             
-            if config['display_mode'] == 'full_screen':
+            if config['last_toggle'] == 'full_screen':
                 mw.showFullScreen()
             if config['stay_on_top'] and not mw.isFullScreen():
                 mw.setWindowFlags(Qt.WindowStaysOnTopHint)
@@ -169,20 +159,33 @@ def stateChange(new_state, old_state, *args):
     #aqt.utils.showText(str(new_state) + " " + str(old_state))
     if 'review' in new_state.lower():
         fullscreen.setDisabled(False)
-        fullscreen.setText('Toggle Full Screen')
+        windowed.setDisabled(False)
+        fullscreen.setText('Toggle Full Screen Mode')
+        windowed.setText('Toggle Windowed Mode ')
     else:
         if ndfs_enabled:
-            toggle_full_screen()
+            toggle()
         fullscreen.setDisabled(True)
-        fullscreen.setText('Toggle Full Screen (Only during review)')
+        windowed.setDisabled(True)
+        fullscreen.setText('Toggle Full Screen Mode (Only in review)')
+        windowed.setText('Toggle Windowed Mode (Only in review)')
 
 #end full screen when review ends
 addHook("afterStateChange", stateChange)
 
-def esc():
-    aqt.utils.showText("hi")
-    if ndfs_enabled:
-        toggle_full_screen()
+def toggle_full_screen():
+    config['last_toggle'] = 'full_screen'
+    mw.addonManager.writeConfig(__name__, config)
+    fullscreen.setShortcut('F11')
+    windowed.setShortcut('')
+    toggle()
+
+def toggle_window():
+    config['last_toggle'] = 'windowed'
+    mw.addonManager.writeConfig(__name__, config)
+    windowed.setShortcut('F11')
+    fullscreen.setShortcut('')
+    toggle()
 
 #add menus
 try:
@@ -197,32 +200,22 @@ except AttributeError:
 menu = QMenu(('Full Screen'), mw)
 mw.addon_view_menu.addMenu(menu)
 
-fullscreen = QAction('Toggle Full Screen (Only in review)', mw)
+display = QActionGroup(mw)
+
+fullscreen = QAction('Toggle Full Screen Mode (Only in review)', display)
 fullscreen.triggered.connect(toggle_full_screen)
-fullscreen.setShortcut('F11')
 fullscreen.setDisabled(True) #re-enabled in stateChange
 menu.addAction(fullscreen)
 
-display = QActionGroup(mw)
-display_menu = QMenu('Display Mode', menu)
-menu.addMenu(display_menu)
+windowed = QAction('Toggle Windowed Mode (Only in review)', display)
+windowed.triggered.connect(toggle_window)
+windowed.setDisabled(True) #re-enabled in stateChange
+menu.addAction(windowed)
 
-fs = QAction('Full Screen', display)
-fs.setCheckable(True)
-fs.setChecked(True)
-display_menu.addAction(fs)
-fs.triggered.connect(user_settings)
-
-windowed = QAction('Windowed', display)
-windowed.setCheckable(True)
-display_menu.addAction(windowed)
-windowed.triggered.connect(user_settings)
-
-keep_on_top = QAction('    Always On Top', mw)
+keep_on_top = QAction('   Windowed Mode Always On Top', mw)
 keep_on_top.setCheckable(True)
-display_menu.addAction(keep_on_top)
+menu.addAction(keep_on_top)
 keep_on_top.triggered.connect(user_settings)
-
 
 menu.addSeparator()
 

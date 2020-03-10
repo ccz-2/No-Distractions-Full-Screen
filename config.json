@@ -5,6 +5,6 @@
 	"_4":"If settings are subsequently changed through menu buttons, these values will be overwritten and will need to be re-entered",
 	"answer_button_opacity": 1,
 	"cursor_idle_timer": 10000,
-	"display_mode": "full_screen",
+	"last_toggle": "full_screen",
 	"stay_on_top": false
 }

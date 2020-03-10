@@ -21,7 +21,7 @@ button[onclick*="more"] {
 table:not([id="innertable"]) {
   padding: 0px;
   border-radius: 5px;
-  background-color: rgba(100, 100, 100, 0.8);
+  background-color: rgba(110, 110, 110, 0.8); 
 }
 
 body, #outer{
