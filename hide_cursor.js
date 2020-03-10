@@ -1,4 +1,4 @@
-//No Distractions Full Screen v2.2.3
+//No Distractions Full Screen v2.3
 //var cursorIdleTimer = 5000; //Defined in python
 $(function hide_cursor() {
     if (cursorIdleTimer >= 0){
