@@ -1,0 +1,426 @@
+/* Trying to get everything to load initially then have functions to just call things in instead of constructing the webview on every toggle
+$('body').append(`
+<style>
+.NDFS_bar {
+  opacity:` + op + `;
+  padding: 0px;
+  border-radius: 5px;
+  background-color: ` + color + `;
+  user-select: none;
+  touch-action: none;
+  vertical-align: bottom;
+}
+
+.NDFS_hide {
+  background: transparent !important;
+  border-top-color: transparent !important;
+  overflow: hidden;
+}
+
+.NDFS_body {
+  height:100%;
+  width:100%;
+}
+
+.NDFS_innertable {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.NDFS_tables {
+  border-collapse: collapse;
+  empty-cells: hide;
+}
+
+.NDFS_canvas {
+    position: absolute;
+    width:100%;
+    height:100%;
+    top: 0px;
+    left: 0px;
+    z-index: -999;
+    touch-action: none;
+    overflow: hidden;
+}
+
+.NDFS_bottomHover {
+    position: absolute;
+    width:100%;
+    height: 15px;
+    bottom: 0px;
+    left: 0px;
+    //background-color: red;
+}
+
+.fade-in {
+  animation-name: fadeInOpacity;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in-out;
+  animation-duration: 0.2s;
+}
+
+@keyframes fadeInOpacity {
+  0% {
+    opacity: ` + op + `;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+</style> 
+<script>
+
+
+
+</script>
+
+
+`);
+
+function activateNDFS() {
+  $("button[onclick*='edit'],button[onclick*='more']").remove()
+  $('body').wrap(`<div id="canvas"></div>`)
+  $('body').append(`<div id="bottomHover"></div>`)
+  $('table:not([id="innertable"])').addClass('NDFS_bar')
+  $('body, #outer').addClass('NDFS_hide')
+  $('body').addClass('NDFS_body')
+  $('table#innertable').addClass('NDFS_innertable')
+  $('table').addClass('NDFS_tables')
+  $('#canvas').addClass('NDFS_canvas')
+  $('#bottomHover').addClass('NDFS_bottomHover')
+}
+*/
+
+
+#aqt.utils.showText(str("test"))
+
+#Bunch of garbage trying to get touchstart events ignored on the reviewer page, but accepted in the bottom bar
+#
+#        self.bottomActive = False
+#        self.lastTouchBegin = None
+#        self.lastTouchWasInactive = False
+#
+#        self.prevEventBottomWasInactive = True
+#        self.newlyActive = False
+#    def eventFilter(self, obj, event):
+#        if self.bottomActive and (event.type() in [QEvent.TouchBegin, QEvent.TouchUpdate, QEvent.TouchCancel, QEvent.TouchEnd]):
+#            if self.lastTouchWasInactive:
+#                for i in mw.reviewer.bottom.web.findChildren(QWidget):
+#                    QApplication.sendEvent(i, self.lastTouchBegin)  
+#                    print('bottomActive_2 ' + str(self.lastTouchBegin.type()))
+#            for i in mw.reviewer.bottom.web.findChildren(QWidget): #Need to access underlying QQuickWidget for mouse events
+#                QApplication.sendEvent(i, event)
+#                print('bottomActive ' + str(event.type()))
+#            return True
+#        elif not self.bottomActive and (event.type() in [QEvent.MouseMove, QEvent.TouchBegin]):
+#            if event.type() == QEvent.TouchBegin:
+#                self.lastTouchBegin = event
+#                self.lastTouchWasInactive = True
+#            for i in mw.reviewer.bottom.web.findChildren(QWidget): #Need to access underlying QQuickWidget for mouse events
+#                QApplication.sendEvent(i, event)
+#                if event.type == QEvent.TouchBegin:
+#                    print('bottominactive ' + str(event.type()))
+#        return QObject.eventFilter(self, obj, event)
+#
+#    def eventFilter(self, obj, event):
+#
+#        #if event.type() == QEvent.TouchCancel and self.bottomActive:
+#        #    print('grabbed touch cancel')
+#
+#        if event.type() in [QEvent.MouseMove, QEvent.TouchBegin, QEvent.TouchCancel, QEvent.TouchEnd, QEvent.TouchUpdate]: #QEvent.HoverMove, QEvent.MouseButtonPress, QEvent.MouseButtonRelease, QEvent.MouseButtonDblClick, 
+#            for i in mw.reviewer.bottom.web.findChildren(QWidget): #Need to access underlying QQuickWidget for mouse events
+#                QApplication.sendEvent(i, event)
+#            if self.bottomActive:
+#                #if self.prevEventBottomWasInactive == True: #Implies there is floating TouchBegin event in reviewer
+#                    #mw.reviewer.web.eval("cancelTouch();")
+#                    #for i in mw.reviewer.web.findChildren(QWidget):
+#                    #    QApplication.sendEvent(i, QTouchEvent(QEvent.TouchCancel))
+#                print('supressed: ' + str(event.type()))
+#                self.prevEventBottomWasInactive = False
+#                return True
+#            self.prevEventBottomWasInactive = True
+
+
+#Forces reviewer to expand, but does not work on bottom bar (?), probably due to minimums set by adjustheighttofit
+            #mw.reviewer.bottom.web.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
+            #mw.reviewer.web.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
+
+#Caught Bug with amboss:
+def asdf2(self, url):
+    print(url)
+    asdf(self, url)
+asdf = DeckBrowser._linkHandler
+DeckBrowser._linkHandler = asdf2 #custom wrapper
+
+# amboss:tooltip:{"phraseId":"mLXVyA","term":"Abetalipoproteinemia","markId":"mark-1"}
+# Caught exception:
+# Traceback (most recent call last):
+#   File "aqt\webview.py", line 30, in cmd
+#   File "aqt\webview.py", line 96, in _onCmd
+#   File "aqt\webview.py", line 422, in _onBridgeCmd
+#   File "C:\Users\cczha\AppData\Roaming\Anki2\addons21\1049863218\__init__.py", line 359, in asdf2
+#     asdf(self, url)
+#   File "aqt\deckbrowser.py", line 50, in _linkHandler
+# ValueError: too many values to unpack (expected 2)
+
+
+/*iFrame mousemovement catches that don't seem to work in qt, but works elsewhere
+$("#bottomiFrame").contents().find("body").mousemove(function(cursor){
+        console.log('mousemove');
+    });
+
+document.getElementById('bottomiFrame').contentDocument.addEventListener('mousemove', function(event) {
+    console.log('mousemove');
+});*/
+
+
+#some crazy logic trying to balance losing focus and gaining focus in sucession - issues when doing it rapidly - also needs corresponding pycmd to be set up
+def showCursor():
+    global cursorHidden
+    if cursorHidden:
+        QGuiApplication.restoreOverrideCursor()
+        QGuiApplication.restoreOverrideCursor() #need to call twice
+        cursorHidden = False
+
+def hideCursor():
+    global cursorHidden
+    if not cursorHidden:
+        QGuiApplication.setOverrideCursor(Qt.BlankCursor) 
+        cursorHidden = True
+
+prevCursorUrl = ['','']
+def linkHandler_wrapper(self, url):
+    global prevCursorUrl
+    url = url.split(', ')
+    if "NDFS" in url:
+        if "hide:" in url and ndfs_inReview:
+            hideCursor()
+        elif set(['NDFS show: loseFocus', 'NDFS show: loseFocus']) == set([prevCursorUrl[0], url[0]]): #If persistent focus loss - show
+            showCursor()
+            #print("persistent loss")
+        elif set(['NDFS show: hasFocus', 'NDFS show: loseFocus']) == set([prevCursorUrl[0], url[0]]): #If switched focuses - do not show
+            if url[1] == 'true':
+                hideCursor()
+            #print("override")
+        elif "show:" in url and "Focus" not in url:
+            showCursor()
+        prevCursorUrl = url
+
+
+            #Trying to add spacer at bottom of review cards but no easy way to click through
+            #Builds new widget for window
+            fs_window = QWidget()
+            fs_layout = QGridLayout(fs_window)
+            fs_layout.setContentsMargins(QMargins(0,0,0,0))
+            fs_layout.setSpacing(0)
+            fs_layout.addWidget(mw.reviewer.web,1,1) #Main screen
+
+            mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
+
+            spacer = QWidget()
+            spacer.setFixedHeight(30)
+            spacer.setAttribute(Qt.WA_TransparentForMouseEvents)
+
+            new_bottom = QWidget()
+            new_bottom_layout = QVBoxLayout(new_bottom)
+            new_bottom_layout.addWidget(mw.reviewer.bottom.web)
+            new_bottom_layout.addWidget(spacer)
+            fs_layout.addWidget(new_bottom,1,1,Qt.AlignBottom) #Answer buttons w/ spacer
+
+            mw.toolbar.web.setFixedHeight(0)
+            fs_layout.addWidget(mw.toolbar.web,1,1,Qt.AlignTop) #need to add or breaks (garbagecollected)
+
+            mw.mainLayout.addWidget(fs_window)
+
+
+
+
+            #Rewriting fs display widget: Displays Properly, but cannot click both widgets 
+            #main = QWidget()
+            #main_layout = QStackedLayout(main)
+            #main_layout.setStackingMode(QStackedLayout.StackAll)
+            #main_layout.addWidget(mw.reviewer.web)
+            #bottom = QWidget()
+            #bottom_layout = QVBoxLayout(bottom)
+            #bottom_layout.addStretch()
+            #bottom_layout.addWidget(mw.reviewer.bottom.web,0,Qt.AlignBottom)
+            #main_layout.addWidget(bottom)
+
+
+#Python Html retriever - issues with loop and waiting for async function to complete
+class Html(QObject):
+    htmlFinished = pyqtSignal()
+    def storeHtml(self, html):
+        self.html = html
+        self.htmlFinished.emit()
+    def fetchHtml(self):
+        self.mw.page().toHtml(self.storeHtml)
+        loop = QEventLoop()
+        self.htmlFinished.connect(loop.quit)
+        #loop.exec_()
+    def __init__(self, mw):
+        super(Html,self).__init__()
+        self.html = ''
+        self.mw = mw
+        self.fetchHtml()
+
+a = Html(mw.reviewer.bottom.web)
+a.fetchHtml()
+if not 'No Distractions Full Screen' in a.html:
+...
+
+#Implementing cursor hide purely in Qt. Works to hide cursor but parallelizing it has issues
+
+            mw.reviewer.web.setMouseTracking(True)
+            class MouseMoveEvent(QObject):
+                def eventFilter(self, obj, event):
+                    if event.type() == QEvent.MouseMove:
+                        mw.reviewer.web.eval("show_mouse();")
+                        return True
+                    else:
+                        return QObject.eventFilter(self, obj, event)
+            mouseMove = MouseMoveEvent()
+            #Applies event filter on underlying object(s) that handles events (QQuickQidget)
+            for i in mw.reviewer.web.findChildren(QWidget):
+                i.installEventFilter(mouseMove)
+                i.setMouseTracking(True)
+            mw.reviewer.eventFilter = mouseMove
+
+#Attempt2: working event filter that uses js, qt hyrbid:
+class loseFocus(QObject):
+    def eventFilter(self, obj, event):
+        if ndfs_enabled:
+            if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]:
+                mw.reviewer.bottom.web.eval(f"show_mouse('{event.type()}');")
+                mw.reviewer.web.eval(f"show_mouse('{event.type()}');")     
+            elif event.type() == QEvent.WindowActivate:
+                mw.reviewer.web.eval(f"countDown('{event.type()}');")
+            elif event.type() not in [77, 129, 173]:
+                print(event.type())
+        return QObject.eventFilter(self, obj, event)
+
+loseFocusEventFilter = loseFocus()
+mw.installEventFilter(loseFocusEventFilter)
+
+
+
+/*Defined in python: var cursorIdleTimer = ~;*/
+var cursorIdleTimer = 100;
+$(function hide_cursor() {
+    if (cursorIdleTimer >= 0){
+        var cursorHidden = true;
+        $('*').css({cursor: 'none'});
+        var timer;
+        $(document).mousemove(function () {
+            timer = setTimeout(function () {
+                $('*').css({cursor: 'none'});
+                cursorHidden = true;
+                console.log("hide "+timer);
+                clearTimeout(timer);
+                }, cursorIdleTimer)
+            if (!cursorHidden) {
+                clearTimeout(timer);
+                console.log("clearTimer ");
+                return
+            } else {
+                $('*').css({cursor: 'default'});
+                console.log("show Cursor ");
+                cursorHidden = false;
+            }
+        });
+    }
+});
+
+
+/*
+
+
+/*
+$(function hide_cursor() {
+    if (cursorIdleTimer >= 0){
+        var isVisible = true;
+        var mousemoves;
+        var currentTime
+        window.setInterval(function(){
+            currentTime = Date.now();
+            if (mousemoves == 0){
+                $('*').css({cursor: 'none'});
+                isVisible = false;
+                console.log("hide");}
+             console.log("mice " + mousemoves);               
+            mousemoves = 0;
+        }, 50);
+
+        $(document).mousemove(function () {
+            mousemoves++;
+            if (!isVisible) {
+                $('*').css({cursor: 'default'});
+                isVisible = true;
+                console.log("made visible " + mousemoves);}
+        });
+    }
+});
+*/
+/*
+$(function hide_cursor() {
+    if (cursorIdleTimer >= 0){
+        var currentTime
+        var elapsed;
+        var isVisible = true;
+        var lastMouseMove;
+        var count = 0;
+        window.setInterval(function(){
+            count++;
+            currentTime = Date.now();
+            elapsed = currentTime - lastMouseMove;
+            console.log("elapsed " + elapsed);
+            if (elapsed >= cursorIdleTimer){
+                if (count%2==0){
+                $('*').css({cursor: 'default'});
+                console.log("hide1");
+                }else{
+                $('*').css({cursor: 'none'});
+                console.log("hide2" + count);}
+            }
+            else{
+                $('*').css({cursor: 'default'});
+                console.log("show");
+            }
+        }, 50);
+
+        $(document).mousemove(function () {
+            lastMouseMove = Date.now();
+        });
+    }
+});
+
+/*
+$(function hide_cursor() {
+    if (cursorIdleTimer >= 0){
+        var timer;
+        var old_timer;
+        var isVisible = true;
+        $(document).mousemove(function () {
+            old_timer = timer;
+            clearTimeout(old_timer);
+            console.log("cleared out "+old_timer + isVisible);
+            if (!isVisible) {
+                $('*').css({cursor: 'default'});
+                isVisible = true;
+                console.log("made visible" +timer);
+            }
+            timer = setTimeout(async function () {
+                $('*').css({cursor: 'none'});
+                isVisible = false;
+                console.log("hide on "+timer);          
+                }, cursorIdleTimer)
+            console.log("new timer "+timer);
+            /*if (!isVisible){
+                await asleep(10000);
+            }
+        });
+    }
+});
+*/

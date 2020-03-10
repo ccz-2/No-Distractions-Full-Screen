@@ -1,0 +1,8 @@
+{
+    "name": "No Distractions Full Screen_test",
+    "package": "NDFS_test",
+    "author": "Quip13",
+    "human_version": "v3.2.5_beta",
+    "homepage": "https://github.com/Quip13/No-Distractions-Full-Screen",
+    "conflicts": [ "1049863218"]
+}
