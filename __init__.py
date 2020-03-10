@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2.1 3/1/2020
+# v3.2.2 3/3/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -92,8 +92,26 @@ Reviewer._linkHandler = linkHandler_wrapper
 
 
 ########## PyQt manipulation ##########
+def setupWeb(): #can be accomplished by just calling mw.reset(), but this also cycles to next card, since Reviewer.shwow() calls nextCard()
+    if mw.state == 'review':
+        try:
+            reviewState = mw.reviewer.state
+            mw.reviewer._initWeb()
+            mw.reviewer._showQuestion()
+            if reviewState == 'answer':
+                try:
+                    mw.reviewer._showAnswer() #breaks on fill in the blank cards
+                except:
+                    pass
+            stateChange('NDFS_review', None) #call statechange hook as if was reset
+        except:
+            mw.reset() #failsafe
+    else:
+        mw.reset()
+
 ndfs_enabled = False
 ndfs_inReview = False
+
 def toggle():
         global ndfs_enabled
         global ndfs_inReview
@@ -113,7 +131,7 @@ def toggle():
             og_window_state = mw.windowState()
             og_window_flags = mw.windowFlags() #stores initial flags
             og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
-            setupEventFilters()
+            
             if config['last_toggle'] == 'full_screen':
                 if isMac: #kicks out of OSX maximize
                     mw.showNormal()
@@ -140,8 +158,8 @@ def toggle():
             mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
             mw.toolbar.web.hide()
             mw.mainLayout.addWidget(fs_window)
-            mw.reset()
-
+            setupWeb()
+            setupEventFilters()
             if config['cursor_idle_timer'] >= 0:
                 mw.installEventFilter(loseFocusEventFilter)
             if config['ignore_scroll_on_answer_buttons']:
@@ -175,7 +193,7 @@ def toggle():
             reviewer_QWidget.removeEventFilter(reviewer_eventFilter_obj)
             bottom_QWidget.removeEventFilter(bottom_eventFilter_obj)
 
-            mw.reset()
+            setupWeb()
 
         delay = config['rendering_delay']
         def unpause():
@@ -194,7 +212,6 @@ def updateBottom(*args):
         if mw.isFullScreen():
            mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
 
-#mw.reset() triggers this
 def stateChange(new_state, old_state, *args):
     #print(str(old_state) + " -> " + str(new_state))
     global ndfs_inReview
@@ -255,9 +272,9 @@ def setupEventFilters(): #if called too soon will throw error on linux machines
     global bottom_eventFilter_obj
     global bottom_QWidget
     global reviewer_eventFilter_obj
-    reviewer_QWidget = mw.reviewer.web.findChildren(QWidget)[0] #undocumented method to get underlying event-handling widget of QWebView *may break in future Qt releases
+    reviewer_QWidget = mw.reviewer.web.focusProxy()
     bottom_eventFilter_obj = bottom_eventFilter(reviewer_QWidget)
-    bottom_QWidget = mw.reviewer.bottom.web.findChildren(QWidget)[0]
+    bottom_QWidget = mw.reviewer.bottom.web.focusProxy()
     reviewer_eventFilter_obj = reviewer_eventFilter(bottom_QWidget)
 
 #Intercepts events on reviewer for routing (touch handling + mouse hover events)
@@ -287,7 +304,6 @@ class bottom_eventFilter(QObject):
             return True #event is only sent to reviewer
         return False #event is only sent to bottom
 
-
 #Intercepts events to detect when focus is lost to show mouse cursor
 class loseFocus(QObject):
     def eventFilter(self, obj, event):
@@ -298,10 +314,6 @@ class loseFocus(QObject):
                 mw.reviewer.bottom.web.eval(f"countDown('{event.type()}');")
         return False
 loseFocusEventFilter = loseFocus()
-
-
-
-
 
 ########## Menu actions ##########
 def resetPos():
@@ -415,6 +427,7 @@ def user_settings():
 
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
+addHook("showQuestion", updateBottom) #only needed so that bottom bar updates when Reviewer runs _init/_showQuestion every 100 answers
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
 
 

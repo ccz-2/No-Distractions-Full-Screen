@@ -1,4 +1,4 @@
-//No Distractions Full Screen v3.2
+//No Distractions Full Screen v3.2.2
 //var op = 0.5; //Defined in python
 //var color = 'rgba(110, 110, 200, 0.8)'; //Defined in python
 
