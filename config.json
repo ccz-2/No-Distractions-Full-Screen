@@ -9,7 +9,8 @@
 	"answer_bar_locked": true,
 	"answer_bar_posX": 0,
 	"answer_bar_posY": 0,
-	"rendering_delay": 300,
+	"rendering_delay": 150,
 	"do_not_show_warnings": false,
-	"ignore_scroll_on_answer_buttons": true
+	"ignore_scroll_on_answer_buttons": true,
+	"MS_Windows_fullscreen_compatibility_mode": true
 }

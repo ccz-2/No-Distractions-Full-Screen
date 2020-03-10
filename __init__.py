@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2.4 3/8/2020
+# v3.2.5 3/9/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -28,6 +28,7 @@ from aqt.webview import AnkiWebView
 from aqt.deckbrowser import DeckBrowser
 from anki.hooks import *
 from anki.utils import isMac, isWin
+from aqt.addons import *
 
 ########## Wrappers ##########
 #monkey patched function to disable height adjustment
@@ -112,6 +113,7 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 ndfs_enabled = False
 ndfs_inReview = False
 isFullscreen = False
+fs_compat_mode = False
 def toggle():
 		global ndfs_enabled
 		global ndfs_inReview
@@ -123,6 +125,7 @@ def toggle():
 		global window_flags_set
 		global fs_window
 		global isFullscreen
+		global fs_compat_mode
 		config = mw.addonManager.getConfig(__name__)
 
 		if not ndfs_enabled:
@@ -139,18 +142,22 @@ def toggle():
 				if isMac: #kicks out of OSX maximize if on
 					mw.showNormal()
 					mw.showFullScreen()
-				if isWin: #Graphical issues on windows when using inbuilt method
+				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
+					og_geometry = mw.normalGeometry()
+					mw.showNormal() #user reported bug where taskbar would show if maximized (prob not necessary, since changing window geometry automatically changes state to normal)
 					mw.setWindowFlags(og_window_flags | Qt.FramelessWindowHint)
+					fs_compat_mode = True
 					window_flags_set = True
-					og_geometry = mw.geometry()
+					mw.show()
 					try:
 						screenSize = mw.screen().geometry()
 					except: #uses deprecated functions for legacy client support e.g. v2.1.15
-						screenNum = mw.app.desktop().screenNumber(mw.pos())
+						windowSize = mw.frameGeometry()
+						offset = QPoint(10,10) #if maximized, pos returns coords that are off
+						screenNum = mw.app.desktop().screenNumber(mw.pos()+offset)
 						screenSize = mw.app.desktop().screenGeometry(screenNum)
 					mw.setGeometry(screenSize.x()-1,screenSize.y(),screenSize.width()+1, screenSize.height()) #Qt bug where if exactly screen size, will cause graphical glitches, so slightly bigger
-					mw.show()
-				else: #Linux
+				else:
 					mw.showFullScreen()
 				isFullscreen = True
 			elif config['stay_on_top']: #Windowed mode options
@@ -187,13 +194,16 @@ def toggle():
 			ndfs_enabled = False
 			ndfs_inReview = False
 			mw.setUpdatesEnabled(False) #pauses updates to screen
-
-			if isFullscreen and isWin:
+			
+			if isFullscreen and fs_compat_mode:
+				mw.hide() #prevents ghost window from showing when resizing
 				mw.setGeometry(og_geometry)
+				fs_compat_mode = False
+				window_flags_set = True #should always be true regardless - just reminder
 			if window_flags_set: #helps prevent annoying flickering when toggling
 				mw.setWindowFlags(og_window_flags) #reassigns initial flags
 				window_flags_set = False
-				mw.show()
+				
 			isFullscreen = False
 
 			mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
@@ -215,10 +225,11 @@ def toggle():
 			bottom_QWidget.removeEventFilter(bottom_eventFilter_obj)
 
 			setupWeb()
-
+			mw.show()
 		delay = config['rendering_delay']
 		def unpause():
 			mw.setUpdatesEnabled(True)
+			#mw.show()
 		QTimer.singleShot(delay, unpause)
 
 def updateBottom(*args):
@@ -382,6 +393,12 @@ def toggle_window():
 	fullscreen.setShortcut('')
 	toggle()
 
+#opens config screen
+def on_advanced_settings():
+	addonDlg = AddonsDialog(mw.addonManager)
+	addonDlg.accept() #closes addon dialog
+	ConfigEditor(addonDlg,__name__,mw.addonManager.getConfig(__name__))
+
 #sets up menu to display previous settings
 def recheckBoxes(*args):
 	config = mw.addonManager.getConfig(__name__)
@@ -519,5 +536,11 @@ enable_cursor_hide.setCheckable(True)
 enable_cursor_hide.setChecked(True)
 menu.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(user_settings)
+
+menu.addSeparator()
+
+advanced_settings = QAction('Advanced Settings (Config)', mw)
+menu.addAction(advanced_settings)
+advanced_settings.triggered.connect(on_advanced_settings)
 
 recheckBoxes()
