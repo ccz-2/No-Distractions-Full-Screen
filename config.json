@@ -12,5 +12,6 @@
 	"rendering_delay": 150,
 	"do_not_show_warnings": false,
 	"ignore_scroll_on_answer_buttons": true,
-	"MS_Windows_fullscreen_compatibility_mode": true
+	"MS_Windows_fullscreen_compatibility_mode": true,
+	"auto_toggle_when_reviewing": false
 }

@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2.5 3/9/2020
+# v3.2.6 3/11/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -248,10 +248,16 @@ def stateChange(new_state, old_state, *args):
 	#print(str(old_state) + " -> " + str(new_state))
 	global ndfs_inReview
 	global ndfs_enabled
-	if 'review' in new_state.lower() and ndfs_enabled:
-		ndfs_inReview = True
-		mw.reviewer.bottom.web.show()
-		updateBottom()
+	global last_state
+	config = mw.addonManager.getConfig(__name__)
+
+	if 'review' in new_state: #triggers on NDFS_review and review states
+		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and (new_state != 'NDFS_review'): #not enabled, not synthetic, but should auto toggle
+			toggle() #sets ndfs_enabled to true
+		if ndfs_enabled:
+			ndfs_inReview = True
+			mw.reviewer.bottom.web.show()
+			updateBottom()
 	elif ndfs_enabled:
 		ndfs_inReview = False
 		mw.reviewer.bottom.web.hide()
@@ -259,6 +265,13 @@ def stateChange(new_state, old_state, *args):
 		QGuiApplication.restoreOverrideCursor()
 		QGuiApplication.restoreOverrideCursor()
 		QGuiApplication.restoreOverrideCursor() #twice still bugs out - needs 4 (?)
+
+		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
+			if 'review' in last_state and old_state == 'sync': #sync is never in the new_state slot, so have to store last visited state
+				toggle()
+			elif old_state == 'review' and new_state in ['overview', 'deckBrowser', 'sync']:
+				toggle()
+	last_state = new_state
 
 def padCards():
 	def padCardsCallback(height):
@@ -409,6 +422,7 @@ def recheckBoxes(*args):
 	fs_shortcut = config['fullscreen_hotkey']
 	lock_shortcut = config['lock_answer_bar_hotkey']
 	dragLocked = config['answer_bar_locked']
+	auto_tog = config['auto_toggle_when_reviewing']
 
 	if op == 1:
 		mouseover_default.setChecked(True)
@@ -432,6 +446,10 @@ def recheckBoxes(*args):
 
 	if dragLocked:
 		lockDrag.setChecked(True)
+
+	if auto_tog:
+		auto_toggle.setChecked(True)
+
 	lockDrag.setShortcut(lock_shortcut)
 
 #updates settings on menu action
@@ -457,6 +475,12 @@ def user_settings():
 		onTop = False
 	config['stay_on_top'] = onTop
 
+	if auto_toggle.isChecked():
+		auto_tog = True
+	else:
+		auto_tog = False
+	config['auto_toggle_when_reviewing'] = auto_tog
+
 	mw.addonManager.writeConfig(__name__, config)
 
 
@@ -480,7 +504,7 @@ except AttributeError:
 		mw.addon_view_menu
 	)
 
-menu = QMenu(('Full Screen'), mw)
+menu = QMenu(('ND Full Screen'), mw)
 mw.addon_view_menu.addMenu(menu)
 
 display = QActionGroup(mw)
@@ -497,6 +521,12 @@ keep_on_top = QAction('   Windowed Mode Always On Top', mw)
 keep_on_top.setCheckable(True)
 menu.addAction(keep_on_top)
 keep_on_top.triggered.connect(user_settings)
+
+auto_toggle = QAction('   Auto-Toggle', mw)
+auto_toggle.setCheckable(True)
+auto_toggle.setChecked(False)
+menu.addAction(auto_toggle)
+auto_toggle.triggered.connect(user_settings)
 
 menu.addSeparator()
 
