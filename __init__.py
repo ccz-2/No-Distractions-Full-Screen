@@ -252,7 +252,7 @@ def stateChange(new_state, old_state, *args):
 	config = mw.addonManager.getConfig(__name__)
 
 	if 'review' in new_state: #triggers on NDFS_review and review states
-		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and (new_state != 'NDFS_review'): #not enabled, not synthetic, but should auto toggle
+		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and [new_state, old_state] == ['review','overview']: #filters out self generated NDFS_review state changes
 			toggle() #sets ndfs_enabled to true
 		if ndfs_enabled:
 			ndfs_inReview = True
@@ -267,7 +267,7 @@ def stateChange(new_state, old_state, *args):
 		QGuiApplication.restoreOverrideCursor() #twice still bugs out - needs 4 (?)
 
 		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
-			if 'review' in last_state and old_state == 'sync': #sync is never in the new_state slot, so have to store last visited state
+			if 'review' in last_state and old_state == 'sync': #sync is never in new_state, so have to store last visited state
 				toggle()
 			elif old_state == 'review' and new_state in ['overview', 'deckBrowser', 'sync']:
 				toggle()
@@ -296,7 +296,7 @@ def checkSoftwareRendering():
 		config = mw.addonManager.getConfig(__name__)
 		if config['do_not_show_warnings']:
 			return
-		msgBox = QMessageBox(QMessageBox.Warning, 'No Distractions Full Screen', 'Software Rendering was detected!\nThis may cause artifacts with the No Distractions Full Screen addon and is not recommended.\nPlease switch to hardware acceleration via Anki Preferences if possible.');
+		msgBox = QMessageBox(QMessageBox.Warning, 'No Distractions Full Screen', 'Software Rendering detected!\nThis may cause artifacts with the No Distractions Full Screen addon and is not recommended.\nPlease switch to hardware acceleration via Anki Preferences if possible.');
 		msgBox.setInformativeText("(If screen is frozen, try resizing the window as a workaround)");
 		msgBox.setStandardButtons(QMessageBox.Ok);
 		msgBox.setDefaultButton(QMessageBox.Ok);
@@ -517,12 +517,12 @@ windowed = QAction('Toggle Windowed Mode', display)
 windowed.triggered.connect(toggle_window)
 menu.addAction(windowed)
 
-keep_on_top = QAction('   Windowed Mode Always On Top', mw)
+keep_on_top = QAction('    ► Windowed Mode Always On Top', mw)
 keep_on_top.setCheckable(True)
 menu.addAction(keep_on_top)
 keep_on_top.triggered.connect(user_settings)
 
-auto_toggle = QAction('   Auto-Toggle', mw)
+auto_toggle = QAction('Auto-Toggle', mw)
 auto_toggle.setCheckable(True)
 auto_toggle.setChecked(False)
 menu.addAction(auto_toggle)
