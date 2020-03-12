@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2.6 3/11/2020
+# v3.3 3/11/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -37,7 +37,8 @@ def adjustHeightToFit_override(*args):
 
 #CSS/JS injection
 def reviewer_wrapper(func):
-	NDFullScreen = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read()
+	bottom_bar_js = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
+	bottom_bar_css = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.css')).read()
 	draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
 	hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
 	card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
@@ -50,7 +51,14 @@ def reviewer_wrapper(func):
 		func()
 		mw.reviewer.bottom.web.eval(interact)
 		mw.reviewer.bottom.web.eval(draggable)
-		mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {NDFullScreen}")
+		mw.reviewer.bottom.web.eval(bottom_bar_js)
+		mw.reviewer.bottom.web.eval(f"""$('head').append(`
+			<style> :root {{
+				--op: {op};
+				--bk-color: {color};
+				}}
+				{bottom_bar_css}
+			</style>`);""")
 		mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
 		mw.reviewer.web.eval(card_padding)
 	return _initReviewerWeb
@@ -244,15 +252,17 @@ def updateBottom(*args):
 		if isFullscreen:
 		   mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
 
+last_state = mw.state
 def stateChange(new_state, old_state, *args):
-	#print(str(old_state) + " -> " + str(new_state))
 	global ndfs_inReview
 	global ndfs_enabled
 	global last_state
 	config = mw.addonManager.getConfig(__name__)
 
-	if 'review' in new_state: #triggers on NDFS_review and review states
-		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and [new_state, old_state] == ['review','overview']: #filters out self generated NDFS_review state changes
+	print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
+
+	if mw.state == 'review' or new_state == 'NDFS_review': #triggers on NDFS_review and review states
+		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review': #filters out self generated NDFS_review state changes
 			toggle() #sets ndfs_enabled to true
 		if ndfs_enabled:
 			ndfs_inReview = True
@@ -267,11 +277,11 @@ def stateChange(new_state, old_state, *args):
 		QGuiApplication.restoreOverrideCursor() #twice still bugs out - needs 4 (?)
 
 		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
-			if 'review' in last_state and old_state == 'sync': #sync is never in new_state, so have to store last visited state
+			if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
 				toggle()
-			elif old_state == 'review' and new_state in ['overview', 'deckBrowser', 'sync']:
-				toggle()
-	last_state = new_state
+
+	if mw.state != 'resetRequired':
+		last_state = mw.state
 
 def padCards():
 	def padCardsCallback(height):

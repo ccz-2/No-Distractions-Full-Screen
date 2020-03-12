@@ -7,4 +7,4 @@ function getHeight() {
 
 $("button[onclick*='edit'],button[onclick*='more']").remove()
 $('body').wrap(`<div id="canvas"></div>`)
-$('body').append(`<div id="bottomHover"></div>`);
+$('body').append(`<div id="bottomHover"></div>`)
