@@ -20,11 +20,12 @@ table.bar {
   height: 50px;
   border-collapse: separate;
   border-spacing:5em 0px;
+  table-layout: fixed;
 }
 
 table.bar td {
   vertical-align: bottom;
-  min-width:20px;
+  width: 20%;
 }
 
 div.again {
@@ -33,7 +34,7 @@ div.again {
     border: 0px solid;
     box-shadow:
     0 0 30px 20px #F00000,
-    0 0 10px 10px #F00000,
+    0 0 10px 0px #F00000,
     0 0 20px 5px #F00000;
 }
 
@@ -52,9 +53,9 @@ div.good {
     width: 100%;
     border: 0px solid;
     box-shadow:
-    0 0 30px 20px #00FF0A,
-    0 0 10px 10px #00FF0A,
-    0 0 20px 5px #00FF0A;
+    0 0 30px 20px #049D00,
+    0 0 10px 10px #049D00,
+    0 0 20px 5px #049D00;
 }
 
 div.easy {
@@ -69,11 +70,11 @@ div.easy {
 
 /*Text*/
 .nobold, span.stattxt {
-  padding-bottom: 1em !important;
-  padding-left: 2em;
-  padding-right: 2em;
+  padding-bottom: 0.1em !important;
+  padding-left: 1em;
+  padding-right: 1em;
   vertical-align: bottom;
-  font-size: 15px !important;
+  font-size: 12px !important;
   font-weight: bold !important;
 }
 
