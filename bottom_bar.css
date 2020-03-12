@@ -2,14 +2,79 @@
    Defined in python:*/
 /*:root {--op: 0.5;--bk-color: rgba(110, 110, 200, 0.8);}*/
 
-table:not([id="innertable"]) {
-  opacity: var(--op);
-  padding: 0px;
-  border-radius: 5px;
-  background-color: var(--bk-color);
+table {
   user-select: none;
   touch-action: none;
   vertical-align: bottom;
+  padding: 0px;
+  border-collapse: collapse;
+  border-spacing: 0px;
+  empty-cells: hide;
+}
+
+table.bar {
+  padding: 0px;
+  opacity: var(--op);
+  /*background-color: var(--bk-color);
+    table-layout: fixed;*/
+  height: 50px;
+  border-collapse: separate;
+  border-spacing:5em 0px;
+}
+
+table.bar td {
+  vertical-align: bottom;
+  min-width:20px;
+}
+
+div.again {
+    z-index: -1;
+    width: 100%;
+    border: 0px solid;
+    box-shadow:
+    0 0 30px 20px #F00000,
+    0 0 10px 10px #F00000,
+    0 0 20px 5px #F00000;
+}
+
+div.hard {
+    z-index: -1;
+    width: 100%;
+    border: 0px solid;
+    box-shadow:
+    0 0 30px 20px #9B9B9B,
+    0 0 10px 10px #9B9B9B,
+    0 0 20px 5px #9B9B9B;
+}
+
+div.good {
+    z-index: -1;
+    width: 100%;
+    border: 0px solid;
+    box-shadow:
+    0 0 30px 20px #00FF0A,
+    0 0 10px 10px #00FF0A,
+    0 0 20px 5px #00FF0A;
+}
+
+div.easy {
+    z-index: -1;
+    width: 100%;
+    border: 0px solid;
+    box-shadow:
+    0 0 30px 20px #0016FF,
+    0 0 10px 10px #0016FF,
+    0 0 20px 5px #0016FF;
+}
+
+/*Text*/
+.nobold, span.stattxt {
+  padding-bottom: 1em !important;
+  padding-left: 2em;
+  padding-right: 2em;
+  vertical-align: bottom;
+  font-size: 15px !important;
+  font-weight: bold !important;
 }
 
 body, #outer{
@@ -18,20 +83,10 @@ body, #outer{
   overflow: hidden;
 }
 
-body {
-	height:100%;
-	width:100%;
-}
-
 table#innertable {
   position: absolute;
   left: 0;
   bottom: 0;
-}
-
-table {
-  border-collapse: collapse;
-  empty-cells: hide;
 }
 
 #canvas {
@@ -41,14 +96,14 @@ table {
     top: 0px;
     left: 0px;
     z-index: -999;
-  	touch-action: none;
+    touch-action: none;
     overflow: hidden;
 }
 
 #bottomHover {
     position: absolute;
     width:100%;
-    height: 15px;
+    height: 20px;
     bottom: 0px;
     left: 0px;
     /*background-color: red;*/

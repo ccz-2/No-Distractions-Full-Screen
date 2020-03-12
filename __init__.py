@@ -259,10 +259,10 @@ def stateChange(new_state, old_state, *args):
 	global last_state
 	config = mw.addonManager.getConfig(__name__)
 
-	print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
+	#print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
 
-	if mw.state == 'review' or new_state == 'NDFS_review': #triggers on NDFS_review and review states
-		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review': #filters out self generated NDFS_review state changes
+	if mw.state == 'review': #triggers on NDFS_review and review states
+		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review' and last_state != mw.state: #filters out self generated NDFS_review state changes
 			toggle() #sets ndfs_enabled to true
 		if ndfs_enabled:
 			ndfs_inReview = True
