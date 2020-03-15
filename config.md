@@ -1,14 +1,14 @@
-## NDFS v3.2.6 Config:
+## NDFS v3.2.7 Config:
 ### The most useful config is outlined below. (Modifying other values may have unintended consequences - please click "Restore Defaults" if having issues.)  
 
-All changes are effective immediately. Note: Changing settings through menu buttons will override respective values.  
+All changes are effective immediately. Note: Changing settings through menu buttons will override respective values. Some values may be obselete. Please click "Restore Defaults" to reset config and remove obselete values.
 
 Please report bugs/feature requests to [Github](https://github.com/Quip13/No-Distractions-Full-Screen/issues) or email at random.emailforcrap@gmail.com (yes it's real &#9786;)  
 
 
 -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_compatibility_mode`**</span>:
   Only applies to Microsoft Windows. When enabled, resolves many graphical issues when in Fullscreen mode (e.g. flickering with addon alerts, hidden right click-menus).  
-  <span style="color:indianred">If experiencing other fullscreen graphical issues (e.g. persistent taskbar), try setting to `false`.</span>
+  <span style="color:indianred">If experiencing other fullscreen graphical issues (e.g. persistent taskbar), try setting to `false`. If still having issues, try setting `stay_on_top_fullscreen` to `true`.</span>
 
 -  <span style="color:dodgerblue">**`answer_button_border_color`**</span>: Color of border around answer buttons. Accepts HTML color codes. For help, see: [Color Picker](https://www.hexcolortool.com/#6e6e6e,0.8)  
   <span style="color:indianred">Suggested values for dark mode: `rgba(110, 110, 110, 0.8)` | light mode: `rgba(180, 180, 180, 0.8)`</span>
@@ -27,3 +27,6 @@ Please report bugs/feature requests to [Github](https://github.com/Quip13/No-Dis
 
 -  <span style="color:dodgerblue">**`rendering_delay`**</span>: Milliseconds to wait before window is updated with layout changes. Helps reduce flickering and artifacts when toggling fullscreen/windowed.  
   <span style="color:indianred">Can be adjusted depending on your machine and preferences. Higher values = cleaner transitions, but less responsive toggling</span>
+
+  -  <span style="color:dodgerblue">**`stay_on_top_fullscreen`**</span>: If `true`, fullscreen mode will stay above other windows. Note that new windows (e.g. card Editor or Browser) will not display.  
+  <span style="color:indianred">For select Microsoft Windows users where the taskbar refuses to hide despite the `MS_Windows_fullscreen_compatibility_mode` option, this option may be useful.</span>

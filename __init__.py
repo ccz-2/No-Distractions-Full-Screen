@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2.6 3/11/2020
+# v3.2.7 3/15/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -160,8 +160,8 @@ def toggle():
 				else:
 					mw.showFullScreen()
 				isFullscreen = True
-			elif config['stay_on_top']: #Windowed mode options
-				mw.setWindowFlags(og_window_flags | Qt.WindowStaysOnTopHint)
+			if (config['stay_on_top_fullscreen'] and isFullscreen) or (config['stay_on_top_windowed'] and not isFullscreen) : #ontop options
+				mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
 				window_flags_set = True
 				mw.show()
 
@@ -418,7 +418,7 @@ def recheckBoxes(*args):
 	op = config['answer_button_opacity']
 	cursorIdleTimer = config['cursor_idle_timer']
 	last_toggle = config['last_toggle']
-	onTop = config['stay_on_top']
+	w_onTop = config['stay_on_top_windowed']
 	fs_shortcut = config['fullscreen_hotkey']
 	lock_shortcut = config['lock_answer_bar_hotkey']
 	dragLocked = config['answer_bar_locked']
@@ -441,7 +441,7 @@ def recheckBoxes(*args):
 		fullscreen.setShortcut(fs_shortcut)
 		windowed.setShortcut('')
 
-	if onTop:
+	if w_onTop:
 		keep_on_top.setChecked(True)
 
 	if dragLocked:
@@ -470,10 +470,10 @@ def user_settings():
 	config['cursor_idle_timer'] = cursorIdleTimer
 
 	if keep_on_top.isChecked():
-		onTop = True
+		w_onTop = True
 	else:
-		onTop = False
-	config['stay_on_top'] = onTop
+		w_onTop = False
+	config['stay_on_top_windowed'] = w_onTop
 
 	if auto_toggle.isChecked():
 		auto_tog = True
