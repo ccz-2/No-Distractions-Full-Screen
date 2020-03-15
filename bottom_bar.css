@@ -28,14 +28,24 @@ table.bar td {
   width: 20%;
 }
 
+div.ans {
+    z-index: -1;
+    width: 20%;
+    border: 0px solid;
+    box-shadow:
+    0 0 30px 20px #686767,
+    0 0 10px 0px #686767,
+    0 0 20px 5px #686767;
+}
+
 div.again {
     z-index: -1;
     width: 100%;
     border: 0px solid;
     box-shadow:
-    0 0 30px 20px #F00000,
-    0 0 10px 0px #F00000,
-    0 0 20px 5px #F00000;
+    0 0 30px 20px #ff6d63,
+    0 0 10px 0px #ff6d63,
+    0 0 20px 5px #ff6d63;
 }
 
 div.hard {
@@ -43,9 +53,9 @@ div.hard {
     width: 100%;
     border: 0px solid;
     box-shadow:
-    0 0 30px 20px #9B9B9B,
-    0 0 10px 10px #9B9B9B,
-    0 0 20px 5px #9B9B9B;
+    0 0 30px 20px #e78b5b,
+    0 0 10px 10px #e78b5b,
+    0 0 20px 5px #e78b5b;
 }
 
 div.good {
@@ -53,9 +63,9 @@ div.good {
     width: 100%;
     border: 0px solid;
     box-shadow:
-    0 0 30px 20px #049D00,
-    0 0 10px 10px #049D00,
-    0 0 20px 5px #049D00;
+    0 0 30px 20px #5bc704,
+    0 0 10px 10px #5bc704,
+    0 0 20px 5px #5bc704;
 }
 
 div.easy {
@@ -63,9 +73,9 @@ div.easy {
     width: 100%;
     border: 0px solid;
     box-shadow:
-    0 0 30px 20px #0016FF,
-    0 0 10px 10px #0016FF,
-    0 0 20px 5px #0016FF;
+    0 0 30px 20px #76c6f6,
+    0 0 10px 10px #76c6f6,
+    0 0 20px 5px #76c6f6;
 }
 
 /*Text*/
@@ -74,7 +84,6 @@ div.easy {
   padding-left: 1em;
   padding-right: 1em;
   vertical-align: bottom;
-  font-size: 12px !important;
   font-weight: bold !important;
 }
 
