@@ -7,11 +7,12 @@ Please report bugs/feature requests to [Github](https://github.com/Quip13/No-Dis
 
 
 -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_compatibility_mode`**</span>:
-  Only applies to Microsoft Windows. When enabled, resolves numerous graphical issues when in Fullscreen mode (e.g. persistent task bar, flickering with overlays, hidden right click-menus).  
+  Only applies to Microsoft Windows. Enabled by default; resolves numerous graphical issues when in Fullscreen mode (e.g. persistent task bar, flickering with overlays, hidden right click-menus).  
   <span style="color:indianred">If still experiencing fullscreen graphical issues, try setting to `false`. If still having issues, try setting `MS_Windows_fullscreen_force_on_top` to `true`.</span>
 
-  -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_force_on_top`**</span>: Only applies to Microsoft Windows. If `true`, will also enable `MS_Windows_fullscreen_compatibility_mode` and force fullscreen window on top. Warning: New windows (e.g. Card Editor or Browser) or other applications will NOT display over fullscreen mode.  
-  <span style="color:indianred">Intended as a last-resort workaround for persistent taskbars on Windows when toggling `MS_Windows_fullscreen_compatibility_mode` does not work. If you have to enable this, please submit a Github report.</span>
+  -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_force_on_top`**</span>: Only applies to Microsoft Windows. Intended as a last-resort workaround for persistent taskbars on Windows when toggling `MS_Windows_fullscreen_compatibility_mode` does not work. If you have to enable this, please submit a Github bug report.  
+  If `true`, will also enable `MS_Windows_fullscreen_compatibility_mode` and force the fullscreen window on top.  
+  <span style="color:indianred">Warning: New windows (e.g. Card Editor or Browser) or other applications will NOT display over fullscreen mode.</span>
 
 -  <span style="color:dodgerblue">**`answer_button_border_color`**</span>: Color of border around answer buttons. Accepts HTML color codes. For help, see: [Color Picker](https://www.hexcolortool.com/#6e6e6e,0.8)  
   <span style="color:indianred">Suggested values for dark mode: `rgba(110, 110, 110, 0.8)` | light mode: `rgba(180, 180, 180, 0.8)`</span>
