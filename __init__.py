@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2.7 3/15/2020
+# v3.2.8 3/16/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -159,7 +159,10 @@ def toggle():
 						offset = QPoint(10,10) #if maximized, pos returns coords that are off
 						screenNum = mw.app.desktop().screenNumber(mw.pos()+offset)
 						screenSize = mw.app.desktop().screenGeometry(screenNum)
-					mw.setGeometry(screenSize.x()-1,screenSize.y(),screenSize.width()+1, screenSize.height()) #Qt bug where if exactly screen size, will cause graphical glitches, so slightly bigger
+					#Qt bug where if exactly screen size, will prevent overlays (context menus, alerts).
+					#Screen size is affected by Windows scaling and Anki interace scaling, and so to make sure larger requires at least 1px border around screen.
+					#If Y axis does not take up full screen height, will not hide taskbar
+					mw.setGeometry(screenSize.x()-1,screenSize.y()-1,screenSize.width()+2, screenSize.height()+2)
 				else:
 					mw.showFullScreen()
 				isFullscreen = True
