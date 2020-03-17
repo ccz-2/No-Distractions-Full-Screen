@@ -164,7 +164,7 @@ def toggle():
 						offset = QPoint(10,10) #if maximized, pos returns coords that are off
 						screenNum = mw.app.desktop().screenNumber(mw.pos()+offset)
 						screenSize = mw.app.desktop().screenGeometry(screenNum)
-					mw.setGeometry(screenSize.x()-1,screenSize.y(),screenSize.width()+1, screenSize.height()) #Qt bug where if exactly screen size, will cause graphical glitches, so slightly bigger
+					mw.setGeometry(screenSize.x()-1,screenSize.y()-1,screenSize.width()+2, screenSize.height()+2) #Qt bug where if exactly screen size, will cause graphical glitches. Screen size is affected by Windows scaling and Anki interace scaling, requires at least 1px border around screen. If Y axis does not take up full screen height, will not hide taskbar
 				else:
 					mw.showFullScreen()
 				isFullscreen = True
@@ -197,6 +197,14 @@ def toggle():
 			if config['ignore_scroll_on_answer_buttons']:
 				bottom_QWidget.installEventFilter(bottom_eventFilter_obj)
 			reviewer_QWidget.installEventFilter(reviewer_eventFilter_obj)
+
+			mw.reviewer.web.settings().setAttribute(QWebEngineSettings.FullScreenSupportEnabled, True)
+			def test(request):
+				print(request)
+				print(request.toggleOn())
+				request.accept()
+
+			mw.reviewer.web.page().fullScreenRequested.connect(test)
 
 		else:
 			ndfs_enabled = False
