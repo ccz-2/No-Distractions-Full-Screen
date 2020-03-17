@@ -146,6 +146,7 @@ def toggle():
 			og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
 
 			mw.setUpdatesEnabled(False) #pauses drawing to screen to prevent flickering
+
 			if config['last_toggle'] == 'full_screen': #Fullscreen mode
 				if isMac: #kicks out of OSX maximize if on
 					mw.showNormal()
@@ -153,7 +154,9 @@ def toggle():
 				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
 					og_geometry = mw.normalGeometry()
 					mw.showNormal() #user reported bug where taskbar would show if maximized (prob not necessary, since changing window geometry automatically changes state to normal)
-					mw.setWindowFlags(og_window_flags | Qt.FramelessWindowHint)
+					if config['MS_Windows_fullscreen_force_on_top']: #user reported bug where taskbar would not disappear unless on top
+						mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
+					mw.setWindowFlags(mw.windowFlags() | Qt.FramelessWindowHint)
 					fs_compat_mode = True
 					window_flags_set = True
 					mw.show()
@@ -164,12 +167,16 @@ def toggle():
 						offset = QPoint(10,10) #if maximized, pos returns coords that are off
 						screenNum = mw.app.desktop().screenNumber(mw.pos()+offset)
 						screenSize = mw.app.desktop().screenGeometry(screenNum)
-					mw.setGeometry(screenSize.x()-1,screenSize.y()-1,screenSize.width()+2, screenSize.height()+2) #Qt bug where if exactly screen size, will cause graphical glitches. Screen size is affected by Windows scaling and Anki interace scaling, requires at least 1px border around screen. If Y axis does not take up full screen height, will not hide taskbar
+					#Qt bug where if exactly screen size, will prevent overlays (context menus, alerts).
+					#Screen size is affected by Windows scaling and Anki interace scaling, and so to make sure larger requires at least 1px border around screen.
+					#If Y axis does not take up full screen height, will not hide taskbar
+					mw.setGeometry(screenSize.x()-1,screenSize.y()-1,screenSize.width()+2, screenSize.height()+2)
 				else:
 					mw.showFullScreen()
 				isFullscreen = True
-			elif config['stay_on_top']: #Windowed mode options
-				mw.setWindowFlags(og_window_flags | Qt.WindowStaysOnTopHint)
+
+			if (config['stay_on_top_windowed'] and not isFullscreen) : #ontopWindow option
+				mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
 				window_flags_set = True
 				mw.show()
 
@@ -436,11 +443,12 @@ def recheckBoxes(*args):
 	op = config['answer_button_opacity']
 	cursorIdleTimer = config['cursor_idle_timer']
 	last_toggle = config['last_toggle']
-	onTop = config['stay_on_top']
+	w_onTop = config['stay_on_top_windowed']
 	fs_shortcut = config['fullscreen_hotkey']
 	lock_shortcut = config['lock_answer_bar_hotkey']
 	dragLocked = config['answer_bar_locked']
 	auto_tog = config['auto_toggle_when_reviewing']
+	ms_fs_on_top = config['MS_Windows_fullscreen_force_on_top']
 
 	if op == 1:
 		mouseover_default.setChecked(True)
@@ -459,7 +467,7 @@ def recheckBoxes(*args):
 		fullscreen.setShortcut(fs_shortcut)
 		windowed.setShortcut('')
 
-	if onTop:
+	if w_onTop:
 		keep_on_top.setChecked(True)
 
 	if dragLocked:
@@ -468,6 +476,10 @@ def recheckBoxes(*args):
 	if auto_tog:
 		auto_toggle.setChecked(True)
 
+	if ms_fs_on_top:
+		config['MS_Windows_fullscreen_compatibility_mode'] = True
+
+	mw.addonManager.writeConfig(__name__, config)
 	lockDrag.setShortcut(lock_shortcut)
 
 #updates settings on menu action
@@ -488,10 +500,10 @@ def user_settings():
 	config['cursor_idle_timer'] = cursorIdleTimer
 
 	if keep_on_top.isChecked():
-		onTop = True
+		w_onTop = True
 	else:
-		onTop = False
-	config['stay_on_top'] = onTop
+		w_onTop = False
+	config['stay_on_top_windowed'] = w_onTop
 
 	if auto_toggle.isChecked():
 		auto_tog = True

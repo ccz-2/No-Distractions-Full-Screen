@@ -1,14 +1,17 @@
-## NDFS v3.2.6 Config:
+## NDFS v3.2.8 Config:
 ### The most useful config is outlined below. (Modifying other values may have unintended consequences - please click "Restore Defaults" if having issues.)  
 
-All changes are effective immediately. Note: Changing settings through menu buttons will override respective values.  
+All changes are effective immediately. Note: Changing settings through menu buttons will override respective values. Some values may be from prior versions and are obsolete. Please click "Restore Defaults" to reset config and remove obsolete values.
 
 Please report bugs/feature requests to [Github](https://github.com/Quip13/No-Distractions-Full-Screen/issues) or email at random.emailforcrap@gmail.com (yes it's real &#9786;)  
 
 
 -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_compatibility_mode`**</span>:
-  Only applies to Microsoft Windows. When enabled, resolves many graphical issues when in Fullscreen mode (e.g. flickering with addon alerts, hidden right click-menus).  
-  <span style="color:indianred">If experiencing other fullscreen graphical issues (e.g. persistent taskbar), try setting to `false`.</span>
+  Only applies to Microsoft Windows. Enabled by default; resolves numerous graphical issues when in Fullscreen mode (e.g. persistent task bar, flickering with overlays, hidden right click-menus).  
+  <span style="color:indianred">If still experiencing fullscreen graphical issues in Windows, try setting to `false`.
+
+-  <span style="color:dodgerblue">**`MS_Windows_fullscreen_force_on_top`**</span>: Only applies to Microsoft Windows. Intended as a last-resort workaround for persistent taskbars on Windows after trying `MS_Windows_fullscreen_compatibility_mode` instructions. If you have to enable this, please submit a Github bug report. May be deprecated in the near future.  
+  <span style="color:indianred">Note: If `true`, new windows (e.g. Card Editor or Browser) or other applications will NOT display over fullscreen mode. Will automatically set `MS_Windows_fullscreen_compatibility_mode` to `true`.</span>
 
 -  <span style="color:dodgerblue">**`answer_button_border_color`**</span>: Color of border around answer buttons. Accepts HTML color codes. For help, see: [Color Picker](https://www.hexcolortool.com/#6e6e6e,0.8)  
   <span style="color:indianred">Suggested values for dark mode: `rgba(110, 110, 110, 0.8)` | light mode: `rgba(180, 180, 180, 0.8)`</span>
