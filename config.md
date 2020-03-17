@@ -8,10 +8,10 @@ Please report bugs/feature requests to [Github](https://github.com/Quip13/No-Dis
 
 -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_compatibility_mode`**</span>:
   Only applies to Microsoft Windows. Enabled by default; resolves numerous graphical issues when in Fullscreen mode (e.g. persistent task bar, flickering with overlays, hidden right click-menus).  
-  <span style="color:indianred">If experiencing fullscreen graphical issues in Windows, try setting to `false`.
+  <span style="color:indianred">If still experiencing fullscreen graphical issues in Windows, try setting to `false`.
 
 -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_force_on_top`**</span>: Only applies to Microsoft Windows. Intended as a last-resort workaround for persistent taskbars on Windows after trying `MS_Windows_fullscreen_compatibility_mode` instructions. If you have to enable this, please submit a Github bug report. May be deprecated in the near future.  
-  <span style="color:indianred">Warning: If `true`, new windows (e.g. Card Editor or Browser) or other applications will NOT display over fullscreen mode. Will automatically enable `MS_Windows_fullscreen_compatibility_mode`.</span>
+  <span style="color:indianred">Note: If `true`, new windows (e.g. Card Editor or Browser) or other applications will NOT display over fullscreen mode. Will automatically set `MS_Windows_fullscreen_compatibility_mode` to `true`.</span>
 
 -  <span style="color:dodgerblue">**`answer_button_border_color`**</span>: Color of border around answer buttons. Accepts HTML color codes. For help, see: [Color Picker](https://www.hexcolortool.com/#6e6e6e,0.8)  
   <span style="color:indianred">Suggested values for dark mode: `rgba(110, 110, 110, 0.8)` | light mode: `rgba(180, 180, 180, 0.8)`</span>
