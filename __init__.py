@@ -54,7 +54,6 @@ def reviewer_wrapper(func):
 		#mw.reviewer.bottom.web.eval(interact)
 		#mw.reviewer.bottom.web.eval(draggable)
 		mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {NDFullScreen}")
-		mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
 		mw.reviewer.web.eval(card_padding)
 		mw.reviewer.web.eval(iframe) #construct iframe for bottom
 	return _initReviewerWeb
@@ -69,23 +68,7 @@ def updateiFrame(html):
 def linkHandler_wrapper(self, url):
 	global posX
 	global posY
-	if "NDFS-cursor_hide" == url and ndfs_inReview:
-		QGuiApplication.setOverrideCursor(Qt.BlankCursor)
-	elif "NDFS-cursor_show" == url:
-		QGuiApplication.restoreOverrideCursor()
-		QGuiApplication.restoreOverrideCursor() #need to call twice
-	elif "NDFS-hover_out" == url and ndfs_inReview:
-		mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-		reviewer_eventFilter_obj.bottomActive = False
-	elif "NDFS-hover_in" == url:
-		mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, False)
-		reviewer_eventFilter_obj.bottomActive = True
-	elif "NDFS-touchstart" == url:
-		reviewer_eventFilter_obj.bottomActive = True
-		touchCancelEvent = QTouchEvent(QEvent.TouchCancel)
-		touchCancelEvent.NDFS = True #flags event so that it is only sent to reviewer in eventListener
-		QApplication.sendEvent(reviewer_QWidget, touchCancelEvent) #cancels initial touchstart event in reviewer, since further touch events are passed to bottom only
-	elif "NDFS-draggable_pos" in url:
+	if "NDFS-draggable_pos" in url:
 		pos = url.split(": ")[1]
 		pos = pos.split(", ")
 		posX = pos[0]
@@ -168,7 +151,7 @@ def toggle():
 					except: #uses deprecated functions for legacy client support e.g. v2.1.15
 						windowSize = mw.frameGeometry()
 						offset = QPoint(10,10) #if maximized, pos returns coords that are off
-						screenNum = mw.app.desktop().screenNumber(mw.pos()+offset)
+						screenNum = mw.app.desktop().screenNumber(mw.pos() + offset)
 						screenSize = mw.app.desktop().screenGeometry(screenNum)
 					#Qt bug where if exactly screen size, will prevent overlays (context menus, alerts).
 					#Screen size is affected by Windows scaling and Anki interace scaling, and so to make sure larger requires at least 1px border around screen.
@@ -201,12 +184,11 @@ def toggle():
 
 			mw.mainLayout.addWidget(fs_window)
 
-			setupEventFilters()
 			if config['cursor_idle_timer'] >= 0:
-				mw.installEventFilter(loseFocusEventFilter)
+				mw.installEventFilter(curIdleTimer)
+				curIdleTimer.countdown()
 			if config['ignore_scroll_on_answer_buttons']:
-				bottom_QWidget.installEventFilter(bottom_eventFilter_obj)
-			reviewer_QWidget.installEventFilter(reviewer_eventFilter_obj)
+				print('FIXME')
 
 		else:
 			ndfs_enabled = False
@@ -239,9 +221,7 @@ def toggle():
 			QGuiApplication.restoreOverrideCursor() #need to call twice
 			mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, False)
 
-			mw.removeEventFilter(loseFocusEventFilter)
-			reviewer_QWidget.removeEventFilter(reviewer_eventFilter_obj)
-			bottom_QWidget.removeEventFilter(bottom_eventFilter_obj)
+			mw.removeEventFilter(curIdleTimer)
 
 			setupWeb()
 			mw.show()
@@ -287,10 +267,7 @@ def stateChange(new_state, old_state, *args):
 	elif ndfs_enabled:
 		ndfs_inReview = False
 		mw.reviewer.bottom.web.hide()
-		QGuiApplication.restoreOverrideCursor()
-		QGuiApplication.restoreOverrideCursor()
-		QGuiApplication.restoreOverrideCursor()
-		QGuiApplication.restoreOverrideCursor() #twice still bugs out - needs 4 (?)
+		showCursor()
 
 		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
 			if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
@@ -337,54 +314,49 @@ def checkSoftwareRendering():
 
 
 
-########## EventFilters ##########
-def setupEventFilters(): #if called too soon will throw error on linux machines
-	global reviewer_QWidget
-	global bottom_eventFilter_obj
-	global bottom_QWidget
-	global reviewer_eventFilter_obj
-	reviewer_QWidget = mw.reviewer.web.focusProxy()
-	bottom_eventFilter_obj = bottom_eventFilter(reviewer_QWidget)
-	bottom_QWidget = mw.reviewer.bottom.web.focusProxy()
-	reviewer_eventFilter_obj = reviewer_eventFilter(bottom_QWidget)
+########## Idle Cursor Functions ##########
+def showCursor():
+	if QGuiApplication.overrideCursor() is None:
+		return
+	if QGuiApplication.overrideCursor().shape() == Qt.BlankCursor: #hidden cursor
+		QGuiApplication.restoreOverrideCursor()
+		QGuiApplication.restoreOverrideCursor() #need to call twice
 
-#Intercepts events on reviewer for routing (touch handling + mouse hover events)
-class reviewer_eventFilter(QObject):
-	def __init__(self, bottomQWidget):
-		QObject.__init__(self)
-		self.bottomActive = False
-		self.bottom_QWidget = bottomQWidget
-	def eventFilter(self, obj, event):
-		if event.type() == QEvent.TouchCancel and hasattr(event, 'NDFS'): #checks tag to see if event is sent by linkhandler
-			return False #event only sent to reviewer
-		if event.type() in [QEvent.MouseMove, QEvent.TouchBegin, QEvent.TouchEnd, QEvent.TouchUpdate, QEvent.TouchCancel]: #mousemove event will trigger js hover event
-			QApplication.sendEvent(self.bottom_QWidget, event) #bottom gets event
-			if self.bottomActive:
-				return True #event only sent to bottom
-		return False #event is sent to reviewer
-
-
-#Intercepts events on bottom for routing (passes scrolling to reviewer)
-class bottom_eventFilter(QObject):
-	def __init__(self, reviewerQWidget):
-		QObject.__init__(self)
-		self.reviewer_QWidget = reviewerQWidget
-	def eventFilter(self, obj, event):
-		if event.type() == QEvent.Wheel:
-			QApplication.sendEvent(self.reviewer_QWidget, event) #reviewer gets event
-			return True #event is only sent to reviewer
-		return False #event is only sent to bottom
+def hideCursor():
+	QGuiApplication.setOverrideCursor(Qt.BlankCursor)
+	print('hide')
 
 #Intercepts events to detect when focus is lost to show mouse cursor
-class loseFocus(QObject):
+class cursor_eventFilter(QObject):
+	def __init__(self):
+		QObject.__init__(self)
+		self.timer = QTimer()
+		self.timer.timeout.connect(self.timeout)
+		self.updateIdleTimer()
+
 	def eventFilter(self, obj, event):
 		if ndfs_inReview:
 			if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
-				mw.reviewer.bottom.web.eval(f"show_mouse('{event.type()}');")
+				showCursor()
+			elif event.type() == QEvent.HoverMove:
+				showCursor()
+				self.countdown()
 			elif event.type() == QEvent.WindowActivate:
-				mw.reviewer.bottom.web.eval(f"countDown('{event.type()}');")
+				self.countdown()			
 		return False
-loseFocusEventFilter = loseFocus()
+
+	def timeout(self):
+		self.timer.stop()
+		hideCursor()
+
+	def countdown(self):
+		self.timer.start(self.cursorIdleTimer)
+
+	def updateIdleTimer(self):
+		config = mw.addonManager.getConfig(__name__)
+		self.cursorIdleTimer = config['cursor_idle_timer']
+
+curIdleTimer = cursor_eventFilter()
 
 ########## Menu actions ##########
 def resetPos():
@@ -450,6 +422,8 @@ def recheckBoxes(*args):
 	dragLocked = config['answer_bar_locked']
 	auto_tog = config['auto_toggle_when_reviewing']
 	ms_fs_on_top = config['MS_Windows_fullscreen_force_on_top']
+
+	curIdleTimer.updateIdleTimer()
 
 	if op == 1:
 		mouseover_default.setChecked(True)
