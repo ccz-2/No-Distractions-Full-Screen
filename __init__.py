@@ -154,8 +154,6 @@ def toggle():
 				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
 					og_geometry = mw.normalGeometry()
 					mw.showNormal() #user reported bug where taskbar would show if maximized (prob not necessary, since changing window geometry automatically changes state to normal)
-					if config['MS_Windows_fullscreen_force_on_top']: #user reported bug where taskbar would not disappear unless on top
-						mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
 					mw.setWindowFlags(mw.windowFlags() | Qt.FramelessWindowHint)
 					fs_compat_mode = True
 					window_flags_set = True
