@@ -29,6 +29,7 @@ from aqt.deckbrowser import DeckBrowser
 from anki.hooks import *
 from anki.utils import isMac, isWin
 from aqt.addons import *
+import urllib
 
 ########## Wrappers ##########
 #monkey patched function to disable height adjustment
@@ -42,6 +43,8 @@ def reviewer_wrapper(func):
 	hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
 	card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
 	interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
+    iframe = open(os.path.join(os.path.dirname(__file__), 'iFrame.js')).read()
+
 	def _initReviewerWeb(*args):
 		config = mw.addonManager.getConfig(__name__)
 		op = config['answer_button_opacity']
@@ -53,7 +56,15 @@ def reviewer_wrapper(func):
 		mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {NDFullScreen}")
 		mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
 		mw.reviewer.web.eval(card_padding)
+        mw.reviewer.web.eval(iframe) #construct iframe for bottom
 	return _initReviewerWeb
+
+def updateiFrame(html):
+    global ndfs_inReview
+    if ndfs_enabled:
+        update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
+        html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
+        mw.reviewer.web.eval(f"var url = `{html}`; {update}")
 
 def linkHandler_wrapper(self, url):
 	global posX
@@ -250,6 +261,11 @@ def updateBottom(*args):
 		setLock()
 		if isFullscreen:
 		   mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
+        mw.reviewer.bottom.web.evalWithCallback("""
+        	(function(){
+            	return document.documentElement.outerHTML
+        	}())
+        """, updateiFrame)
 
 last_state = mw.state
 def stateChange(new_state, old_state, *args):
@@ -503,6 +519,7 @@ def user_settings():
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
 addHook("showQuestion", updateBottom) #only needed so that bottom bar updates when Reviewer runs _init/_showQuestion every 100 answers
+addHook("showAnswer", udpateBottom)
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
 mw.addonManager.setConfigUpdatedAction(__name__, recheckBoxes)
 
