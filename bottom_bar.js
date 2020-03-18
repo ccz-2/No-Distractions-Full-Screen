@@ -8,7 +8,7 @@ function getHeight() {
 }
 
 $("button[onclick*='edit'],button[onclick*='more']").remove()
-$('body').wrap(`<div id="canvas"></div>`)
+
 $('body').append(`
 <div id="bottomHover"></div>
 <style>
@@ -42,17 +42,6 @@ table#innertable {
 table {
   border-collapse: collapse;
   empty-cells: hide;
-}
-
-#canvas {
-    position: absolute;
-    width:100%;
-    height:100%;
-    top: 0px;
-    left: 0px;
-    z-index: -999;
-  	touch-action: none;
-    overflow: hidden;
 }
 
 #bottomHover {

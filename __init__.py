@@ -38,12 +38,12 @@ def adjustHeightToFit_override(*args):
 
 #CSS/JS injection
 def reviewer_wrapper(func):
-	NDFullScreen = open(os.path.join(os.path.dirname(__file__), 'NDFullScreen.js')).read()
+	NDFullScreen = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
 	draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
 	hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
 	card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
 	interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
-    iframe = open(os.path.join(os.path.dirname(__file__), 'iFrame.js')).read()
+	iframe = open(os.path.join(os.path.dirname(__file__), 'iFrame.js')).read()
 
 	def _initReviewerWeb(*args):
 		config = mw.addonManager.getConfig(__name__)
@@ -51,20 +51,20 @@ def reviewer_wrapper(func):
 		cursorIdleTimer = config['cursor_idle_timer']
 		color = config['answer_button_border_color']
 		func()
-		mw.reviewer.bottom.web.eval(interact)
-		mw.reviewer.bottom.web.eval(draggable)
+		#mw.reviewer.bottom.web.eval(interact)
+		#mw.reviewer.bottom.web.eval(draggable)
 		mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {NDFullScreen}")
 		mw.reviewer.bottom.web.eval(f"var cursorIdleTimer = {cursorIdleTimer}; {hide_cursor}")
 		mw.reviewer.web.eval(card_padding)
-        mw.reviewer.web.eval(iframe) #construct iframe for bottom
+		mw.reviewer.web.eval(iframe) #construct iframe for bottom
 	return _initReviewerWeb
 
 def updateiFrame(html):
-    global ndfs_inReview
-    if ndfs_enabled:
-        update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
-        html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
-        mw.reviewer.web.eval(f"var url = `{html}`; {update}")
+	global ndfs_inReview
+	if ndfs_enabled:
+		update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
+		html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
+		mw.reviewer.web.eval(f"var url = `{html}`; {update}")
 
 def linkHandler_wrapper(self, url):
 	global posX
@@ -172,7 +172,7 @@ def toggle():
 						screenSize = mw.app.desktop().screenGeometry(screenNum)
 					#Qt bug where if exactly screen size, will prevent overlays (context menus, alerts).
 					#Screen size is affected by Windows scaling and Anki interace scaling, and so to make sure larger requires at least 1px border around screen.
-					#If Y axis does not take up full screen height, will not hide taskbar
+					#If does not take up full screen height, will not hide taskbar
 					mw.setGeometry(screenSize.x()-1,screenSize.y()-1,screenSize.width()+2, screenSize.height()+2)
 				else:
 					mw.showFullScreen()
@@ -184,8 +184,7 @@ def toggle():
 				mw.show()
 
 			mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
-			mw.reviewer.bottom.web.adjustHeightToFit = adjustHeightToFit_override #disables adjustheighttofit
-			mw.reviewer.bottom.web.setFixedSize(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX) #resets fixed minimums
+			setupWeb()
 
 			#Builds new widget for window
 			fs_window = QWidget()
@@ -195,12 +194,13 @@ def toggle():
 			fs_layout.addWidget(mw.toolbar.web,0,0)#,Qt.AlignTop) #need to add or breaks (garbagecollected)
 			fs_layout.addWidget(mw.reviewer.web,0,0)
 			fs_layout.addWidget(mw.reviewer.bottom.web,0,0)
-			mw.reviewer.bottom.web.page().setBackgroundColor(QColor(0, 0, 0, 0)) #qtwidget background removal
-			mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+
 			mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
 			mw.toolbar.web.hide()
+			mw.reviewer.bottom.web.hide() #iFrame handles bottom bar
+
 			mw.mainLayout.addWidget(fs_window)
-			setupWeb()
+
 			setupEventFilters()
 			if config['cursor_idle_timer'] >= 0:
 				mw.installEventFilter(loseFocusEventFilter)
@@ -232,6 +232,7 @@ def toggle():
 			mw.mainLayout.addWidget(mw.reviewer.web)
 			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
 			mw.toolbar.web.show()
+			mw.reviewer.bottom.web.show()
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
 			
 			QGuiApplication.restoreOverrideCursor()
@@ -253,19 +254,20 @@ def toggle():
 def updateBottom(*args):
 	if ndfs_inReview:
 		config = mw.addonManager.getConfig(__name__)
-		posX = config['answer_bar_posX']
-		posY = config['answer_bar_posY']
-		mw.reviewer.bottom.web.eval(f"updatePos({posX}, {posY});")
-		mw.reviewer.bottom.web.eval("activateHover();")
+		#posX = config['answer_bar_posX']
+		#posY = config['answer_bar_posY']
+		#mw.reviewer.bottom.web.eval(f"updatePos({posX}, {posY});")
+		#mw.reviewer.bottom.web.eval("activateHover();")
 		padCards()
-		setLock()
+		#setLock()
+		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
 		if isFullscreen:
 		   mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
-        mw.reviewer.bottom.web.evalWithCallback("""
-        	(function(){
-            	return document.documentElement.outerHTML
-        	}())
-        """, updateiFrame)
+		mw.reviewer.bottom.web.evalWithCallback("""
+			(function(){
+				return document.documentElement.outerHTML
+			}())
+			""", updateiFrame)
 
 last_state = mw.state
 def stateChange(new_state, old_state, *args):
@@ -274,14 +276,13 @@ def stateChange(new_state, old_state, *args):
 	global last_state
 	config = mw.addonManager.getConfig(__name__)
 
-	#print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
+	print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
 
 	if mw.state == 'review': #triggers on NDFS_review and review states
 		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review' and last_state != mw.state: #filters out self generated NDFS_review state changes
 			toggle() #sets ndfs_enabled to true
 		if ndfs_enabled:
 			ndfs_inReview = True
-			mw.reviewer.bottom.web.show()
 			updateBottom()
 	elif ndfs_enabled:
 		ndfs_inReview = False
@@ -519,7 +520,7 @@ def user_settings():
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
 addHook("showQuestion", updateBottom) #only needed so that bottom bar updates when Reviewer runs _init/_showQuestion every 100 answers
-addHook("showAnswer", udpateBottom)
+addHook("showAnswer", updateBottom)
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
 mw.addonManager.setConfigUpdatedAction(__name__, recheckBoxes)
 
