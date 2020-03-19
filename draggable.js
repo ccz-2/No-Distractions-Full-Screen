@@ -12,7 +12,7 @@ function getTarget(){
   target = document.querySelector('div.bottomWrapper');
 }
 
-//called when screen updates
+/*/called when screen updates
 var timeout = false;
 $("body").on('DOMSubtreeModified', 'td#middle', function() {
   getTarget();
@@ -31,7 +31,7 @@ $("body").on('DOMSubtreeModified', 'td#middle', function() {
     }
     setTimeout(function(){ timeout = false; }, 5); //prevents overzealous updates, since selector grabs multiple events per card change
   }
-});
+});*/
 
 //moves target to within window boundaries
 function fitInWindow() {
@@ -40,29 +40,32 @@ function fitInWindow() {
     var rect = target.getBoundingClientRect();
     var x = parseFloat(target.getAttribute('data-x'));
     var y = parseFloat(target.getAttribute('data-y'));
+    windowW = $("html").prop("clientWidth") * zF()
+    windowH = $("html").prop("clientHeight") * zF()
     if (rect.x < 0){
       updatePos(x - rect.x, y)
     }
-    if (rect.right > window.innerWidth){
-      dx = rect.right - window.innerWidth
+    if (rect.right > windowW){
+      dx = rect.right - windowW
       updatePos(x - dx , y)
     }
     if (rect.top < 0){
-      updatePos(x, y - rect.top )
+      updatePos(x, y - rect.top)
     }
-    if (rect.bottom > window.innerHeight){
-      dy = rect.bottom - window.innerHeight
+    if (rect.bottom > windowH){
+      dy = rect.bottom - windowH
       updatePos(x, y - dy )
     }
   }
 }
 
 $(window).resize(function() {
-  fitInWindow();
+ fitInWindow();
 });
 
 function updatePos(x, y){
   getTarget()
+  //css transform works in real coordinates (unscaled)
   target.style.transform = 'translate(' + (parseFloat(x) || 0) + 'px, ' + (parseFloat(y) || 0) + 'px)';
   target.setAttribute("data-x", x);
   target.setAttribute("data-y", y);
@@ -70,54 +73,64 @@ function updatePos(x, y){
   currY = y;
 }
 
+function restrictBBox() {
+  bbox = $('#canvas')[0].getBoundingClientRect();
+  bbox.bottom = bbox.bottom * zF();
+  bbox.height = bbox.height * zF();
+  bbox.right = bbox.right * zF(); 
+  bbox.width = bbox.width * zF();
+  console.log('asdf')
+  return bbox
+}
+
 function enable_drag(){
   getTarget()
   fitInWindow()
   if (!interact.isSet(target)){
-    interact(target)
-      .draggable({
-        inertia: true,
-        enabled: true,
-        modifiers: [
-            interact.modifiers.restrictRect({
-              restriction: 'div.bottomWrapper',
-              endOnly: true
-            }),
-              interact.modifiers.snap({
-                targets: [
-              function () { //recursively calculates target original position (before transform)
-              var el = target, offsetLeft = 0, offsetTop  = 0;
-              do{
-                  offsetLeft += el.offsetLeft;
-                  offsetTop  += el.offsetTop;
-                  el = el.offsetParent;
-              } while( el );
-                return {
-                  x: offsetLeft, //snap target
-                  y: offsetTop,
-                  range: 50, //snap 'stickiness'
-                }
+    interact(target).draggable({
+      inertia: true,
+      enabled: true,
+      modifiers: [
+          interact.modifiers.restrictRect({
+            restriction: restrictBBox(),
+            endOnly: true
+          })/*,
+            interact.modifiers.snap({
+              targets: [
+            function () { //recursively calculates target original position (before transform)
+            var el = target, offsetLeft = 0, offsetTop  = 0;
+            do{
+                offsetLeft += el.offsetLeft;
+                offsetTop  += el.offsetTop;
+                el = el.offsetParent;
+            } while( el );
+              return {
+                x: offsetLeft * zF(), //snap target
+                y: offsetTop * zF(),
+                range: 50, //snap 'stickiness'
               }
-                ],
-              relativePoints: [
-              { x: 0, y: 0} //snap to top-left
-            ]
-              })
-        ],
-        autoScroll: false,
-        onstart: function() {
-          currDrag = true;
-        },
-        onmove: dragMoveListener,
-        onend: function (event) {
-          var x = event.target.getAttribute('data-x');
-          var y = event.target.getAttribute('data-y');
-          pycmd("NDFS-draggable_pos: " + x + ", " + y);
-          currX = x;
-          currY = y;
-          currDrag = false;
-        }
-      })
+            }
+              ],
+            relativePoints: [
+            { x: 0, y: 0} //snap to top-left
+          ]
+            })*/
+      ],
+      autoScroll: false,
+      onstart: function() {
+        currDrag = true;
+        interact(target).draggable({modifiers: interact.modifiers.restrictRect({restriction: restrictBBox(), endOnly:true})})
+      },
+      onmove: dragMoveListener,
+      onend: function (event) {
+        var x = event.target.getAttribute('data-x');
+        var y = event.target.getAttribute('data-y');
+        pycmd("NDFS-draggable_pos: " + x + ", " + y);
+        currX = x;
+        currY = y;
+        currDrag = false;
+      }
+    })
   }
   else {
       interact(target).draggable({enabled: true})
@@ -126,16 +139,25 @@ function enable_drag(){
   currLock = false;
 }
 
+// Zoom factor
+function zF(){
+  return((window.devicePixelRatio)/2)
+}
+
 function dragMoveListener (event) {
   var target = event.target
   // keep the dragged position in the data-x/data-y attributes
-  var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
-  var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+  var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx * zF();
+  var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy * zF();
+
   // translate the element
-  target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+  target.style.webkitTransform =
+    target.style.transform =
+      'translate(' + x + 'px, ' + y + 'px)'
+
+  // update the posiion attributes
   target.setAttribute('data-x', x)
   target.setAttribute('data-y', y)
-  //console.log(x +', '+ y)
 }
 
 function disable_drag(){
@@ -161,7 +183,6 @@ function activateHover(){
         fade_in(target);
       },
       touchend: function(){
-        //console.log('touchend')
         fade_out(target)
       }
   });

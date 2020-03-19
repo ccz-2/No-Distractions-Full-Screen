@@ -4,54 +4,69 @@ var newheight;
 var newwidth;
 
 $('body').append(`
-<div id="outer">
-<div class="bottomWrapper">
-<iframe id='bottomiFrame' frameborder="0" scrolling="no">
-</iframe>
+<div id='canvas'>
+  <div id='outer'>
+    <div class="bottomWrapper">
+      <iframe id='bottomiFrame' frameborder="0" scrolling="no">
+      </iframe>
+    </div>
+  </div>
 </div>
-</div>
-
 <style>
 
 #outer{
-  right: 0;
   bottom: 0;
   position: fixed;
   left: 50%;
-  height: auto;
-  background-color: green;
+  //background-color: green;
 }
 
 .bottomWrapper {
   position: relative;
   left: -50%;
-  background-color: red;
+  //background-color: red;
+  border-radius: 5px;
   margin: 0px;
+  pointer-events: auto;
+}
+
+#canvas{
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  margin: 0px;
+  background-color: teal;
+  pointer-events: none;
+}
+
+#bottomiFrame {
+  display:block;
+  margin: 0px;
+  position: absolute;
+  bottom: 0;
 }
 
 </style>
 `);
 
-/*
-.bottomWrapper {
-  text-align: center;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-}
-*/
-
-document.querySelector("iframe").addEventListener( "load", function(e) {
+$('#bottomiFrame')[0].addEventListener( "load", function(e){
     var iframe = e.target
     var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
     newheight = target.scrollHeight;
     newwidth = target.scrollWidth;
-    newheight = (newheight) + "px"
-    newwidth = (newwidth) + "px"
-    iframe.height= newheight;
-    iframe.width= newwidth;
-    $("div.bottomWrapper").outerHeight(newheight + 50);
+    iframe.height= newheight + "px";
+    iframe.width= newwidth + "px";
+    $("div.bottomWrapper").outerHeight(newheight + 20);
     $("div.bottomWrapper").outerWidth(newwidth);
-
+    resize()
 } );
+
+function resize(){
+  var factor = (2/(window.devicePixelRatio));
+  $('#outer')[0].style.zoom = (factor);
+  //$('#outer')[0].style.transform = "scale("+ factor +", " + factor + ")";    
+}
+
+window.visualViewport.addEventListener('resize', resize);

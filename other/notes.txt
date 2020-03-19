@@ -1,3 +1,50 @@
+// Inertial bounding box restriction for interact.js with zoom (is buggy when bouncing back - does not always snap to edges)
+function restrictBBox() {
+  bbox = $('#canvas')[0].getBoundingClientRect();
+  bbox.bottom = bbox.bottom * zF();
+  bbox.height = bbox.height * zF();
+  bbox.right = bbox.right * zF(); 
+  bbox.width = bbox.width * zF();
+  console.log('asdf')
+  return bbox
+}
+
+function enable_drag(){
+  getTarget()
+  fitInWindow()
+  if (!interact.isSet(target)){
+    interact(target).draggable({
+      inertia: true,
+      enabled: true,
+      modifiers: [
+          interact.modifiers.restrictRect({
+            restriction: restrictBBox(),
+            endOnly: true
+          })
+      ],
+      autoScroll: false,
+      onstart: function() {
+        currDrag = true;
+        interact(target).draggable({modifiers: interact.modifiers.restrictRect({restriction: restrictBBox(), endOnly:true})})
+      },
+      onmove: dragMoveListener,
+      onend: function (event) {
+        var x = event.target.getAttribute('data-x');
+        var y = event.target.getAttribute('data-y');
+        pycmd("NDFS-draggable_pos: " + x + ", " + y);
+        currX = x;
+        currY = y;
+        currDrag = false;
+      }
+    })
+  }
+  else {
+      interact(target).draggable({enabled: true})
+  }
+  $(target).css({'-webkit-box-shadow': '0 0 10px LightBlue'});
+  currLock = false;
+}
+
 /* Trying to get everything to load initially then have functions to just call things in instead of constructing the webview on every toggle
 $('body').append(`
 <style>

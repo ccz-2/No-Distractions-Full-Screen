@@ -40,7 +40,6 @@ def adjustHeightToFit_override(*args):
 def reviewer_wrapper(func):
 	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
 	draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
-	hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
 	card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
 	interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
 	iframe = open(os.path.join(os.path.dirname(__file__), 'iFrame.js')).read()
@@ -217,13 +216,12 @@ def toggle():
 			mw.reviewer.bottom.web.show()
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
 			mw.removeEventFilter(curIdleTimer)
-			showCursor()
+			curIdleTimer.showCursor()
 			setupWeb()
 			mw.show()
 		delay = config['rendering_delay']
 		def unpause():
 			mw.setUpdatesEnabled(True)
-			#mw.show()
 		QTimer.singleShot(delay, unpause)
 
 def updateBottom(*args):
@@ -263,7 +261,7 @@ def stateChange(new_state, old_state, *args):
 	elif ndfs_enabled:
 		ndfs_inReview = False
 		mw.reviewer.bottom.web.hide()
-		showCursor()
+		curIdleTimer.showCursor()
 
 		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
 			if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
@@ -311,40 +309,25 @@ def checkSoftwareRendering():
 
 
 ########## Idle Cursor Functions ##########
-def showCursor():
-	if QGuiApplication.overrideCursor() is None:
-		return
-	if QGuiApplication.overrideCursor().shape() == Qt.BlankCursor: #hidden cursor
-		QGuiApplication.restoreOverrideCursor()
-		QGuiApplication.restoreOverrideCursor() #need to call twice
-
-def hideCursor():
-	QGuiApplication.setOverrideCursor(Qt.BlankCursor)
-	print('hide')
-
 #Intercepts events to detect when focus is lost to show mouse cursor
 class cursor_eventFilter(QObject):
 	def __init__(self):
 		QObject.__init__(self)
 		self.timer = QTimer()
-		self.timer.timeout.connect(self.timeout)
+		self.timer.timeout.connect(self.hideCursor)
 		self.updateIdleTimer()
 
 	def eventFilter(self, obj, event):
 		if ndfs_inReview:
 			if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
-				showCursor()
+				self.showCursor()
 				self.timer.stop()
 			elif event.type() == QEvent.HoverMove:
-				showCursor()
+				self.showCursor()
 				self.countdown()
 			elif event.type() == QEvent.WindowActivate:
 				self.countdown()			
 		return False
-
-	def timeout(self):
-		self.timer.stop()
-		hideCursor()
 
 	def countdown(self):
 		self.timer.start(self.cursorIdleTimer)
@@ -352,6 +335,19 @@ class cursor_eventFilter(QObject):
 	def updateIdleTimer(self):
 		config = mw.addonManager.getConfig(__name__)
 		self.cursorIdleTimer = config['cursor_idle_timer']
+
+	def showCursor(self):
+		self.timer.stop()
+		if QGuiApplication.overrideCursor() is None:
+			return
+		if QGuiApplication.overrideCursor().shape() == Qt.BlankCursor: #hidden cursor
+			QGuiApplication.restoreOverrideCursor()
+			QGuiApplication.restoreOverrideCursor() #need to call twice	
+
+	def hideCursor(self):
+		self.timer.stop()
+		QGuiApplication.setOverrideCursor(Qt.BlankCursor)
+		print('hide')
 
 curIdleTimer = cursor_eventFilter()
 
