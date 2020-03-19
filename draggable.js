@@ -9,7 +9,7 @@ var currHover;
 var currDrag = false;
 
 function getTarget(){
-  target = document.querySelector('table:not([id="innertable"])');
+  target = document.querySelector('div.bottomWrapper');
 }
 
 //called when screen updates
@@ -80,7 +80,7 @@ function enable_drag(){
         enabled: true,
         modifiers: [
             interact.modifiers.restrictRect({
-              restriction: '#canvas',
+              restriction: 'div.bottomWrapper',
               endOnly: true
             }),
               interact.modifiers.snap({
@@ -122,7 +122,7 @@ function enable_drag(){
   else {
       interact(target).draggable({enabled: true})
   }
-  $(target).css('-webkit-box-shadow', '0 0 10px LightBlue');
+  $(target).css({'-webkit-box-shadow': '0 0 10px LightBlue'});
   currLock = false;
 }
 
@@ -143,7 +143,7 @@ function disable_drag(){
   fitInWindow();
   interact(target).unset();
   //interact(target).draggable({enabled: false}); //Will occasionally stop working if disabled - better to unset
-  $(target).css('-webkit-box-shadow', '');
+  $(target).css({'-webkit-box-shadow': '', 'border': ''});
   currLock = true;
 }
 
@@ -152,24 +152,17 @@ function activateHover(){
   getTarget();
   $(target).on({
       mouseenter: function(){
-        //console.log('hover_in')
-        pycmd('NDFS-hover_in');
         fade_in(target);
       },
       mouseleave: function(){
-        //console.log('hover_out')
-        pycmd('NDFS-hover_out');
         fade_out(target)
       },
       touchstart: function(){
-        //console.log('touchstart')
-        pycmd('NDFS-touchstart');
         fade_in(target);
       },
       touchend: function(){
         //console.log('touchend')
         fade_out(target)
-        setTimeout(function(){pycmd('NDFS-hover_out');}, 50); //undos automatic mouseenter at end of touchend
       }
   });
 }

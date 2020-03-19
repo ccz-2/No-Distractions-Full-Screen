@@ -10,7 +10,6 @@ function getHeight() {
 $("button[onclick*='edit'],button[onclick*='more']").remove()
 
 $('body').append(`
-<div id="bottomHover"></div>
 <style>
 table:not([id="innertable"]) {
   opacity:` + op + `;
@@ -42,15 +41,6 @@ table#innertable {
 table {
   border-collapse: collapse;
   empty-cells: hide;
-}
-
-#bottomHover {
-    position: absolute;
-    width:100%;
-    height: 15px;
-    bottom: 0px;
-    left: 0px;
-    //background-color: red;
 }
 
 .fade-in {

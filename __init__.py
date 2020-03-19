@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.2.8 3/16/2020
+# v3.3 3/18/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -38,7 +38,7 @@ def adjustHeightToFit_override(*args):
 
 #CSS/JS injection
 def reviewer_wrapper(func):
-	NDFullScreen = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
+	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
 	draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
 	hide_cursor = open(os.path.join(os.path.dirname(__file__), 'hide_cursor.js')).read()
 	card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
@@ -51,9 +51,9 @@ def reviewer_wrapper(func):
 		cursorIdleTimer = config['cursor_idle_timer']
 		color = config['answer_button_border_color']
 		func()
-		#mw.reviewer.bottom.web.eval(interact)
-		#mw.reviewer.bottom.web.eval(draggable)
-		mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {NDFullScreen}")
+		mw.reviewer.web.eval(interact)
+		mw.reviewer.web.eval(draggable)
+		mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {bottom_bar}")
 		mw.reviewer.web.eval(card_padding)
 		mw.reviewer.web.eval(iframe) #construct iframe for bottom
 	return _initReviewerWeb
@@ -216,13 +216,8 @@ def toggle():
 			mw.toolbar.web.show()
 			mw.reviewer.bottom.web.show()
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
-			
-			QGuiApplication.restoreOverrideCursor()
-			QGuiApplication.restoreOverrideCursor() #need to call twice
-			mw.reviewer.bottom.web.setAttribute(Qt.WA_TransparentForMouseEvents, False)
-
 			mw.removeEventFilter(curIdleTimer)
-
+			showCursor()
 			setupWeb()
 			mw.show()
 		delay = config['rendering_delay']
@@ -242,7 +237,8 @@ def updateBottom(*args):
 		#setLock()
 		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
 		if isFullscreen:
-		   mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
+		   print('FIXME')
+		   #mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
 		mw.reviewer.bottom.web.evalWithCallback("""
 			(function(){
 				return document.documentElement.outerHTML
@@ -338,6 +334,7 @@ class cursor_eventFilter(QObject):
 		if ndfs_inReview:
 			if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
 				showCursor()
+				self.timer.stop()
 			elif event.type() == QEvent.HoverMove:
 				showCursor()
 				self.countdown()
@@ -382,9 +379,9 @@ def toggleBar():
 def setLock():
 	if ndfs_inReview:
 		if lockDrag.isChecked():
-			mw.reviewer.bottom.web.eval("disable_drag();")
+			mw.reviewer.web.eval("disable_drag();")
 		else:
-			mw.reviewer.bottom.web.eval("enable_drag();")
+			mw.reviewer.web.eval("enable_drag();")
 
 def toggle_full_screen():
 	config = mw.addonManager.getConfig(__name__)
