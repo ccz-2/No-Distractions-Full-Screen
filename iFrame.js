@@ -4,14 +4,12 @@ var newheight;
 var newwidth;
 
 $('body').append(`
-<div id='canvas'>
   <div id='outer'>
     <div class="bottomWrapper">
       <iframe id='bottomiFrame' frameborder="0" scrolling="no">
       </iframe>
     </div>
   </div>
-</div>
 <style>
 
 #outer{
@@ -28,6 +26,7 @@ $('body').append(`
   border-radius: 5px;
   margin: 0px;
   pointer-events: auto;
+  touch-action: none;
 }
 
 #canvas{
@@ -37,8 +36,8 @@ $('body').append(`
   height: 100%;
   width: 100%;
   margin: 0px;
-  background-color: teal;
   pointer-events: none;
+  background-color: teal;
 }
 
 #bottomiFrame {

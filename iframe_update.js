@@ -9,7 +9,7 @@ function resize (){
     document.body.style.zoom = ` + defaultZoom + `/window.devicePixelRatio;
 }
 window.visualViewport.addEventListener('resize', resize);
-
+window.addEventListener('DOMContentLoaded', resize);
 </script>
 `;
 

@@ -2,36 +2,12 @@
 //Uses interact.js
 
 var target;
-var currX;
-var currY;
 var currLock;
-var currHover;
 var currDrag = false;
 
 function getTarget(){
   target = document.querySelector('div.bottomWrapper');
 }
-
-/*/called when screen updates
-var timeout = false;
-$("body").on('DOMSubtreeModified', 'td#middle', function() {
-  getTarget();
-  if(target != null && !timeout){
-    timeout = true;
-    updatePos(currX, currY);
-    activateHover();
-    if (currLock){
-      disable_drag();
-    }
-    else {
-      enable_drag();    
-    }
-    if (currHover){
-      fade_in(target);
-    }
-    setTimeout(function(){ timeout = false; }, 5); //prevents overzealous updates, since selector grabs multiple events per card change
-  }
-});*/
 
 //moves target to within window boundaries
 function fitInWindow() {
@@ -40,27 +16,30 @@ function fitInWindow() {
     var rect = target.getBoundingClientRect();
     var x = parseFloat(target.getAttribute('data-x'));
     var y = parseFloat(target.getAttribute('data-y'));
-    windowW = $("html").prop("clientWidth") * zF()
-    windowH = $("html").prop("clientHeight") * zF()
-    if (rect.x < 0){
-      updatePos(x - rect.x, y)
+    windowW = ($("html").prop("clientWidth") * zF()) + 1
+    windowH = ($("html").prop("clientHeight") * zF()) + 1
+    if (rect.left < 0){
+      updatePos(x - rect.left, y);
+      x = parseFloat(target.getAttribute('data-x'));
     }
-    if (rect.right > windowW){
-      dx = rect.right - windowW
-      updatePos(x - dx , y)
+    if (rect.right > windowW) {
+      dx = rect.right - windowW;
+      updatePos(x - dx , y);
+      x = parseFloat(target.getAttribute('data-x'));
     }
-    if (rect.top < 0){
-      updatePos(x, y - rect.top)
+    if (rect.top < 0) {
+      updatePos(x, y - rect.top);
+      y = parseFloat(target.getAttribute('data-y'));
     }
-    if (rect.bottom > windowH){
-      dy = rect.bottom - windowH
-      updatePos(x, y - dy )
+    if (rect.bottom > windowH) {
+      dy = rect.bottom - windowH;
+      updatePos(x, y - dy );
     }
   }
 }
 
 $(window).resize(function() {
- fitInWindow();
+  fitInWindow();
 });
 
 function updatePos(x, y){
@@ -69,18 +48,21 @@ function updatePos(x, y){
   target.style.transform = 'translate(' + (parseFloat(x) || 0) + 'px, ' + (parseFloat(y) || 0) + 'px)';
   target.setAttribute("data-x", x);
   target.setAttribute("data-y", y);
-  currX = x;
-  currY = y;
 }
 
-function restrictBBox() {
-  bbox = $('#canvas')[0].getBoundingClientRect();
-  bbox.bottom = bbox.bottom * zF();
-  bbox.height = bbox.height * zF();
-  bbox.right = bbox.right * zF(); 
-  bbox.width = bbox.width * zF();
-  console.log('asdf')
-  return bbox
+function getOrigPos() { //recursively calculates target original position (before transform)
+  var el = target, offsetLeft = 0, offsetTop  = 0;
+  do{
+      offsetLeft += el.offsetLeft;
+      offsetTop  += el.offsetTop;
+      el = el.offsetParent;
+  } while( el );
+  console.log(offsetLeft + ":" + offsetTop + ":" + 50/zF())
+  return {
+    x: offsetLeft, //snap target
+    y: offsetTop,
+    range: 50/zF(), //snap 'stickiness'
+  }
 }
 
 function enable_drag(){
@@ -88,46 +70,23 @@ function enable_drag(){
   fitInWindow()
   if (!interact.isSet(target)){
     interact(target).draggable({
-      inertia: true,
+      inertia: false,
       enabled: true,
-      modifiers: [
-          interact.modifiers.restrictRect({
-            restriction: restrictBBox(),
-            endOnly: true
-          })/*,
-            interact.modifiers.snap({
-              targets: [
-            function () { //recursively calculates target original position (before transform)
-            var el = target, offsetLeft = 0, offsetTop  = 0;
-            do{
-                offsetLeft += el.offsetLeft;
-                offsetTop  += el.offsetTop;
-                el = el.offsetParent;
-            } while( el );
-              return {
-                x: offsetLeft * zF(), //snap target
-                y: offsetTop * zF(),
-                range: 50, //snap 'stickiness'
-              }
-            }
-              ],
-            relativePoints: [
-            { x: 0, y: 0} //snap to top-left
-          ]
-            })*/
-      ],
       autoScroll: false,
+      modifiers: [
+        interact.modifiers.snap({
+          targets: [getOrigPos()],
+          relativePoints: [ { x: 0, y: 0} ] //snap to top-left
+          })],
       onstart: function() {
         currDrag = true;
-        interact(target).draggable({modifiers: interact.modifiers.restrictRect({restriction: restrictBBox(), endOnly:true})})
       },
       onmove: dragMoveListener,
       onend: function (event) {
+        fitInWindow();
         var x = event.target.getAttribute('data-x');
         var y = event.target.getAttribute('data-y');
         pycmd("NDFS-draggable_pos: " + x + ", " + y);
-        currX = x;
-        currY = y;
         currDrag = false;
       }
     })
@@ -208,7 +167,6 @@ function fade_in(target){
     $(target).on("animationend", function(){
       $(this).removeClass('fade-in');
       });
-    currHover = true;
   }
 }
 
@@ -220,6 +178,5 @@ function fade_out(target){
     $(target).on("animationend", function(){
       $(this).removeClass('fade-in');
       });
-    currHover = false;
   }
 }
