@@ -50,6 +50,7 @@ def reviewer_wrapper(func):
 		cursorIdleTimer = config['cursor_idle_timer']
 		color = config['answer_button_border_color']
 		func()
+		mw.reviewer.web.eval(f'window.defaultScale = {mw.screen().devicePixelRatio()}') #sets scale factor for javascript functions
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
 		mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {bottom_bar}")
@@ -119,6 +120,7 @@ def toggle():
 		global fs_window
 		global isFullscreen
 		global fs_compat_mode
+		global DPIScaler
 		config = mw.addonManager.getConfig(__name__)
 
 		if not ndfs_enabled:
@@ -167,6 +169,12 @@ def toggle():
 
 			mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
 			setupWeb()
+
+			def scaleChange():
+				if ndfs_inReview:
+					print('asdf')
+					mw.reviewer.web.eval(f'changeScale({mw.screen().devicePixelRatio()})')
+			DPIScaler = mw.windowHandle().screenChanged.connect(scaleChange)
 
 			#Builds new widget for window
 			fs_window = QWidget()
@@ -218,6 +226,7 @@ def toggle():
 			mw.removeEventFilter(curIdleTimer)
 			curIdleTimer.showCursor()
 			setupWeb()
+			mw.windowHandle().screenChanged.disconnect(DPIScaler)
 			mw.show()
 		delay = config['rendering_delay']
 		def unpause():
@@ -250,7 +259,7 @@ def stateChange(new_state, old_state, *args):
 	global last_state
 	config = mw.addonManager.getConfig(__name__)
 
-	print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
+	#print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
 
 	if mw.state == 'review': #triggers on NDFS_review and review states
 		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review' and last_state != mw.state: #filters out self generated NDFS_review state changes
@@ -347,7 +356,6 @@ class cursor_eventFilter(QObject):
 	def hideCursor(self):
 		self.timer.stop()
 		QGuiApplication.setOverrideCursor(Qt.BlankCursor)
-		print('hide')
 
 curIdleTimer = cursor_eventFilter()
 

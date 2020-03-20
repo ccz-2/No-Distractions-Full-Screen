@@ -100,7 +100,7 @@ function enable_drag(){
 
 // Zoom factor
 function zF(){
-  return((window.devicePixelRatio)/2)
+  return((window.devicePixelRatio)/window.defaultScale)
 }
 
 function dragMoveListener (event) {

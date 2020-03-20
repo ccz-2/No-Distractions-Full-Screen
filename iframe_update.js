@@ -1,13 +1,19 @@
 //var url = '';
-defaultZoom = 2;
 url = decodeURIComponent(url);
 
 scripts = `<script>
 function pycmd(a){parent.pycmd(a)};
 
-function resize (){
-    document.body.style.zoom = ` + defaultZoom + `/window.devicePixelRatio;
+var scale = ` + window.defaultScale + `;
+function resize(){
+    document.body.style.zoom = scale/window.devicePixelRatio;
 }
+
+function changeScale(x){ //called from parent
+	scale = x;
+	resize();
+}
+
 window.visualViewport.addEventListener('resize', resize);
 window.addEventListener('DOMContentLoaded', resize);
 </script>
@@ -17,4 +23,3 @@ window.addEventListener('DOMContentLoaded', resize);
 $(document).ready(function(){
     $("#bottomiFrame").attr("srcdoc", url + scripts);
 });
-

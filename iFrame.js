@@ -63,9 +63,15 @@ $('#bottomiFrame')[0].addEventListener( "load", function(e){
 } );
 
 function resize(){
-  var factor = (2/(window.devicePixelRatio));
+  var factor = (window.defaultScale/(window.devicePixelRatio));
   $('#outer')[0].style.zoom = (factor);
   //$('#outer')[0].style.transform = "scale("+ factor +", " + factor + ")";    
 }
 
 window.visualViewport.addEventListener('resize', resize);
+
+function changeScale(x) { //Adjusts to new scale, calls iFrame function to update scale
+  window.defaultScale = x;
+  $('#bottomiFrame')[0].contentWindow.changeScale(x);
+  resize();
+}
