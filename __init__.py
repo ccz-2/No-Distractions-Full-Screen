@@ -126,7 +126,6 @@ def toggle():
 		if not ndfs_enabled:
 			ndfs_enabled = True
 			window_flags_set = False
-			checkSoftwareRendering()
 			og_adjustHeightToFit = mw.reviewer.bottom.web.adjustHeightToFit
 			og_window_state = mw.windowState()
 			og_window_flags = mw.windowFlags() #stores initial flags
@@ -283,36 +282,6 @@ def padCards():
 	def padCardsCallback(height):
 		mw.reviewer.web.eval(f"calcPadding({height});")
 	mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
-
-def checkSoftwareRendering():
-	try:
-		software1 = (os.environ["QT_XCB_FORCE_SOFTWARE_OPENGL"] == '1')
-	except:
-		software1 = False
-	try:
-		software2 = (os.environ["QT_OPENGL"] =='software')
-	except:
-		software2 = False
-	try:
-		software3 = os.environ.get("ANKI_SOFTWAREOPENGL")
-	except:
-		software3 = False
-
-	if software1 or software2 or software3:
-		config = mw.addonManager.getConfig(__name__)
-		if config['do_not_show_warnings']:
-			return
-		msgBox = QMessageBox(QMessageBox.Warning, 'No Distractions Full Screen', 'Software Rendering detected!\nThis may cause artifacts with the No Distractions Full Screen addon and is not recommended.\nPlease switch to hardware acceleration via Anki Preferences if possible.');
-		msgBox.setInformativeText("(If screen is frozen, try resizing the window as a workaround)");
-		msgBox.setStandardButtons(QMessageBox.Ok);
-		msgBox.setDefaultButton(QMessageBox.Ok);
-		doNotShowAgain = QCheckBox('Do not show again')
-		msgBox.setCheckBox(doNotShowAgain)
-		msgBox.exec();
-		if doNotShowAgain.isChecked():
-			config['do_not_show_warnings'] = True
-			mw.addonManager.writeConfig(__name__, config)
-
 
 
 
