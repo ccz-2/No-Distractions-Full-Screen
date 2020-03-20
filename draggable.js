@@ -46,6 +46,7 @@ function updatePos(x, y){
   getTarget()
   //css transform works in real coordinates (unscaled)
   target.style.transform = 'translate(' + (parseFloat(x) || 0) + 'px, ' + (parseFloat(y) || 0) + 'px)';
+  //console.log('translate(' + (parseFloat(x) || 0) + 'px, ' + (parseFloat(y) || 0) + 'px)');
   target.setAttribute("data-x", x);
   target.setAttribute("data-y", y);
 }
@@ -57,32 +58,43 @@ function getOrigPos() { //recursively calculates target original position (befor
       offsetTop  += el.offsetTop;
       el = el.offsetParent;
   } while( el );
-  console.log(offsetLeft + ":" + offsetTop + ":" + 50/zF())
+  console.log("snap:" + offsetLeft + ":" + offsetTop)
   return {
     x: offsetLeft, //snap target
     y: offsetTop,
-    range: 50/zF(), //snap 'stickiness'
+    range: 50, //snap 'stickiness'
   }
+}
+
+function setSnap() {
+  interact(target).draggable({modifiers: [
+    interact.modifiers.snap({
+      targets: [getOrigPos()],
+      relativePoints: [ { x: 0, y: 0} ] //snap to top-left
+      })
+  ]})
 }
 
 function enable_drag(){
   getTarget()
-  fitInWindow()
   if (!interact.isSet(target)){
     interact(target).draggable({
       inertia: false,
       enabled: true,
       autoScroll: false,
-      modifiers: [
-        interact.modifiers.snap({
-          targets: [getOrigPos()],
-          relativePoints: [ { x: 0, y: 0} ] //snap to top-left
-          })],
+      //modifiers: [
+      //  interact.modifiers.snap({
+      //    targets: [getOrigPos()],
+      //    relativePoints: [ { x: 0, y: 0} ] //snap to top-left
+      //    })],
       onstart: function() {
         currDrag = true;
+      //setSnap()
       },
       onmove: dragMoveListener,
       onend: function (event) {
+        var temp = target.getBoundingClientRect();
+        console.log( "pos:" + temp.x + ", " + temp.y);
         fitInWindow();
         var x = event.target.getAttribute('data-x');
         var y = event.target.getAttribute('data-y');
@@ -110,9 +122,7 @@ function dragMoveListener (event) {
   var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy * zF();
 
   // translate the element
-  target.style.webkitTransform =
-    target.style.transform =
-      'translate(' + x + 'px, ' + y + 'px)'
+  target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
 
   // update the posiion attributes
   target.setAttribute('data-x', x)
@@ -121,7 +131,6 @@ function dragMoveListener (event) {
 
 function disable_drag(){
   getTarget();
-  fitInWindow();
   interact(target).unset();
   //interact(target).draggable({enabled: false}); //Will occasionally stop working if disabled - better to unset
   $(target).css({'-webkit-box-shadow': '', 'border': ''});

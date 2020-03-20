@@ -235,12 +235,12 @@ def toggle():
 def updateBottom(*args):
 	if ndfs_inReview:
 		config = mw.addonManager.getConfig(__name__)
-		#posX = config['answer_bar_posX']
-		#posY = config['answer_bar_posY']
-		#mw.reviewer.bottom.web.eval(f"updatePos({posX}, {posY});")
-		#mw.reviewer.bottom.web.eval("activateHover();")
+		posX = config['answer_bar_posX']
+		posY = config['answer_bar_posY']
+		mw.reviewer.web.eval(f"updatePos({posX}, {posY});")
+		mw.reviewer.web.eval("activateHover();")
 		padCards()
-		#setLock()
+		setLock()
 		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
 		if isFullscreen:
 		   print('FIXME')
