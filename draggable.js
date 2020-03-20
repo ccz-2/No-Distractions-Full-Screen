@@ -1,4 +1,4 @@
-//No Distractions Full Screen v3.2
+//No Distractions Full Screen v4.0
 //Uses interact.js
 
 var target;
@@ -51,6 +51,8 @@ function updatePos(x, y){
   target.setAttribute("data-y", y);
 }
 
+/*
+// Is buggy - if target is released anywhere but snap location, snap location is randomly changed (?)
 function getOrigPos() { //recursively calculates target original position (before transform)
   var el = target, offsetLeft = 0, offsetTop  = 0;
   do{
@@ -73,7 +75,7 @@ function setSnap() {
       relativePoints: [ { x: 0, y: 0} ] //snap to top-left
       })
   ]})
-}
+}*/
 
 function enable_drag(){
   getTarget()
@@ -82,11 +84,6 @@ function enable_drag(){
       inertia: false,
       enabled: true,
       autoScroll: false,
-      //modifiers: [
-      //  interact.modifiers.snap({
-      //    targets: [getOrigPos()],
-      //    relativePoints: [ { x: 0, y: 0} ] //snap to top-left
-      //    })],
       onstart: function() {
         currDrag = true;
       //setSnap()
@@ -135,57 +132,4 @@ function disable_drag(){
   //interact(target).draggable({enabled: false}); //Will occasionally stop working if disabled - better to unset
   $(target).css({'-webkit-box-shadow': '', 'border': ''});
   currLock = true;
-}
-
-var mousedown = false;
-function activateHover(){
-  getTarget();
-  $(target).on({
-      mouseenter: function(){
-        fade_in(target);
-      },
-      mouseleave: function(){
-        fade_out(target)
-      },
-      touchstart: function(){
-        fade_in(target);
-      },
-      touchend: function(){
-        fade_out(target)
-      }
-  });
-}
-
-function enable_bottomHover(){
-  getTarget();
-  $("#bottomHover").on({
-    mouseenter: function(){
-      fade_in(target);
-    },
-    mouseleave: function(){
-      fade_out(target);
-    }
-  });
-}
-
-function fade_in(target){
-  if (!currDrag) { //prevents changes when dragging
-    $(target).css('animation-direction','normal');
-    $(target).addClass('fade-in');
-    $(target).css('opacity','1');  
-    $(target).on("animationend", function(){
-      $(this).removeClass('fade-in');
-      });
-  }
-}
-
-function fade_out(target){
-  if (!currDrag) { //prevents changes when dragging
-    $(target).css('animation-direction','reverse');
-    $(target).addClass('fade-in');
-    $(target).css('opacity','');  
-    $(target).on("animationend", function(){
-      $(this).removeClass('fade-in');
-      });
-  }
 }

@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v3.3 3/18/2020
+# v4.0 3/18/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -53,9 +53,9 @@ def reviewer_wrapper(func):
 		mw.reviewer.web.eval(f'window.defaultScale = {mw.screen().devicePixelRatio()}') #sets scale factor for javascript functions
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
-		mw.reviewer.bottom.web.eval(f"var op = {op}; var color = '{color}'; {bottom_bar}")
+		mw.reviewer.bottom.web.eval(f"var color = '{color}'; {bottom_bar}")
 		mw.reviewer.web.eval(card_padding)
-		mw.reviewer.web.eval(iframe) #construct iframe for bottom
+		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #construct iframe for bottom
 	return _initReviewerWeb
 
 def updateiFrame(html):
@@ -339,8 +339,10 @@ def resetPos():
 def on_context_menu_event(web, menu):
 	if ndfs_inReview:
 		menu.addAction(lockDrag)
+		menu.addAction(reset_bar)
 	else:
 		menu.removeAction(lockDrag)
+		menu.removeAction(reset_bar)
 
 #Qt inverts selection before triggering
 def toggleBar():
