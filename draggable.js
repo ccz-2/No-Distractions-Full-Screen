@@ -38,10 +38,6 @@ function fitInWindow() {
   }
 }
 
-$(window).resize(function() {
-  fitInWindow();
-});
-
 function updatePos(x, y){
   getTarget()
   //css transform works in real coordinates (unscaled)
@@ -49,6 +45,17 @@ function updatePos(x, y){
   //console.log('translate(' + (parseFloat(x) || 0) + 'px, ' + (parseFloat(y) || 0) + 'px)');
   target.setAttribute("data-x", x);
   target.setAttribute("data-y", y);
+  pycmd("NDFS-draggable_pos: " + x + ", " + y);
+}
+
+$(window).resize(function() {
+  console.log('RESIZE')
+  fitInWindow();
+});
+
+//Used when toggling off, since screen is redrawn before this javascript is unloaded
+function disableResize(){
+  $(window).off("resize");
 }
 
 /*
@@ -103,8 +110,9 @@ function enable_drag(){
   else {
       interact(target).draggable({enabled: true})
   }
-  $(target).css({'-webkit-box-shadow': '0 0 10px LightBlue'});
+  $(target).css({'-webkit-box-shadow': '0 0 10px LightBlue', 'background': 'linear-gradient(180deg, rgba(188,236,255,0.3) 0%, rgba(255,255,255,0) 25%)'}); 
   currLock = false;
+  fitInWindow()
 }
 
 // Zoom factor
@@ -130,6 +138,7 @@ function disable_drag(){
   getTarget();
   interact(target).unset();
   //interact(target).draggable({enabled: false}); //Will occasionally stop working if disabled - better to unset
-  $(target).css({'-webkit-box-shadow': '', 'border': ''});
+  $(target).css({'-webkit-box-shadow': '', 'border': '', 'background':''});
   currLock = true;
+  fitInWindow()
 }

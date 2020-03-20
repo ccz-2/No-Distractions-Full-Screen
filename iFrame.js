@@ -1,4 +1,4 @@
-// NDFS v4.0
+//No Distractions Full Screen v4.0
 //var op = 0.5; //Defined in python
 var newheight;
 var newwidth;
@@ -10,7 +10,18 @@ $('body').append(`
       </iframe>
     </div>
   </div>
+
+<div id='bottomHover'></div>
+
 <style>
+#bottomHover {
+    position: fixed;
+    width:100%;
+    height: 15px;
+    bottom: 0px;
+    left: 0px;
+    //background-color: red;
+}
 
 #outer{
   bottom: 0;
@@ -26,7 +37,7 @@ $('body').append(`
   border-radius: 5px;
   margin: 0px;
   pointer-events: auto;
-  touch-action: none;
+  //touch-action: none;
   opacity: ` + op + `
   user-select: none;
 }
@@ -70,16 +81,17 @@ $('body').append(`
 `);
 
 $('#bottomiFrame')[0].addEventListener( "load", function(e){
-    var iframe = e.target
-    var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
-    newheight = target.scrollHeight;
-    newwidth = target.scrollWidth;
-    iframe.height= newheight + "px";
-    iframe.width= newwidth + "px";
-    $("div.bottomWrapper").outerHeight(newheight + 20);
-    $("div.bottomWrapper").outerWidth(newwidth);
-    resize()
-} );
+  var iframe = e.target
+  var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
+  newheight = target.scrollHeight;
+  newwidth = target.scrollWidth;
+  iframe.height= newheight + "px";
+  iframe.width= newwidth + "px";
+  $("div.bottomWrapper").outerHeight(newheight + 20);
+  $("div.bottomWrapper").outerWidth(newwidth);
+  resize();
+  fitInWindow();
+});
 
 function resize(){
   var factor = (window.defaultScale/(window.devicePixelRatio));
@@ -97,6 +109,7 @@ function changeScale(x) { //Adjusts to new scale, calls iFrame function to updat
 var mousedown = false;
 function activateHover(){
   target = document.querySelector('div.bottomWrapper');
+  $(target).css('opacity', op);  
   $(target).on({
       mouseenter: function(){
         fade_in(target);

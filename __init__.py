@@ -30,6 +30,7 @@ from anki.hooks import *
 from anki.utils import isMac, isWin
 from aqt.addons import *
 import urllib
+from anki import version as anki_version
 
 ########## Wrappers ##########
 #monkey patched function to disable height adjustment
@@ -48,9 +49,13 @@ def reviewer_wrapper(func):
 		config = mw.addonManager.getConfig(__name__)
 		op = config['answer_button_opacity']
 		cursorIdleTimer = config['cursor_idle_timer']
-		color = config['answer_button_border_color']
+		if isNightMode:
+			color = config['answer_button_border_color_night']
+		else:
+			color = config['answer_button_border_color_normal']
+
 		func()
-		mw.reviewer.web.eval(f'window.defaultScale = {mw.screen().devicePixelRatio()}') #sets scale factor for javascript functions
+		mw.reviewer.web.eval(f'window.defaultScale = {getScale()}') #sets scale factor for javascript functions
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
 		mw.reviewer.bottom.web.eval(f"var color = '{color}'; {bottom_bar}")
@@ -58,12 +63,25 @@ def reviewer_wrapper(func):
 		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #construct iframe for bottom
 	return _initReviewerWeb
 
-def updateiFrame(html):
-	global ndfs_inReview
-	if ndfs_enabled:
-		update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
-		html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
-		mw.reviewer.web.eval(f"var url = `{html}`; {update}")
+def getScale():
+	try: 
+		scale = mw.screen().devicePixelRatio()
+	except:
+		scale = mw.windowHandle().devicePixelRatio() #support for legacy clients (e.g.)
+	return scale
+
+isNightMode = False
+def checkNightMode(on = None):
+	global isNightMode
+	old_anki = tuple(int(i) for i in anki_version.split(".")) < (2, 1, 20)
+	if old_anki:
+		if on is not None:
+			isNightMode = on
+	else:
+		from aqt.theme import theme_manager
+		if theme_manager.night_mode:
+			isNightMode = True
+	print(isNightMode)
 
 def linkHandler_wrapper(self, url):
 	global posX
@@ -92,7 +110,9 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 		try:
 			reviewState = mw.reviewer.state
 			mw.reviewer._initWeb()
+			print("_initweb")
 			mw.reviewer._showQuestion()
+			print("showQ")
 			if reviewState == 'answer':
 				try:
 					mw.reviewer._showAnswer() #breaks on fill in the blank cards
@@ -122,6 +142,7 @@ def toggle():
 		global fs_compat_mode
 		global DPIScaler
 		config = mw.addonManager.getConfig(__name__)
+		checkNightMode()
 
 		if not ndfs_enabled:
 			ndfs_enabled = True
@@ -140,8 +161,6 @@ def toggle():
 				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
 					og_geometry = mw.normalGeometry()
 					mw.showNormal() #user reported bug where taskbar would show if maximized (prob not necessary, since changing window geometry automatically changes state to normal)
-					if config['MS_Windows_fullscreen_force_on_top']: #user reported bug where taskbar would not disappear unless on top
-						mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
 					mw.setWindowFlags(mw.windowFlags() | Qt.FramelessWindowHint)
 					fs_compat_mode = True
 					window_flags_set = True
@@ -150,8 +169,7 @@ def toggle():
 						screenSize = mw.screen().geometry()
 					except: #uses deprecated functions for legacy client support e.g. v2.1.15
 						windowSize = mw.frameGeometry()
-						offset = QPoint(10,10) #if maximized, pos returns coords that are off
-						screenNum = mw.app.desktop().screenNumber(mw.pos() + offset)
+						screenNum = mw.app.desktop().screenNumber(mw)
 						screenSize = mw.app.desktop().screenGeometry(screenNum)
 					#Qt bug where if exactly screen size, will prevent overlays (context menus, alerts).
 					#Screen size is affected by Windows scaling and Anki interace scaling, and so to make sure larger requires at least 1px border around screen.
@@ -165,15 +183,6 @@ def toggle():
 				mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
 				window_flags_set = True
 				mw.show()
-
-			mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
-			setupWeb()
-
-			def scaleChange():
-				if ndfs_inReview:
-					print('asdf')
-					mw.reviewer.web.eval(f'changeScale({mw.screen().devicePixelRatio()})')
-			DPIScaler = mw.windowHandle().screenChanged.connect(scaleChange)
 
 			#Builds new widget for window
 			fs_window = QWidget()
@@ -193,14 +202,24 @@ def toggle():
 			if config['cursor_idle_timer'] >= 0:
 				mw.installEventFilter(curIdleTimer)
 				curIdleTimer.countdown()
-			if config['ignore_scroll_on_answer_buttons']:
-				print('FIXME')
+
+			mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
+			setupWeb() #invokes statechange hook
+
+			def scaleChange():
+				if ndfs_inReview:
+					mw.reviewer.web.eval(f'changeScale({getScale()})')
+			DPIScaler = mw.windowHandle().screenChanged.connect(scaleChange)
 
 		else:
 			ndfs_enabled = False
 			ndfs_inReview = False
 			mw.setUpdatesEnabled(False) #pauses updates to screen
-			
+			mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
+			mw.reviewer.bottom.web.adjustHeightToFit = og_adjustHeightToFit
+			mw.reviewer.web.eval('disableResize();')
+			setupWeb()
+
 			if isFullscreen and fs_compat_mode:
 				mw.hide() #prevents ghost window from showing when resizing
 				mw.setGeometry(og_geometry)
@@ -209,12 +228,9 @@ def toggle():
 			if window_flags_set: #helps prevent annoying flickering when toggling
 				mw.setWindowFlags(og_window_flags) #reassigns initial flags
 				window_flags_set = False
-				
+			mw.setWindowState(og_window_state)
 			isFullscreen = False
 
-			mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
-			mw.setWindowState(og_window_state)
-			mw.reviewer.bottom.web.adjustHeightToFit = og_adjustHeightToFit
 			mw.mainLayout.removeWidget(fs_window)
 			mw.mainLayout.addWidget(mw.toolbar.web)
 			mw.mainLayout.addWidget(mw.reviewer.web)
@@ -224,7 +240,7 @@ def toggle():
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
 			mw.removeEventFilter(curIdleTimer)
 			curIdleTimer.showCursor()
-			setupWeb()
+
 			mw.windowHandle().screenChanged.disconnect(DPIScaler)
 			mw.show()
 		delay = config['rendering_delay']
@@ -234,6 +250,20 @@ def toggle():
 
 def updateBottom(*args):
 	if ndfs_inReview:
+		mw.reviewer.bottom.web.evalWithCallback("""
+			(function(){
+				return document.documentElement.outerHTML
+			}())
+			""", updateiFrame)
+		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
+		if isFullscreen:
+		   mw.reviewer.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
+
+def updateiFrame(html):
+	if ndfs_inReview:
+		update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
+		html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
+		mw.reviewer.web.eval(f"var url = `{html}`; {update}")
 		config = mw.addonManager.getConfig(__name__)
 		posX = config['answer_bar_posX']
 		posY = config['answer_bar_posY']
@@ -241,15 +271,6 @@ def updateBottom(*args):
 		mw.reviewer.web.eval("activateHover();")
 		padCards()
 		setLock()
-		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
-		if isFullscreen:
-		   print('FIXME')
-		   #mw.reviewer.bottom.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
-		mw.reviewer.bottom.web.evalWithCallback("""
-			(function(){
-				return document.documentElement.outerHTML
-			}())
-			""", updateiFrame)
 
 last_state = mw.state
 def stateChange(new_state, old_state, *args):
@@ -393,7 +414,6 @@ def recheckBoxes(*args):
 	lock_shortcut = config['lock_answer_bar_hotkey']
 	dragLocked = config['answer_bar_locked']
 	auto_tog = config['auto_toggle_when_reviewing']
-	ms_fs_on_top = config['MS_Windows_fullscreen_force_on_top']
 
 	curIdleTimer.updateIdleTimer()
 
@@ -422,9 +442,6 @@ def recheckBoxes(*args):
 
 	if auto_tog:
 		auto_toggle.setChecked(True)
-
-	if ms_fs_on_top:
-		config['MS_Windows_fullscreen_compatibility_mode'] = True
 
 	mw.addonManager.writeConfig(__name__, config)
 	lockDrag.setShortcut(lock_shortcut)
@@ -469,6 +486,7 @@ addHook("showQuestion", updateBottom) #only needed so that bottom bar updates wh
 addHook("showAnswer", updateBottom)
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
 mw.addonManager.setConfigUpdatedAction(__name__, recheckBoxes)
+addHook("night_mode_state_changed", checkNightMode) #Night Mode addon (1496166067) support for legacy Anki versions
 
 
 
