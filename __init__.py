@@ -104,8 +104,13 @@ Reviewer._linkHandler = linkHandler_wrapper
 
 
 ########## PyQt manipulation ##########
+
 def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since also cycles to next card, since Reviewer.show() calls nextCard()
+	global iframeHTML
+	iframeHTML = ""
 	if mw.state == 'review':
+		mw.reviewer.bottom.web._setHtml = setHtml_wrapper(mw.reviewer.bottom.web._setHtml)
+		mw.reviewer.bottom.web._evalWithCallback = runJS_wrapper(mw.reviewer.bottom.web._evalWithCallback)
 		try:
 			reviewState = mw.reviewer.state
 			mw.reviewer._initWeb()
@@ -120,6 +125,25 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 			mw.reset() #failsafe
 	else:
 		mw.reset()
+
+iframeHTML = ""
+def addHTML(html):
+	global iframeHTML
+	iframeHTML += f"{html}\n"
+
+def setHtml_wrapper(func):
+	def _setHtml(html: str):
+		addHTML(html)
+		func(html)
+	return _setHtml
+
+def runJS_wrapper(func):
+	def _evalWithCallback(js: str, cb: Callable[[Any], Any]):
+		addHTML(f'<script>{js}</script>')
+		func(js, cb)
+	return _evalWithCallback
+
+
 
 ndfs_enabled = False
 ndfs_inReview = False
@@ -247,11 +271,7 @@ def toggle():
 
 def updateBottom(*args):
 	if ndfs_inReview:
-		mw.reviewer.bottom.web.evalWithCallback("""
-			(function(){
-				return document.documentElement.outerHTML
-			}())
-			""", updateiFrame)
+		updateiFrame(iframeHTML)
 		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
 		if isFullscreen:
 		   mw.reviewer.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
