@@ -1,4 +1,4 @@
-## NDFS v4.0 Config:
+## NDFS v4.0 BETA Config:
 
 #### <span style="color:mediumaquamarine">If you are updating from an old version,</span> many values may be obsolete. Please note your current config and click "Restore Defaults" clean up config.  
 

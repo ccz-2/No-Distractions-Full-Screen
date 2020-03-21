@@ -81,7 +81,6 @@ def checkNightMode(on = None):
 		from aqt.theme import theme_manager
 		if theme_manager.night_mode:
 			isNightMode = True
-	print(isNightMode)
 
 def linkHandler_wrapper(self, url):
 	global posX
@@ -110,9 +109,7 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 		try:
 			reviewState = mw.reviewer.state
 			mw.reviewer._initWeb()
-			print("_initweb")
 			mw.reviewer._showQuestion()
-			print("showQ")
 			if reviewState == 'answer':
 				try:
 					mw.reviewer._showAnswer() #breaks on fill in the blank cards
