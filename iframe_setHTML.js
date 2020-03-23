@@ -1,12 +1,13 @@
 //No Distractions Full Screen v4.0
 //var url = '';
-var op = 0.5;
 url = decodeURIComponent(url);
 scripts = `
 <script>
 	function pycmd(a){parent.pycmd(a)};
+	function finishedLoad(){parent.finishedLoad()};
 </script>
 `;
+
 if (!$('#bottomiFrame').length){
 	$('body').append(`
 	  <div id='outer'>
@@ -25,25 +26,21 @@ if (!$('#bottomiFrame').length){
 	    height: 15px;
 	    bottom: 0px;
 	    left: 0px;
-	    //background-color: red;
 	}
 	
 	#outer{
 	  bottom: 0;
 	  position: fixed;
 	  left: 50%;
-	  //background-color: green;
 	}
 	
 	.bottomWrapper {
 	  position: relative;
 	  left: -50%;
-	  //background-color: red;
 	  border-radius: 5px;
 	  margin: 0px;
 	  pointer-events: auto;
-	  //touch-action: none;
-	  opacity: ` + op + `
+	  touch-action: none;
 	  user-select: none;
 	}
 	
@@ -66,26 +63,18 @@ if (!$('#bottomiFrame').length){
 	  user-select: none;
 	}
 	
-	.fade-in {
-	  animation-name: fadeInOpacity;
-	  animation-iteration-count: 1;
-	  animation-timing-function: ease-in-out;
-	  animation-duration: 0.15s;
-	}
-	
-	@keyframes fadeInOpacity {
-	  0% {
-	    opacity: ` + op + `;
-	  }
-	  100% {
-	    opacity: 1;
-	  }
-	}
-	
 	</style>
 	`);
 }
 $("#bottomiFrame").attr("srcdoc", url + scripts);
+
+
+var scriptQueue = [];
+
+function queueJS(js) {
+	scriptQueue.push(js);
+	scriptExec();
+}
 
 var stopped = true;
 function scriptExec() {
@@ -103,14 +92,3 @@ function scriptExec() {
 		}, 10);
 	}
 }
-
-//executes in iFrame
-/*
-$(document).ready(function(){
-	var checkExist = setInterval(function() {
-	   if ($('#bottomiFrame').length) {
-    		$("#bottomiFrame").attr("srcdoc", url + scripts);
-	     	clearInterval(checkExist);
-	   }
-	}, 50);
-});*/
