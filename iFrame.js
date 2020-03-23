@@ -4,61 +4,11 @@ var newheight;
 var newwidth;
 
 $('body').append(`
-  <div id='outer'>
-    <div class="bottomWrapper">
-      <iframe id='bottomiFrame' frameborder="0" scrolling="no">
-      </iframe>
-    </div>
-  </div>
-
-<div id='bottomHover'></div>
 
 <style>
-#bottomHover {
-    position: fixed;
-    width:100%;
-    height: 15px;
-    bottom: 0px;
-    left: 0px;
-    //background-color: red;
-}
-
-#outer{
-  bottom: 0;
-  position: fixed;
-  left: 50%;
-  //background-color: green;
-}
 
 .bottomWrapper {
-  position: relative;
-  left: -50%;
-  //background-color: red;
-  border-radius: 5px;
-  margin: 0px;
-  pointer-events: auto;
-  //touch-action: none;
   opacity: ` + op + `
-  user-select: none;
-}
-
-#canvas{
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  margin: 0px;
-  pointer-events: none;
-  background-color: teal;
-}
-
-#bottomiFrame {
-  display:block;
-  margin: 0px;
-  position: absolute;
-  bottom: 0;
-  user-select: none;
 }
 
 .fade-in {
@@ -80,18 +30,36 @@ $('body').append(`
 </style>
 `);
 
-$('#bottomiFrame')[0].addEventListener( "load", function(e){
-  var iframe = e.target
+
+//Queued from python after _initWeb and _showAnswer/_showQuestion scripts are queued 
+function finishedLoad(){
+  var iframe = $('#bottomiFrame')[0]
+  var target = iframe.contentDocument.getElementById('middle')
+  var observer = new MutationObserver(function(mutations, observer) {
+      fitContent()
+  });
+  observer.observe(target, {
+    subtree: true,
+    attributes: true,
+    childList: true
+  });
+  fitContent();
+}
+
+function fitContent(){
+  var iframe = $('#bottomiFrame')[0]
   var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
-  newheight = target.scrollHeight;
-  newwidth = target.scrollWidth;
-  iframe.height= newheight + "px";
-  iframe.width= newwidth + "px";
-  $("div.bottomWrapper").outerHeight(newheight + 20);
-  $("div.bottomWrapper").outerWidth(newwidth);
-  resize();
-  fitInWindow();
-});
+  if (target != null){
+    newheight = target.scrollHeight;
+    newwidth = target.scrollWidth;
+    iframe.height= newheight + "px";
+    iframe.width= newwidth + "px";
+    $("div.bottomWrapper").outerHeight(newheight + 20);
+    $("div.bottomWrapper").outerWidth(newwidth);
+    resize();
+    fitInWindow();
+  }
+}
 
 function resize(){
   var factor = (window.defaultScale/(window.devicePixelRatio));
@@ -100,7 +68,7 @@ function resize(){
 
 window.visualViewport.addEventListener('resize', resize);
 
-function changeScale(x) { //Adjusts to new scale, calls iFrame function to update scale
+function changeScale(x) { //Adjusts to new scale e.g. changing screen DPI; calls iFrame function to update scale
   window.defaultScale = x;
   $('#bottomiFrame')[0].contentWindow.changeScale(x);
   resize();

@@ -1,7 +1,7 @@
 //No Distractions Full Screen v4.0
 //var op = 0.5; //Defined in python
 //var color = 'rgba(110, 110, 200, 0.8)'; //Defined in python
-
+//var sacle = 2;
 function getHeight() {
   height = $('table:not([id="innertable"])').height();
   return height
@@ -43,3 +43,14 @@ table {
 }
 
 </style> `);
+
+function resize(){
+    document.body.style.zoom = scale/window.devicePixelRatio;
+}
+function changeScale(x){ //called from parent
+  scale = x;
+  resize();
+}
+
+window.visualViewport.addEventListener('resize', resize);
+window.addEventListener('DOMContentLoaded', resize);

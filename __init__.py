@@ -40,7 +40,6 @@ def adjustHeightToFit_override(*args):
 
 #CSS/JS injection
 def reviewer_wrapper(func):
-	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
 	draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
 	card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
 	interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
@@ -49,19 +48,13 @@ def reviewer_wrapper(func):
 	def _initReviewerWeb(*args):
 		config = mw.addonManager.getConfig(__name__)
 		op = config['answer_button_opacity']
-		cursorIdleTimer = config['cursor_idle_timer']
-		if isNightMode:
-			color = config['answer_button_border_color_night']
-		else:
-			color = config['answer_button_border_color_normal']
 
 		func()
 		mw.reviewer.web.eval(f'window.defaultScale = {getScale()}') #sets scale factor for javascript functions
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
 		mw.reviewer.web.eval(card_padding)
-		#mw.reviewer.web.eval(f'var op = {op}; {iframe}') #construct iframe for bottom
-		mw.reviewer.bottom.web.eval(f"var color = '{color}'; {bottom_bar}")
+		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #prettify iframe
 	return _initReviewerWeb
 
 def getScale():
@@ -107,72 +100,43 @@ Reviewer._linkHandler = linkHandler_wrapper
 ########## PyQt manipulation ##########
 
 def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since also cycles to next card, since Reviewer.show() calls nextCard()
-	global iframeHTML
-
-	def _setHtml_wrapper(func):
-		iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
-		def _setHtml(html: str):
-			func(html)
-			html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
-			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
-
-		return _setHtml
-
-	def _runJS_wrapper_init(func):
-		iframe_executeJS = open(os.path.join(os.path.dirname(__file__), 'iframe_executeJS.js')).read()
-		def _evalWithCallback(js: str, cb: Callable[[Any], Any]):
-			func(js, cb)
-			js = urllib.parse.quote(js, safe='') #percent encoding hack so can be passed to js
-			mw.reviewer.web.page().runJavaScript(f"var js = `{js}`; {iframe_executeJS}")
-			#addHTML(f'<script>{js}</script>')
-			#
-		return _evalWithCallback
-
-
-	def test(*args):
-		return
-
-
 	def setHtml_wrapper(self, html):
 		if self == mw.reviewer.bottom.web:
 			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
-			html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
+			html = urllib.parse.quote(html, safe='')
 			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
 
 	def runJS_wrapper_init(self, js, cb):
 		if self == mw.reviewer.bottom.web:
 			iframe_executeJS = open(os.path.join(os.path.dirname(__file__), 'iframe_executeJS.js')).read()
-			js = urllib.parse.quote(js, safe='') #percent encoding hack so can be passed to js
+			js = urllib.parse.quote(js, safe='')
 			mw.reviewer.web.eval(f"var js = `{js}`; {iframe_executeJS}")
-		#func(self, js)
-		#iframe_executeJS = open(os.path.join(os.path.dirname(__file__), 'iframe_executeJS.js')).read()
-		#js = urllib.parse.quote(js, safe='') #percent encoding hack so can be passed to js
-		#js = f"var js = `{js}`; {iframe_executeJS}"
-		#mw.reviewer.web.eval(f"var js = `{js}`; {iframe_executeJS}")
+
+	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
+	config = mw.addonManager.getConfig(__name__)
+	if isNightMode:
+		color = config['answer_button_border_color_night']
+	else:
+		color = config['answer_button_border_color_normal']
 
 	if mw.state == 'review' and ndfs_enabled:
-		#mw.reviewer.bottom.web._setHtml = _setHtml_wrapper(mw.reviewer.bottom.web._setHtml)
-		#mw.reviewer.bottom.web._evalWithCallback = _runJS_wrapper_init(mw.reviewer.bottom.web._evalWithCallback)
 		AnkiWebView._setHtml = wrap(AnkiWebView._setHtml,setHtml_wrapper)
 		AnkiWebView._evalWithCallback = wrap(AnkiWebView._evalWithCallback,runJS_wrapper_init)
-		#mw.reviewer.bottom.web.setHtml = setHtml_wrapper(mw.reviewer.bottom.web.setHtml)
-		#AnkiWebView.eval = wrap(AnkiWebView.eval,runJS_wrapper_init)
-		#mw.reviewer.bottom.web.evalWithCallback = runJS_wrapper_init(mw.reviewer.bottom.web.evalWithCallback)
 		try:
 			reviewState = mw.reviewer.state
-			mw.reviewer._initWeb()
-			mw.reviewer.bottom.web.setFixedHeight(100) #DEBUGGING
-			#mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
+			mw.reviewer._initWeb() #reviewer_wrapper is run
+			mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
 			mw.reviewer._showQuestion()
 			if reviewState == 'answer':
 				try:
 					mw.reviewer._showAnswer() #breaks on fill in the blank cards
 				except:
 					pass
-			#stateChange('NDFS_review', None) #call statechange hook as if was reset
+			stateChange('NDFS_review', None) #call statechange hook as if was reset
 		except:
-			pass
-			#mw.reset() #failsafe
+			mw.reset() #failsafe
+		mw.reviewer.bottom.web.eval(f"var color = '{color}'; var scale = {getScale()}; {bottom_bar}")
+		mw.reviewer.bottom.web.eval(f"finishedLoad();")
 	else:
 		mw.reset()
 
@@ -180,32 +144,50 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 		AnkiWebView._setHtml = og_setHtml
 		AnkiWebView._evalWithCallback = og_evalWithCallback
 
-	#print(iframeHTML)
-	#iframe_init(iframeHTML)
-	#os.system("pause")
+def updateBottom(*args):#HIDE/SHOW IFRAME
+	if ndfs_inReview:
+		config = mw.addonManager.getConfig(__name__)
+		posX = config['answer_bar_posX']
+		posY = config['answer_bar_posY']
+		mw.reviewer.web.eval(f"updatePos({posX}, {posY});")
+		mw.reviewer.web.eval("activateHover();")
+		padCards()
+		setLock()
+		if isFullscreen:
+		   mw.reviewer.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
 
+last_state = mw.state
+def stateChange(new_state, old_state, *args):
+	global ndfs_inReview
+	global ndfs_enabled
+	global last_state
+	config = mw.addonManager.getConfig(__name__)
 
-#def updateBottom(*args):
-#	if ndfs_inReview:
-#		updateiFrame(iframeHTML)
-#		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
-#		if isFullscreen:
-#		   mw.reviewer.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
-#
-#def updateiFrame(html):
-#	if ndfs_inReview:
-#		iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
-#		html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
-#		mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
-		#config = mw.addonManager.getConfig(__name__)
-		#posX = config['answer_bar_posX']
-		#posY = config['answer_bar_posY']
-		#mw.reviewer.web.eval(f"updatePos({posX}, {posY});")
-		#mw.reviewer.web.eval("activateHover();")
-		#padCards()
-		#setLock()
+	#print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
+	if mw.state == 'review': #triggers on NDFS_review and review states
+		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review' and last_state != mw.state: #filters out self generated NDFS_review state changes
+			toggle() #sets ndfs_enabled to true
+		if ndfs_enabled:
+			ndfs_inReview = True
+			updateBottom()
+	elif ndfs_enabled:
+		ndfs_inReview = False
+		curIdleTimer.showCursor()
+		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
+			if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
+				toggle()
 
+	if ndfs_enabled:
+		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
 
+	if mw.state != 'resetRequired':
+		last_state = mw.state
+
+def padCards():
+	pass
+	#def padCardsCallback(height):
+	#	mw.reviewer.web.eval(f"calcPadding({height});")
+	#mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
 
 ndfs_enabled = False
 ndfs_inReview = False
@@ -335,39 +317,6 @@ def toggle():
 		def unpause():
 			mw.setUpdatesEnabled(True)
 		QTimer.singleShot(delay, unpause)
-
-last_state = mw.state
-def stateChange(new_state, old_state, *args):
-	#global ndfs_inReview
-	#global ndfs_enabled
-	global last_state
-	#config = mw.addonManager.getConfig(__name__)
-#
-	#print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
-#
-	#if mw.state == 'review': #triggers on NDFS_review and review states
-	#	if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review' and last_state != mw.state: #filters out self generated NDFS_review state changes
-	#		toggle() #sets ndfs_enabled to true
-	#	if ndfs_enabled:
-	#		ndfs_inReview = True
-	#		updateBottom()
-	#elif ndfs_enabled:
-	#	ndfs_inReview = False
-	#	mw.reviewer.bottom.web.hide()
-	#	curIdleTimer.showCursor()
-#
-	#	if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
-	#		if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
-	#			toggle()
-#
-	if mw.state != 'resetRequired':
-		last_state = mw.state
-
-def padCards():
-	def padCardsCallback(height):
-		mw.reviewer.web.eval(f"calcPadding({height});")
-	mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
-
 
 
 
