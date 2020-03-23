@@ -49,6 +49,7 @@ function updatePos(x, y){
 }
 
 $(window).resize(function() {
+  console.log('resize')
   fitInWindow();
 });
 
