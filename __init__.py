@@ -21,7 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from aqt.reviewer import Reviewer
+from aqt.reviewer import Reviewer, ReviewerBottomBar
 from aqt.qt import *
 from aqt import *
 from aqt.webview import AnkiWebView
@@ -31,6 +31,7 @@ from anki.utils import isMac, isWin
 from aqt.addons import *
 import urllib
 from anki import version as anki_version
+import os
 
 ########## Wrappers ##########
 #monkey patched function to disable height adjustment
@@ -58,9 +59,9 @@ def reviewer_wrapper(func):
 		mw.reviewer.web.eval(f'window.defaultScale = {getScale()}') #sets scale factor for javascript functions
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
-		mw.reviewer.bottom.web.eval(f"var color = '{color}'; {bottom_bar}")
 		mw.reviewer.web.eval(card_padding)
-		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #construct iframe for bottom
+		#mw.reviewer.web.eval(f'var op = {op}; {iframe}') #construct iframe for bottom
+		mw.reviewer.bottom.web.eval(f"var color = '{color}'; {bottom_bar}")
 	return _initReviewerWeb
 
 def getScale():
@@ -107,41 +108,102 @@ Reviewer._linkHandler = linkHandler_wrapper
 
 def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since also cycles to next card, since Reviewer.show() calls nextCard()
 	global iframeHTML
-	iframeHTML = ""
-	if mw.state == 'review':
-		mw.reviewer.bottom.web._setHtml = setHtml_wrapper(mw.reviewer.bottom.web._setHtml)
-		mw.reviewer.bottom.web._evalWithCallback = runJS_wrapper(mw.reviewer.bottom.web._evalWithCallback)
+
+	def _setHtml_wrapper(func):
+		iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
+		def _setHtml(html: str):
+			func(html)
+			html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
+			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
+
+		return _setHtml
+
+	def _runJS_wrapper_init(func):
+		iframe_executeJS = open(os.path.join(os.path.dirname(__file__), 'iframe_executeJS.js')).read()
+		def _evalWithCallback(js: str, cb: Callable[[Any], Any]):
+			func(js, cb)
+			js = urllib.parse.quote(js, safe='') #percent encoding hack so can be passed to js
+			mw.reviewer.web.page().runJavaScript(f"var js = `{js}`; {iframe_executeJS}")
+			#addHTML(f'<script>{js}</script>')
+			#
+		return _evalWithCallback
+
+
+	def test(*args):
+		return
+
+
+	def setHtml_wrapper(self, html):
+		if self == mw.reviewer.bottom.web:
+			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
+			html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
+			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
+
+	def runJS_wrapper_init(self, js, cb):
+		if self == mw.reviewer.bottom.web:
+			iframe_executeJS = open(os.path.join(os.path.dirname(__file__), 'iframe_executeJS.js')).read()
+			js = urllib.parse.quote(js, safe='') #percent encoding hack so can be passed to js
+			mw.reviewer.web.eval(f"var js = `{js}`; {iframe_executeJS}")
+		#func(self, js)
+		#iframe_executeJS = open(os.path.join(os.path.dirname(__file__), 'iframe_executeJS.js')).read()
+		#js = urllib.parse.quote(js, safe='') #percent encoding hack so can be passed to js
+		#js = f"var js = `{js}`; {iframe_executeJS}"
+		#mw.reviewer.web.eval(f"var js = `{js}`; {iframe_executeJS}")
+
+	if mw.state == 'review' and ndfs_enabled:
+		#mw.reviewer.bottom.web._setHtml = _setHtml_wrapper(mw.reviewer.bottom.web._setHtml)
+		#mw.reviewer.bottom.web._evalWithCallback = _runJS_wrapper_init(mw.reviewer.bottom.web._evalWithCallback)
+		AnkiWebView._setHtml = wrap(AnkiWebView._setHtml,setHtml_wrapper)
+		AnkiWebView._evalWithCallback = wrap(AnkiWebView._evalWithCallback,runJS_wrapper_init)
+		#mw.reviewer.bottom.web.setHtml = setHtml_wrapper(mw.reviewer.bottom.web.setHtml)
+		#AnkiWebView.eval = wrap(AnkiWebView.eval,runJS_wrapper_init)
+		#mw.reviewer.bottom.web.evalWithCallback = runJS_wrapper_init(mw.reviewer.bottom.web.evalWithCallback)
 		try:
 			reviewState = mw.reviewer.state
 			mw.reviewer._initWeb()
+			mw.reviewer.bottom.web.setFixedHeight(100) #DEBUGGING
+			#mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
 			mw.reviewer._showQuestion()
 			if reviewState == 'answer':
 				try:
 					mw.reviewer._showAnswer() #breaks on fill in the blank cards
 				except:
 					pass
-			stateChange('NDFS_review', None) #call statechange hook as if was reset
+			#stateChange('NDFS_review', None) #call statechange hook as if was reset
 		except:
-			mw.reset() #failsafe
+			pass
+			#mw.reset() #failsafe
 	else:
 		mw.reset()
 
-iframeHTML = ""
-def addHTML(html):
-	global iframeHTML
-	iframeHTML += f"{html}\n"
+	if not ndfs_enabled:
+		AnkiWebView._setHtml = og_setHtml
+		AnkiWebView._evalWithCallback = og_evalWithCallback
 
-def setHtml_wrapper(func):
-	def _setHtml(html: str):
-		addHTML(html)
-		func(html)
-	return _setHtml
+	#print(iframeHTML)
+	#iframe_init(iframeHTML)
+	#os.system("pause")
 
-def runJS_wrapper(func):
-	def _evalWithCallback(js: str, cb: Callable[[Any], Any]):
-		addHTML(f'<script>{js}</script>')
-		func(js, cb)
-	return _evalWithCallback
+
+#def updateBottom(*args):
+#	if ndfs_inReview:
+#		updateiFrame(iframeHTML)
+#		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
+#		if isFullscreen:
+#		   mw.reviewer.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
+#
+#def updateiFrame(html):
+#	if ndfs_inReview:
+#		iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
+#		html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
+#		mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
+		#config = mw.addonManager.getConfig(__name__)
+		#posX = config['answer_bar_posX']
+		#posY = config['answer_bar_posY']
+		#mw.reviewer.web.eval(f"updatePos({posX}, {posY});")
+		#mw.reviewer.web.eval("activateHover();")
+		#padCards()
+		#setLock()
 
 
 
@@ -162,6 +224,8 @@ def toggle():
 		global isFullscreen
 		global fs_compat_mode
 		global DPIScaler
+		global og_setHtml
+		global og_evalWithCallback
 		config = mw.addonManager.getConfig(__name__)
 		checkNightMode()
 
@@ -172,6 +236,9 @@ def toggle():
 			og_window_state = mw.windowState()
 			og_window_flags = mw.windowFlags() #stores initial flags
 			og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
+
+			og_setHtml = AnkiWebView._setHtml
+			og_evalWithCallback = AnkiWebView._evalWithCallback
 
 			mw.setUpdatesEnabled(False) #pauses drawing to screen to prevent flickering
 
@@ -269,50 +336,30 @@ def toggle():
 			mw.setUpdatesEnabled(True)
 		QTimer.singleShot(delay, unpause)
 
-def updateBottom(*args):
-	if ndfs_inReview:
-		updateiFrame(iframeHTML)
-		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
-		if isFullscreen:
-		   mw.reviewer.web.eval("enable_bottomHover();") #enables showing of bottom bar when mouse on bottom
-
-def updateiFrame(html):
-	if ndfs_inReview:
-		update = open(os.path.join(os.path.dirname(__file__), 'iframe_update.js')).read()
-		html = urllib.parse.quote(html, safe='') #percent encoding hack so can be passed to js
-		mw.reviewer.web.eval(f"var url = `{html}`; {update}")
-		config = mw.addonManager.getConfig(__name__)
-		posX = config['answer_bar_posX']
-		posY = config['answer_bar_posY']
-		mw.reviewer.web.eval(f"updatePos({posX}, {posY});")
-		mw.reviewer.web.eval("activateHover();")
-		padCards()
-		setLock()
-
 last_state = mw.state
 def stateChange(new_state, old_state, *args):
-	global ndfs_inReview
-	global ndfs_enabled
+	#global ndfs_inReview
+	#global ndfs_enabled
 	global last_state
-	config = mw.addonManager.getConfig(__name__)
-
+	#config = mw.addonManager.getConfig(__name__)
+#
 	#print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
-
-	if mw.state == 'review': #triggers on NDFS_review and review states
-		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review' and last_state != mw.state: #filters out self generated NDFS_review state changes
-			toggle() #sets ndfs_enabled to true
-		if ndfs_enabled:
-			ndfs_inReview = True
-			updateBottom()
-	elif ndfs_enabled:
-		ndfs_inReview = False
-		mw.reviewer.bottom.web.hide()
-		curIdleTimer.showCursor()
-
-		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
-			if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
-				toggle()
-
+#
+	#if mw.state == 'review': #triggers on NDFS_review and review states
+	#	if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review' and last_state != mw.state: #filters out self generated NDFS_review state changes
+	#		toggle() #sets ndfs_enabled to true
+	#	if ndfs_enabled:
+	#		ndfs_inReview = True
+	#		updateBottom()
+	#elif ndfs_enabled:
+	#	ndfs_inReview = False
+	#	mw.reviewer.bottom.web.hide()
+	#	curIdleTimer.showCursor()
+#
+	#	if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
+	#		if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
+	#			toggle()
+#
 	if mw.state != 'resetRequired':
 		last_state = mw.state
 
@@ -372,7 +419,7 @@ def resetPos():
 	config['answer_bar_posX'] = 0
 	config['answer_bar_posY'] = 0
 	mw.addonManager.writeConfig(__name__, config)
-	updateBottom()
+	#updateBottom()
 
 def on_context_menu_event(web, menu):
 	if ndfs_inReview:
@@ -499,8 +546,8 @@ def user_settings():
 
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
-addHook("showQuestion", updateBottom) #only needed so that bottom bar updates when Reviewer runs _init/_showQuestion every 100 answers
-addHook("showAnswer", updateBottom)
+#addHook("showQuestion", updateBottom) #only needed so that bottom bar updates when Reviewer runs _init/_showQuestion every 100 answers
+#addHook("showAnswer", updateBottom)
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
 mw.addonManager.setConfigUpdatedAction(__name__, recheckBoxes)
 addHook("night_mode_state_changed", checkNightMode) #Night Mode addon (1496166067) support for legacy Anki versions
