@@ -100,17 +100,21 @@ Reviewer._linkHandler = linkHandler_wrapper
 ########## PyQt manipulation ##########
 
 def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since also cycles to next card, since Reviewer.show() calls nextCard()
-	def setHtml_wrapper(self, html):
+	def setHtml_wrapper(self, html, _old):
 		if self == mw.reviewer.bottom.web:
 			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
 			html = urllib.parse.quote(html, safe='')
 			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
+		else:
+			_old(self, html)
 
-	def runJS_wrapper_init(self, js, cb):
+	def evalWithCallback_wrapper(self, js, cb, _old):
 		if self == mw.reviewer.bottom.web:
 			iframe_executeJS = open(os.path.join(os.path.dirname(__file__), 'iframe_executeJS.js')).read()
 			js = urllib.parse.quote(js, safe='')
 			mw.reviewer.web.eval(f"var js = `{js}`; {iframe_executeJS}")
+		else:
+			_old(self, js, cb)
 
 	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
 	config = mw.addonManager.getConfig(__name__)
@@ -120,8 +124,8 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 		color = config['answer_button_border_color_normal']
 
 	if mw.state == 'review' and ndfs_enabled:
-		AnkiWebView._setHtml = wrap(AnkiWebView._setHtml,setHtml_wrapper)
-		AnkiWebView._evalWithCallback = wrap(AnkiWebView._evalWithCallback,runJS_wrapper_init)
+		AnkiWebView._setHtml = wrap(AnkiWebView._setHtml,setHtml_wrapper, "around")
+		AnkiWebView._evalWithCallback = wrap(AnkiWebView._evalWithCallback,evalWithCallback_wrapper, "around")
 		try:
 			reviewState = mw.reviewer.state
 			mw.reviewer._initWeb() #reviewer_wrapper is run
@@ -137,12 +141,25 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 			mw.reset() #failsafe
 		mw.reviewer.bottom.web.eval(f"var color = '{color}'; var scale = {getScale()}; {bottom_bar}")
 		mw.reviewer.bottom.web.eval(f"finishedLoad();")
+		mw.reviewer.bottom.web.reload() #breaks currently running scripts in bottom
 	else:
 		mw.reset()
 
 	if not ndfs_enabled:
 		AnkiWebView._setHtml = og_setHtml
 		AnkiWebView._evalWithCallback = og_evalWithCallback
+		try:
+			reviewState = mw.reviewer.state
+			mw.reviewer._initWeb() #reviewer_wrapper is run
+			mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
+			mw.reviewer._showQuestion()
+			if reviewState == 'answer':
+				try:
+					mw.reviewer._showAnswer() #breaks on fill in the blank cards
+				except:
+					pass
+		except:
+			mw.reset() #failsafe
 
 def updateBottom(*args):#HIDE/SHOW IFRAME
 	if ndfs_inReview:
