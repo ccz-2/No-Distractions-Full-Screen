@@ -72,14 +72,14 @@ $("#bottomiFrame").attr("srcdoc", url + scripts);
 var scriptQueue = [];
 
 function queueJS(js){
+	js = decodeURIComponent(js) //% encoded
 	queueJS_cb(js, function(results) {
-		console.log(results)
+		//console.log(js+"\n\n"+results)
 		return results
 	})
 }
 
 function queueJS_cb(js, callback) {
-	js = decodeURIComponent(js) //% encoded
 	scriptQueue.push(js);
 	queueExec();
 	var waitForReturn = setInterval(function () {
@@ -100,7 +100,7 @@ function queueJS_cb(js, callback) {
 var stopped = true;
 var ret = [];
 function queueExec() {
-	//if (stopped){
+	if (stopped){
 		stopped = false;
 		var waitForJQuery = setInterval(function () {
 		    if ($('#bottomiFrame')[0].contentWindow.eval("typeof $ != 'undefined'")) {
@@ -125,7 +125,7 @@ function queueExec() {
         		clearInterval(waitForJQuery);
 		    }
 		}, 10);
-	//}
+	}
 }
 
 function scriptExec(js) { 
@@ -156,3 +156,4 @@ function callBack(js) {
 	val = $('#bottomiFrame')[0].contentWindow.eval(js);
 	return val
 }
+

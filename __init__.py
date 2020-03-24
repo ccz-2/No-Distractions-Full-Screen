@@ -122,6 +122,7 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 		if self == mw.reviewer.bottom.web:
 			js = urllib.parse.quote(js, safe='')
 			mw.reviewer.web.evalWithCallback(f"queueJS(`{js}`);",test)
+			#mw.reviewer.web.page().runJavaScript(f"queueJS(`{js}`)", test)
 			#mw.reviewer.web.evalWithCallback(f"scriptExec(`{js}`);", test)
 		else:
 			_old(self, js, cb)
