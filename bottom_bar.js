@@ -2,10 +2,6 @@
 //var op = 0.5; //Defined in python
 //var color = 'rgba(110, 110, 200, 0.8)'; //Defined in python
 //var sacle = 2;
-function getHeight() {
-  height = $('table:not([id="innertable"])').height();
-  return height
-}
 
 $("button[onclick*='edit'],button[onclick*='more']").remove()
 
@@ -44,13 +40,18 @@ table {
 
 </style> `);
 
+//Called from resize events and mutation observer in parent
 function resize(){
     document.body.style.zoom = scale/window.devicePixelRatio;
 }
+
 function changeScale(x){ //called from parent
   scale = x;
   resize();
 }
+function getHeight() {
+  height = $('table:not([id="innertable"])').height();
+  return height
+}
 
 window.visualViewport.addEventListener('resize', resize);
-window.addEventListener('DOMContentLoaded', resize);

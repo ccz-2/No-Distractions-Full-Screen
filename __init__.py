@@ -44,6 +44,12 @@ def reviewer_wrapper(func):
 	card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
 	interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
 	iframe = open(os.path.join(os.path.dirname(__file__), 'iFrame.js')).read()
+	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
+	config = mw.addonManager.getConfig(__name__)
+	if isNightMode:
+		color = config['answer_button_border_color_night']
+	else:
+		color = config['answer_button_border_color_normal']
 
 	def _initReviewerWeb(*args):
 		config = mw.addonManager.getConfig(__name__)
@@ -55,6 +61,7 @@ def reviewer_wrapper(func):
 		mw.reviewer.web.eval(draggable)
 		mw.reviewer.web.eval(card_padding)
 		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #prettify iframe
+		mw.reviewer.bottom.web.eval(f"var color = '{color}'; var scale = {getScale()}; {bottom_bar}")
 	return _initReviewerWeb
 
 def getScale():
@@ -116,13 +123,6 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 		else:
 			_old(self, js, cb)
 
-	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
-	config = mw.addonManager.getConfig(__name__)
-	if isNightMode:
-		color = config['answer_button_border_color_night']
-	else:
-		color = config['answer_button_border_color_normal']
-
 	if mw.state == 'review' and ndfs_enabled:
 		AnkiWebView._setHtml = wrap(AnkiWebView._setHtml,setHtml_wrapper, "around")
 		AnkiWebView._evalWithCallback = wrap(AnkiWebView._evalWithCallback,evalWithCallback_wrapper, "around")
@@ -139,7 +139,7 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 			stateChange('NDFS_review', None) #call statechange hook as if was reset
 		except:
 			mw.reset() #failsafe
-		mw.reviewer.bottom.web.eval(f"var color = '{color}'; var scale = {getScale()}; {bottom_bar}")
+
 		mw.reviewer.bottom.web.eval(f"finishedLoad();")
 		mw.reviewer.bottom.web.reload() #breaks currently running scripts in bottom
 	else:
@@ -201,10 +201,9 @@ def stateChange(new_state, old_state, *args):
 		last_state = mw.state
 
 def padCards():
-	pass
-	#def padCardsCallback(height):
-	#	mw.reviewer.web.eval(f"calcPadding({height});")
-	#mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
+	def padCardsCallback(height):
+		mw.reviewer.web.eval(f"calcPadding({height});")
+	mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
 
 ndfs_enabled = False
 ndfs_inReview = False

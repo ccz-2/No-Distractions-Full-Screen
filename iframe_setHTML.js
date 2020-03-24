@@ -70,7 +70,6 @@ $("#bottomiFrame").attr("srcdoc", url + scripts);
 
 
 var scriptQueue = [];
-
 function queueJS(js) {
 	scriptQueue.push(js);
 	scriptExec();
@@ -82,12 +81,26 @@ function scriptExec() {
 		stopped = false;
 		var waitForJQuery = setInterval(function () {
 		    if ($('#bottomiFrame')[0].contentWindow.eval("typeof $ != 'undefined'")) {
-				while (scriptQueue.length != 0){
-					js = scriptQueue.shift()
-					$('#bottomiFrame')[0].contentWindow.eval("$(document).ready(function(){"+js+"});");
-				}
+				//while (scriptQueue.length != 0){
+				var waitforiFrame = setInterval(function() {
+					if ($('#bottomiFrame')[0].contentWindow.eval("document.readyState == 'complete'")){
+						js = scriptQueue.shift()
+						$('#bottomiFrame')[0].contentWindow.eval(js);
+
+						//Faster, but do not allow scripts to be callable after run
+						//val = $('#bottomiFrame')[0].contentWindow.Function("return($(document).ready(function(){"+js+"}))")()
+						//val = $('#bottomiFrame')[0].contentWindow.eval("$(document).ready(function(){"+js+"});");
+					}
+					else {
+						console.log('failed to load script...retrying')
+					}
+					if (scriptQueue.length == 0){
+						clearInterval(waitforiFrame)
+						stopped = true;
+						return
+					}
+				}, 1);		
         		clearInterval(waitForJQuery);
-        		stopped = true;
 		    }
 		}, 10);
 	}
