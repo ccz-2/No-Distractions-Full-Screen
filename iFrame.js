@@ -37,6 +37,7 @@ function finishedLoad(){
   var target = iframe.contentDocument.getElementById('middle')
   var observer = new MutationObserver(function(mutations, observer) {
       fitContent()
+      iframe.contentWindow.resize()
   });
   observer.observe(target, {
     subtree: true,
