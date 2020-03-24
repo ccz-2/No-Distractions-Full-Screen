@@ -68,16 +68,39 @@ if (!$('#bottomiFrame').length){
 }
 $("#bottomiFrame").attr("srcdoc", url + scripts);
 
-
+//getHeight%28%29%3B
 var scriptQueue = [];
-function queueJS(js) {
+
+function queueJS(js){
+	queueJS_cb(js, function(results) {
+		console.log(results)
+		return results
+	})
+}
+
+function queueJS_cb(js, callback) {
+	js = decodeURIComponent(js) //% encoded
 	scriptQueue.push(js);
-	scriptExec();
+	queueExec();
+	var waitForReturn = setInterval(function () {
+		var i = ret.findIndex(function(element){
+			if(element[0] == js) {
+				return element
+			}
+		});
+		if (i>=0) {
+			var val = ret[i][1];
+			ret.splice(i,1);
+			clearInterval(waitForReturn);
+			callback(val);
+		}
+	}, 10);
 }
 
 var stopped = true;
-function scriptExec() {
-	if (stopped){
+var ret = [];
+function queueExec() {
+	//if (stopped){
 		stopped = false;
 		var waitForJQuery = setInterval(function () {
 		    if ($('#bottomiFrame')[0].contentWindow.eval("typeof $ != 'undefined'")) {
@@ -85,8 +108,8 @@ function scriptExec() {
 				var waitforiFrame = setInterval(function() {
 					if ($('#bottomiFrame')[0].contentWindow.eval("document.readyState == 'complete'")){
 						js = scriptQueue.shift()
-						$('#bottomiFrame')[0].contentWindow.eval(js);
-
+						val = $('#bottomiFrame')[0].contentWindow.eval(js);
+						ret.push([js,val])
 						//Faster, but do not allow scripts to be callable after run
 						//val = $('#bottomiFrame')[0].contentWindow.Function("return($(document).ready(function(){"+js+"}))")()
 						//val = $('#bottomiFrame')[0].contentWindow.eval("$(document).ready(function(){"+js+"});");
@@ -97,11 +120,39 @@ function scriptExec() {
 					if (scriptQueue.length == 0){
 						clearInterval(waitforiFrame)
 						stopped = true;
-						return
 					}
 				}, 1);		
         		clearInterval(waitForJQuery);
 		    }
 		}, 10);
-	}
+	//}
+}
+
+function scriptExec(js) { 
+	js = decodeURIComponent(js) //% encoded
+	var val = 'hi';
+	var waitForJQuery = setInterval(function () {
+	    if ($('#bottomiFrame')[0].contentWindow.eval("typeof $ != 'undefined'")) {
+			var waitforiFrame = setInterval(function() {
+				if ($('#bottomiFrame')[0].contentWindow.eval("document.readyState == 'complete'")){
+					val = $('#bottomiFrame')[0].contentWindow.eval(js);
+   					clearInterval(waitForJQuery);
+   					clearInterval(waitforiFrame);
+   					console.log('val: ' + val)
+   					console.log(val)
+					return val;
+				}
+				else {
+					console.log('failed to load script...retrying')
+				}
+			}, 1);
+	    }
+	}, 10);
+
+}
+
+function callBack(js) { 
+	js = decodeURIComponent(js) //% encoded
+	val = $('#bottomiFrame')[0].contentWindow.eval(js);
+	return val
 }
