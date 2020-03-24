@@ -115,11 +115,14 @@ def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since
 		else:
 			_old(self, html)
 
+	def test(a):
+		print(a)
+
 	def evalWithCallback_wrapper(self, js, cb, _old):
 		if self == mw.reviewer.bottom.web:
-			iframe_executeJS = open(os.path.join(os.path.dirname(__file__), 'iframe_executeJS.js')).read()
 			js = urllib.parse.quote(js, safe='')
-			mw.reviewer.web.eval(f"var js = `{js}`; {iframe_executeJS}")
+			mw.reviewer.web.evalWithCallback(f"queueJS(`{js}`);",test)
+			#mw.reviewer.web.evalWithCallback(f"scriptExec(`{js}`);", test)
 		else:
 			_old(self, js, cb)
 
