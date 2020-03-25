@@ -20,7 +20,7 @@
 -  <span style="color:dodgerblue">**`answer_button_opacity`**</span>: Pre-mouse-hover opacity of the answer buttons  
   <span style="color:indianred">`0` = hidden, `1` = solid. Must add leading 0 (e.g. `0.5`)</span>
 
--  <span style="color:dodgerblue">**`cursor_idle_timer`**</span>: Milliseconds to wait before hiding mouse
+-  <span style="color:dodgerblue">**`cursor_idle_timer`**</span>: Milliseconds to wait before hiding cursor. Negative values disable cursor hide.
 
 -  <span style="color:dodgerblue">**`fullscreen_hotkey`**</span>: Keybinding that toggles fullscreen/windowed mode  
   <span style="color:indianred">Examples:  `F11`,  `Ctrl+F`,  `Shift+D`,  `P`. For more details, see: [QKeySequence](https://doc.qt.io/qtforpython/PySide2/QtGui/QKeySequence.html?highlight=qkeysequence#PySide2.QtGui.QKeySequence)</span>

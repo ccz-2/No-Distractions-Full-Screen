@@ -30,7 +30,6 @@ $('body').append(`
 </style>
 `);
 
-
 //Queued from python after _initWeb and _showAnswer/_showQuestion scripts are queued 
 function finishedLoad(){
   var iframe = $('#bottomiFrame')[0]
@@ -58,7 +57,7 @@ function fitContent(){
     $("div.bottomWrapper").outerHeight(newheight + 20);
     $("div.bottomWrapper").outerWidth(newwidth);
     resize();
-    fitInWindow();
+    fitInWindow(); //called from draggable.js
   }
 }
 

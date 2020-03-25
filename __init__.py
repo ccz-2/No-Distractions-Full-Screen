@@ -86,6 +86,7 @@ def checkNightMode(on = None):
 def linkHandler_wrapper(self, url):
 	global posX
 	global posY
+	global iFrame_domDone
 	if "NDFS-draggable_pos" in url:
 		pos = url.split(": ")[1]
 		pos = pos.split(", ")
@@ -95,6 +96,9 @@ def linkHandler_wrapper(self, url):
 		config['answer_bar_posX'] = posX
 		config['answer_bar_posY']  = posY
 		mw.addonManager.writeConfig(__name__, config)
+	elif url == "NDFS-iFrame-DOMReady":
+		iFrame_domDone = True
+		runiFrameJS()
 	else:
 		origLinkHandler(self, url)
 origLinkHandler = Reviewer._linkHandler
@@ -106,24 +110,35 @@ Reviewer._linkHandler = linkHandler_wrapper
 
 ########## PyQt manipulation ##########
 
-def setupWeb(): #can be accomplished by just calling mw.reset(), but issue since also cycles to next card, since Reviewer.show() calls nextCard()
+iFrame_domDone = False #Is set to true via pycmd after HTML loaded
+js_queue = []
+def runiFrameJS(): # Mimics Anki reviewer evalWithCallback queue, just for iFrame
+	global js_queue
+	while len(js_queue) != 0 and iFrame_domDone:
+		i = js_queue.pop(0)
+		js = i[0]
+		cb = i[1]
+		js = urllib.parse.quote(js, safe='')
+		mw.reviewer.web.evalWithCallback(f"scriptExec(`{js}`);", cb)
+
+def setupWeb():
+	global js_queue
+	global iFrame_domDone
 	def setHtml_wrapper(self, html, _old):
+		global iFrame_domDone
 		if self == mw.reviewer.bottom.web:
 			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
 			html = urllib.parse.quote(html, safe='')
 			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
+			iFrame_domDone = False
 		else:
 			_old(self, html)
 
-	def test(a):
-		print(a)
-
 	def evalWithCallback_wrapper(self, js, cb, _old):
+		global js_queue
 		if self == mw.reviewer.bottom.web:
-			js = urllib.parse.quote(js, safe='')
-			mw.reviewer.web.evalWithCallback(f"queueJS(`{js}`);",test)
-			#mw.reviewer.web.page().runJavaScript(f"queueJS(`{js}`)", test)
-			#mw.reviewer.web.evalWithCallback(f"scriptExec(`{js}`);", test)
+			js_queue.append([js, cb])
+			runiFrameJS()
 		else:
 			_old(self, js, cb)
 
