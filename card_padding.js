@@ -1,4 +1,4 @@
-//No Distractions Full Screen v3.2
+//No Distractions Full Screen v4.0
 //var height = 100 //Defined in python
 
 $('body').append(`
@@ -15,6 +15,7 @@ $('body').append(`
 `);
 
 function calcPadding(height){
-	var percent = (height/window.innerHeight)*100; //pads cards by height of answer button
+	var zF = window.devicePixelRatio/window.defaultScale
+	var percent = (height/(window.innerHeight*zF))*100; //pads cards by height of answer button
 	$(".NDFS").css("height", percent + '%');
 };

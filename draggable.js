@@ -12,7 +12,7 @@ function getTarget(){
 //moves target to within window boundaries
 function fitInWindow() {
   getTarget()
-  if (target !== null){
+  if (target !== null && target.getBoundingClientRect().height != 0){
     var rect = target.getBoundingClientRect();
     var x = parseFloat(target.getAttribute('data-x'));
     var y = parseFloat(target.getAttribute('data-y'));
@@ -49,7 +49,6 @@ function updatePos(x, y){
 }
 
 $(window).resize(function() {
- // console.log('resize')
   fitInWindow();
 });
 
@@ -57,32 +56,6 @@ $(window).resize(function() {
 function disableResize(){
   $(window).off("resize");
 }
-
-/*
-// Is buggy - if target is released anywhere but snap location, snap location is randomly changed (?)
-function getOrigPos() { //recursively calculates target original position (before transform)
-  var el = target, offsetLeft = 0, offsetTop  = 0;
-  do{
-      offsetLeft += el.offsetLeft;
-      offsetTop  += el.offsetTop;
-      el = el.offsetParent;
-  } while( el );
-  console.log("snap:" + offsetLeft + ":" + offsetTop)
-  return {
-    x: offsetLeft, //snap target
-    y: offsetTop,
-    range: 50, //snap 'stickiness'
-  }
-}
-
-function setSnap() {
-  interact(target).draggable({modifiers: [
-    interact.modifiers.snap({
-      targets: [getOrigPos()],
-      relativePoints: [ { x: 0, y: 0} ] //snap to top-left
-      })
-  ]})
-}*/
 
 function enable_drag(){
   getTarget()
@@ -93,12 +66,11 @@ function enable_drag(){
       autoScroll: false,
       onstart: function() {
         currDrag = true;
-      //setSnap()
       },
       onmove: dragMoveListener,
       onend: function (event) {
         var temp = target.getBoundingClientRect();
-        console.log( "pos:" + temp.x + ", " + temp.y);
+        //console.log( "pos:" + temp.x + ", " + temp.y);
         fitInWindow();
         var x = event.target.getAttribute('data-x');
         var y = event.target.getAttribute('data-y');
