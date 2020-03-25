@@ -31,6 +31,7 @@ from anki.utils import isMac, isWin
 from aqt.addons import *
 import urllib
 from anki import version as anki_version
+from .toolbar import *
 import os
 
 ########## Wrappers ##########
@@ -209,6 +210,7 @@ def stateChange(new_state, old_state, *args):
 	elif ndfs_enabled:
 		ndfs_inReview = False
 		curIdleTimer.showCursor()
+		mw.reviewer.web.eval("$('#outer').remove()") #remove iframe
 		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
 			if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
 				toggle()
@@ -539,17 +541,9 @@ addHook("night_mode_state_changed", checkNightMode) #Night Mode addon (149616606
 
 
 ########## Menu setup ##########
-try:
-	mw.addon_view_menu
-except AttributeError:
-	mw.addon_view_menu = QMenu(('View'), mw)
-	mw.form.menubar.insertMenu(
-		mw.form.menuTools.menuAction(),
-		mw.addon_view_menu
-	)
-
+addon_view_menu = getMenu(mw, "&View")
 menu = QMenu(('ND Full Screen'), mw)
-mw.addon_view_menu.addMenu(menu)
+addon_view_menu.addMenu(menu)
 
 display = QActionGroup(mw)
 

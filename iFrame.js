@@ -46,6 +46,18 @@ function finishedLoad(){
   fitContent();
 }
 
+function monitorContent(){
+  var iframe = $('#bottomiFrame')[0].contentDocument
+  var observer = new MutationObserver(function(mutations, observer) {
+      console.log(mutations)
+  });
+  observer.observe(iframe, {
+    subtree: true,
+    attributes: true,
+    childList: true
+  });
+}
+
 function fitContent(){
   var iframe = $('#bottomiFrame')[0]
   var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
