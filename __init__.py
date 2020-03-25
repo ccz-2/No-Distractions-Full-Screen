@@ -125,13 +125,14 @@ def runiFrameJS(): # Mimics Anki reviewer evalWithCallback queue, just for iFram
 def setupWeb():
 	global js_queue
 	global iFrame_domDone
+	global ndfs_inReview
 	def setHtml_wrapper(self, html, _old):
 		global iFrame_domDone
 		if self == mw.reviewer.bottom.web:
+			iFrame_domDone = False
 			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
 			html = urllib.parse.quote(html, safe='')
 			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
-			iFrame_domDone = False
 		else:
 			_old(self, html)
 
@@ -144,6 +145,8 @@ def setupWeb():
 			_old(self, js, cb)
 
 	if mw.state == 'review' and ndfs_enabled:
+		ndfs_inReview = True
+		iFrame_domDone = False
 		AnkiWebView._setHtml = wrap(AnkiWebView._setHtml,setHtml_wrapper, "around")
 		AnkiWebView._evalWithCallback = wrap(AnkiWebView._evalWithCallback,evalWithCallback_wrapper, "around")
 		try:
@@ -156,32 +159,33 @@ def setupWeb():
 					mw.reviewer._showAnswer() #breaks on fill in the blank cards
 				except:
 					pass
-			stateChange('NDFS_review', None) #call statechange hook as if was reset
 		except:
 			mw.reset() #failsafe
 
 		mw.reviewer.bottom.web.eval(f"finishedLoad();")
+		updateBottom()
 		mw.reviewer.bottom.web.reload() #breaks currently running scripts in bottom
-	else:
-		mw.reset()
 
-	if not ndfs_enabled:
+	elif not ndfs_enabled:
 		AnkiWebView._setHtml = og_setHtml
 		AnkiWebView._evalWithCallback = og_evalWithCallback
-		try:
-			reviewState = mw.reviewer.state
-			mw.reviewer._initWeb() #reviewer_wrapper is run
-			mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
-			mw.reviewer._showQuestion()
-			if reviewState == 'answer':
-				try:
-					mw.reviewer._showAnswer() #breaks on fill in the blank cards
-				except:
-					pass
-		except:
-			mw.reset() #failsafe
+		if mw.state == 'review':
+			try:
+				reviewState = mw.reviewer.state
+				mw.reviewer._initWeb() #reviewer_wrapper is run
+				mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
+				mw.reviewer._showQuestion()
+				if reviewState == 'answer':
+					try:
+						mw.reviewer._showAnswer() #breaks on fill in the blank cards
+					except:
+						pass
+			except:
+				mw.reset() #failsafe
+		else:
+			mw.reset()
 
-def updateBottom(*args):#HIDE/SHOW IFRAME
+def updateBottom(*args):
 	if ndfs_inReview:
 		config = mw.addonManager.getConfig(__name__)
 		posX = config['answer_bar_posX']
@@ -206,7 +210,7 @@ def stateChange(new_state, old_state, *args):
 			toggle() #sets ndfs_enabled to true
 		if ndfs_enabled:
 			ndfs_inReview = True
-			updateBottom()
+			setupWeb()
 	elif ndfs_enabled:
 		ndfs_inReview = False
 		curIdleTimer.showCursor()
@@ -239,7 +243,6 @@ def toggle():
 		global og_window_state
 		global og_geometry
 		global window_flags_set
-		global fs_window
 		global isFullscreen
 		global fs_compat_mode
 		global DPIScaler
@@ -255,7 +258,6 @@ def toggle():
 			og_window_state = mw.windowState()
 			og_window_flags = mw.windowFlags() #stores initial flags
 			og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
-
 			og_setHtml = AnkiWebView._setHtml
 			og_evalWithCallback = AnkiWebView._evalWithCallback
 
@@ -291,20 +293,9 @@ def toggle():
 				window_flags_set = True
 				mw.show()
 
-			#Builds new widget for window
-			fs_window = QWidget()
-			fs_layout = QGridLayout(fs_window)
-			fs_layout.setContentsMargins(QMargins(0,0,0,0))
-			fs_layout.setSpacing(0)
-			fs_layout.addWidget(mw.toolbar.web,0,0)#,Qt.AlignTop) #need to add or breaks (garbagecollected)
-			fs_layout.addWidget(mw.reviewer.web,0,0)
-			fs_layout.addWidget(mw.reviewer.bottom.web,0,0)
-
 			mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
 			mw.toolbar.web.hide()
 			mw.reviewer.bottom.web.hide() #iFrame handles bottom bar
-
-			mw.mainLayout.addWidget(fs_window)
 
 			if config['cursor_idle_timer'] >= 0:
 				mw.installEventFilter(curIdleTimer)
@@ -324,7 +315,8 @@ def toggle():
 			mw.setUpdatesEnabled(False) #pauses updates to screen
 			mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
 			mw.reviewer.bottom.web.adjustHeightToFit = og_adjustHeightToFit
-			mw.reviewer.web.eval('disableResize();')
+			if mw.state == 'review':
+				mw.reviewer.web.eval('disableResize();')
 			setupWeb()
 
 			if isFullscreen and fs_compat_mode:
@@ -338,10 +330,6 @@ def toggle():
 			mw.setWindowState(og_window_state)
 			isFullscreen = False
 
-			mw.mainLayout.removeWidget(fs_window)
-			mw.mainLayout.addWidget(mw.toolbar.web)
-			mw.mainLayout.addWidget(mw.reviewer.web)
-			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
 			mw.toolbar.web.show()
 			mw.reviewer.bottom.web.show()
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
