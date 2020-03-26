@@ -8,18 +8,29 @@ scripts = `
 	pycmd('NDFS-iFrame-DOMReady');
 </script>
 `;
+scriptsDummy = `
+<script>
+	function pycmd(a){};
+	function finishedLoad(){};
+	parent.pycmd('NDFS-iFrameDummy-DOMReady')
+</script>
+`;
 
 if (!$('#bottomiFrame').length){
 	$('body').append(`
+
 	  <div id='outer'>
 	    <div class="bottomWrapper">
 	      <iframe id='bottomiFrame' frameborder="0" scrolling="no"">
 	      </iframe>
+
 	    </div>
+	      <iframe id='bottomiFrameBkgnd' frameborder="0" scrolling="no"">
+	      </iframe>
+  		<div id='bottomHover'></div>
 	  </div>
-	
-	<div id='bottomHover'></div>
-	
+
+
 	<style>
 	#bottomHover {
 	    position: fixed;
@@ -27,13 +38,16 @@ if (!$('#bottomiFrame').length){
 	    height: 15px;
 	    bottom: 0px;
 	    left: 0px;
-	    z-index: -999;
+	    z-index: 3;
+	    //background-color:green;
 	}
 	
 	#outer{
 	  bottom: 0;
 	  position: fixed;
 	  left: 50%;
+	  z-index: 1;
+	  //background-color: yellow;
 	}
 	
 	.bottomWrapper {
@@ -46,32 +60,45 @@ if (!$('#bottomiFrame').length){
 	  user-select: none;
 	}
 	
-	#canvas{
-	  position: fixed;
-	  top: 0;
-	  left: 0;
-	  height: 100%;
-	  width: 100%;
-	  margin: 0px;
-	  pointer-events: none;
-	  background-color: teal;
-	}
-	
 	#bottomiFrame {
 	  display:block;
 	  margin: 0px;
 	  position: absolute;
 	  bottom: 0;
 	  user-select: none;
+	  z-index: 100;
 	}
 	
+	#bottomiFrameBkgnd {
+	  //border: 1px red solid;
+	  display:block;
+	  margin: 0px;
+	  position: fixed;
+	  bottom: 0;
+	  left: 0;
+	  width: 100%;
+	  user-select: none;
+	  touch-action: none;
+	  pointer-events: none;
+	  z-index: 2;
+	}
 	</style>
 	`);
 }
 $("#bottomiFrame").attr("srcdoc", url + scripts);
+$("#bottomiFrameBkgnd").attr("srcdoc", url + scriptsDummy); //no scripts - has no communication with python
 
 function scriptExec(js) { 
 	js = decodeURIComponent(js) //% encoded
-	val = $('#bottomiFrame')[0].contentWindow.eval(js);
+	if (js.includes('<<<FOR BKGND>>>')){
+		val = $('#bottomiFrameBkgnd')[0].contentWindow.eval(js);
+	}
+	else if (js.includes('<<<FOR ACTUAL>>>')){
+		val = $('#bottomiFrame')[0].contentWindow.eval(js);
+	}
+	else {
+		val = $('#bottomiFrame')[0].contentWindow.eval(js);
+		$('#bottomiFrameBkgnd')[0].contentWindow.eval(js);
+	}
 	return val
 }

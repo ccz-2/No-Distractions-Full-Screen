@@ -82,7 +82,7 @@ function enable_drag(){
   else {
       interact(target).draggable({enabled: true})
   }
-  $(target).css({'-webkit-box-shadow': '0 0 10px LightBlue', 'background': 'linear-gradient(180deg, rgba(188,236,255,0.3) 0%, rgba(255,255,255,0) 25%)'}); 
+  $(target).css({'-webkit-box-shadow': '0 0 10px lightblue', 'background': 'linear-gradient(180deg, rgba(173,216,230,1) 0%, rgba(255,255,255,0) 25%)'}); 
   currLock = false;
   fitInWindow()
 }
@@ -92,7 +92,7 @@ function zF(){
   return((window.devicePixelRatio)/window.defaultScale)
 }
 
-function dragMoveListener (event) {
+function dragMoveListener(event) {
   var target = event.target
   // keep the dragged position in the data-x/data-y attributes
   var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx * zF();

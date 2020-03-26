@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.0 3/18/2020
+# v4.0 3/25/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -46,16 +46,19 @@ def reviewer_wrapper(func):
 	interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
 	iframe = open(os.path.join(os.path.dirname(__file__), 'iFrame.js')).read()
 	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
+	bottom_bar_bkgnd = open(os.path.join(os.path.dirname(__file__), 'bottom_bar_bkgnd.js')).read()
 	config = mw.addonManager.getConfig(__name__)
-	if isNightMode:
-		color = config['answer_button_border_color_night']
-	else:
-		color = config['answer_button_border_color_normal']
 
 	def _initReviewerWeb(*args):
+
 		config = mw.addonManager.getConfig(__name__)
 		op = config['answer_button_opacity']
-
+		if isNightMode:
+			color = config['answer_button_border_color_night']
+		else:
+			color = config['answer_button_border_color_normal']
+		iFrame_domDone = False #set to true after HTML is injected
+		iFrameDummy_domDone = False
 		func()
 		mw.reviewer.web.eval(f'window.defaultScale = {getScale()}') #sets scale factor for javascript functions
 		mw.reviewer.web.eval(interact)
@@ -63,6 +66,9 @@ def reviewer_wrapper(func):
 		mw.reviewer.web.eval(card_padding)
 		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #prettify iframe
 		mw.reviewer.bottom.web.eval(f"var color = '{color}'; var scale = {getScale()}; {bottom_bar}")
+		mw.reviewer.bottom.web.eval(f"var scale = {getScale()}; {bottom_bar_bkgnd}")
+		mw.reviewer.bottom.web.eval(f"finishedLoad();")
+		mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
 	return _initReviewerWeb
 
 def getScale():
@@ -88,6 +94,7 @@ def linkHandler_wrapper(self, url):
 	global posX
 	global posY
 	global iFrame_domDone
+	global iFrameDummy_domDone
 	if "NDFS-draggable_pos" in url:
 		pos = url.split(": ")[1]
 		pos = pos.split(", ")
@@ -99,6 +106,9 @@ def linkHandler_wrapper(self, url):
 		mw.addonManager.writeConfig(__name__, config)
 	elif url == "NDFS-iFrame-DOMReady":
 		iFrame_domDone = True
+		runiFrameJS()
+	elif url == 'NDFS-iFrameDummy-DOMReady':
+		iFrameDummy_domDone = True
 		runiFrameJS()
 	else:
 		origLinkHandler(self, url)
@@ -112,24 +122,24 @@ Reviewer._linkHandler = linkHandler_wrapper
 ########## PyQt manipulation ##########
 
 iFrame_domDone = False #Is set to true via pycmd after HTML loaded
+iFrameDummy_domDone = False
 js_queue = []
 def runiFrameJS(): # Mimics Anki reviewer evalWithCallback queue, just for iFrame
 	global js_queue
-	while len(js_queue) != 0 and iFrame_domDone:
+	while len(js_queue) != 0 and iFrame_domDone and iFrameDummy_domDone:
 		i = js_queue.pop(0)
 		js = i[0]
 		cb = i[1]
 		js = urllib.parse.quote(js, safe='')
-		mw.reviewer.web.evalWithCallback(f"scriptExec(`{js}`);", cb)
+		mw.reviewer.web.evalWithCallback(f"scriptExec(`{js}`);", cb)			
 
 def setupWeb():
 	global js_queue
 	global iFrame_domDone
+	global iFrameDummy_domDone
 	global ndfs_inReview
 	def setHtml_wrapper(self, html, _old):
-		global iFrame_domDone
 		if self == mw.reviewer.bottom.web:
-			iFrame_domDone = False
 			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
 			html = urllib.parse.quote(html, safe='')
 			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
@@ -147,12 +157,12 @@ def setupWeb():
 	if mw.state == 'review' and ndfs_enabled:
 		ndfs_inReview = True
 		iFrame_domDone = False
+		iFrameDummy_domDone = False
 		AnkiWebView._setHtml = wrap(AnkiWebView._setHtml,setHtml_wrapper, "around")
 		AnkiWebView._evalWithCallback = wrap(AnkiWebView._evalWithCallback,evalWithCallback_wrapper, "around")
 		try:
 			reviewState = mw.reviewer.state
 			mw.reviewer._initWeb() #reviewer_wrapper is run
-			mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
 			mw.reviewer._showQuestion()
 			if reviewState == 'answer':
 				try:
@@ -162,7 +172,6 @@ def setupWeb():
 		except:
 			mw.reset() #failsafe
 
-		mw.reviewer.bottom.web.eval(f"finishedLoad();")
 		updateBottom()
 		mw.reviewer.bottom.web.reload() #breaks currently running scripts in bottom
 
@@ -327,8 +336,9 @@ def toggle():
 			if window_flags_set: #helps prevent annoying flickering when toggling
 				mw.setWindowFlags(og_window_flags) #reassigns initial flags
 				window_flags_set = False
-			mw.setWindowState(og_window_state)
-			isFullscreen = False
+			if isFullscreen: #only change window state if was fullscreen
+				mw.setWindowState(og_window_state)
+				isFullscreen = False
 
 			mw.toolbar.web.show()
 			mw.reviewer.bottom.web.show()
@@ -393,7 +403,7 @@ def resetPos():
 	config['answer_bar_posX'] = 0
 	config['answer_bar_posY'] = 0
 	mw.addonManager.writeConfig(__name__, config)
-	#updateBottom()
+	updateBottom()
 
 def on_context_menu_event(web, menu):
 	if ndfs_inReview:
@@ -520,8 +530,8 @@ def user_settings():
 
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
-#addHook("showQuestion", updateBottom) #only needed so that bottom bar updates when Reviewer runs _init/_showQuestion every 100 answers
-#addHook("showAnswer", updateBottom)
+addHook("showQuestion", updateBottom) #only needed so that bottom bar updates when Reviewer runs _init/_showQuestion every 100 answers
+addHook("showAnswer", updateBottom)
 addHook("AnkiWebView.contextMenuEvent", on_context_menu_event)
 mw.addonManager.setConfigUpdatedAction(__name__, recheckBoxes)
 addHook("night_mode_state_changed", checkNightMode) #Night Mode addon (1496166067) support for legacy Anki versions
@@ -543,7 +553,7 @@ windowed = QAction('Toggle Windowed Mode', display)
 windowed.triggered.connect(toggle_window)
 menu.addAction(windowed)
 
-keep_on_top = QAction('    ► Windowed Mode Always On Top', mw)
+keep_on_top = QAction('    Windowed Mode Always On Top', mw)
 keep_on_top.setCheckable(True)
 menu.addAction(keep_on_top)
 keep_on_top.triggered.connect(user_settings)
@@ -584,7 +594,6 @@ lockDrag.triggered.connect(toggleBar)
 reset_bar = QAction('Reset Answer Bar Position', mw)
 menu.addAction(reset_bar)
 reset_bar.triggered.connect(resetPos)
-
 menu.addSeparator()
 
 enable_cursor_hide = QAction('Enable Idle Cursor Hide', mw)
@@ -594,7 +603,6 @@ menu.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(user_settings)
 
 menu.addSeparator()
-
 advanced_settings = QAction('Advanced Settings (Config)', mw)
 menu.addAction(advanced_settings)
 advanced_settings.triggered.connect(on_advanced_settings)

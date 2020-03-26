@@ -7,8 +7,8 @@ $('body').append(`
 
 <style>
 
-.bottomWrapper {
-  opacity: ` + op + `
+#bottomiFrame {
+  opacity: ` + op + `;
 }
 
 .fade-in {
@@ -36,6 +36,7 @@ function finishedLoad(){
   var target = iframe.contentDocument.getElementById('middle')
   var observer = new MutationObserver(function(mutations, observer) {
       fitContent()
+      fitContentDummy();
       iframe.contentWindow.resize()
   });
   observer.observe(target, {
@@ -44,6 +45,7 @@ function finishedLoad(){
     childList: true
   });
   fitContent();
+  fitContentDummy();
 }
 
 function fitContent(){
@@ -52,12 +54,22 @@ function fitContent(){
   if (target != null){
     newheight = target.scrollHeight;
     newwidth = target.scrollWidth;
-    iframe.height= newheight + "px";
-    iframe.width= newwidth + "px";
+    iframe.height= newheight + 1 + "px";
+    iframe.width= newwidth + 1 + "px";
     $("div.bottomWrapper").outerHeight(newheight + 20);
     $("div.bottomWrapper").outerWidth(newwidth);
     resize();
     fitInWindow(); //called from draggable.js
+  }
+}
+
+function fitContentDummy(){
+  var iframe = $('#bottomiFrameBkgnd')[0]
+  var target = iframe.contentDocument.body;
+  if (target != null){
+    newheight = target.scrollHeight;
+    newwidth = target.scrollWidth;
+    iframe.height= newheight + 1 + "px";
   }
 }
 
@@ -71,62 +83,63 @@ window.visualViewport.addEventListener('resize', resize);
 function changeScale(x) { //Adjusts to new scale e.g. changing screen DPI; calls iFrame function to update scale
   window.defaultScale = x;
   $('#bottomiFrame')[0].contentWindow.changeScale(x);
+  $('#bottomiFrameBkgnd')[0].contentWindow.changeScale(x);
   resize();
 }
 
-var mousedown = false;
 function activateHover(){
-  target = document.querySelector('div.bottomWrapper');
-  $(target).css('opacity', op);  
+  target = $('#bottomiFrame')[0]
+  $(target).css('opacity', op);
   $(target).on({
       mouseenter: function(){
-        fade_in(target);
+        fade_in();
       },
       mouseleave: function(){
-        fade_out(target)
+        fade_out()
       },
       touchstart: function(){
-        fade_in(target);
+        fade_in();
       },
       touchend: function(){
-        fade_out(target)
+        fade_out()
       }
   });
 }
 
 function enable_bottomHover(){
-  target = document.querySelector('div.bottomWrapper');
   $("#bottomHover").on({
     mouseenter: function(){
-      fade_in(target);
+      fade_in();
     },
     mouseleave: function(){
-      fade_out(target);
+      fade_out();
     }
   });
 }
 
-function fade_in(target){
+function fade_in(){
+  target = $('#bottomiFrame')[0]
   if (!currDrag) { //prevents changes when dragging
     $(target).css('animation-direction','normal');
     $(target).addClass('fade-in');
-    $(target).css('opacity','1');  
+    $(target).css('opacity','1');
     $(target).on("animationend", function(){
-      $(this).removeClass('fade-in');
+      $(target).removeClass('fade-in');
       });
   }
 }
 
-function fade_out(target){
+function fade_out(){
+  target = $('#bottomiFrame')[0]
   if (currDrag) {
-    $(this).removeClass('fade-out');
+    $(target).removeClass('fade-out');
   }
   else { //prevents changes when dragging
     $(target).css('animation-direction','reverse');
     $(target).addClass('fade-in');
     $(target).css('opacity', op);  
     $(target).on("animationend", function(){
-      $(this).removeClass('fade-in');
+      $(target).removeClass('fade-in');
       });
   }
 }

@@ -1,13 +1,19 @@
+//<<<FOR ACTUAL>>>//
 //No Distractions Full Screen v4.0
 //var op = 0.5; //Defined in python
 //var color = 'rgba(110, 110, 200, 0.8)'; //Defined in python
-//var sacle = 2;
+//var scale = 2;
 
-$("button[onclick*='edit'],button[onclick*='more']").remove()
+$('table:not([id="innertable"])').parents().siblings().hide()
+$('td.stat').hide()
 
 $('body').append(`
 <style>
 table:not([id="innertable"]) {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 999;
   padding: 0px;
   border-radius: 5px;
   background-color: ` + color + `;
@@ -20,22 +26,6 @@ body, #outer{
   background: transparent !important;
   border-top-color: transparent !important;
   overflow: hidden;
-}
-
-body {
-	height:100%;
-	width:100%;
-}
-
-table#innertable {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-
-table {
-  border-collapse: collapse;
-  empty-cells: hide;
 }
 
 </style> `);
