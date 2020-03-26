@@ -54,9 +54,9 @@ function fitContent(){
   if (target != null){
     newheight = target.scrollHeight;
     newwidth = target.scrollWidth;
-    iframe.height= newheight + 1 + "px";
-    iframe.width= newwidth + 1 + "px";
-    $("div.bottomWrapper").outerHeight(newheight + 20);
+    iframe.height = newheight + 1 + "px";
+    iframe.width = newwidth + 1 + "px";
+    $("div.bottomWrapper").outerHeight(newheight);
     $("div.bottomWrapper").outerWidth(newwidth);
     resize();
     fitInWindow(); //called from draggable.js

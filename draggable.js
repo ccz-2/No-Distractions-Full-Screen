@@ -82,7 +82,8 @@ function enable_drag(){
   else {
       interact(target).draggable({enabled: true})
   }
-  $(target).css({'-webkit-box-shadow': '0 0 10px lightblue', 'background': 'linear-gradient(180deg, rgba(173,216,230,1) 0%, rgba(255,255,255,0) 25%)'}); 
+  $("#cover").show();
+  $(target).css({'box-shadow': '0 19px 38px rgba(0, 0, 0, 0.40), 0 15px 12px rgba(0, 0, 0, 0.25)'});
   currLock = false;
   fitInWindow()
 }
@@ -111,6 +112,8 @@ function disable_drag(){
   interact(target).unset();
   //interact(target).draggable({enabled: false}); //Will occasionally stop working if disabled - better to unset
   $(target).css({'-webkit-box-shadow': '', 'border': '', 'background':''});
+  $(target).css({'filter': ''});
+  $("#cover").hide();
   currLock = true;
   fitInWindow()
 }

@@ -23,7 +23,7 @@ if (!$('#bottomiFrame').length){
 	    <div class="bottomWrapper">
 	      <iframe id='bottomiFrame' frameborder="0" scrolling="no"">
 	      </iframe>
-
+	      <div id = 'cover'></div>
 	    </div>
 	      <iframe id='bottomiFrameBkgnd' frameborder="0" scrolling="no"">
 	      </iframe>
@@ -38,18 +38,24 @@ if (!$('#bottomiFrame').length){
 	    height: 15px;
 	    bottom: 0px;
 	    left: 0px;
-	    z-index: 3;
-	    //background-color:green;
+	    //z-index: 2;
 	}
 	
 	#outer{
 	  bottom: 0;
 	  position: fixed;
 	  left: 50%;
-	  z-index: 1;
-	  //background-color: yellow;
+	  //z-index: -10;
 	}
 	
+	#cover{
+		position: absolute;
+		top: 0;
+		height: 100%;
+		width: 100%;
+    	//background-color: hotpink;
+	}
+
 	.bottomWrapper {
 	  position: relative;
 	  left: -50%;
@@ -58,19 +64,22 @@ if (!$('#bottomiFrame').length){
 	  pointer-events: auto;
 	  touch-action: none;
 	  user-select: none;
+	  overflow: hidden;
+	  //background-color: purple;
 	}
 	
 	#bottomiFrame {
 	  display:block;
 	  margin: 0px;
 	  position: absolute;
+	  overflow: hidden;
 	  bottom: 0;
 	  user-select: none;
-	  z-index: 100;
+	  z-index: -1;
 	}
-	
+
 	#bottomiFrameBkgnd {
-	  //border: 1px red solid;
+	  //background-color: red;
 	  display:block;
 	  margin: 0px;
 	  position: fixed;
@@ -80,13 +89,14 @@ if (!$('#bottomiFrame').length){
 	  user-select: none;
 	  touch-action: none;
 	  pointer-events: none;
-	  z-index: 2;
+	  //z-index: -2;
 	}
 	</style>
 	`);
 }
+$("#cover").hide(); //cover only shown when dragging iframe
 $("#bottomiFrame").attr("srcdoc", url + scripts);
-$("#bottomiFrameBkgnd").attr("srcdoc", url + scriptsDummy); //no scripts - has no communication with python
+$("#bottomiFrameBkgnd").attr("srcdoc", url + scriptsDummy); // no communication with python
 
 function scriptExec(js) { 
 	js = decodeURIComponent(js) //% encoded
