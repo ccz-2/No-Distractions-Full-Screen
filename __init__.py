@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.0 3/25/2020
+# v4.0 3/26/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -126,7 +126,7 @@ iFrameDummy_domDone = False
 js_queue = []
 def runiFrameJS(): # Mimics Anki reviewer evalWithCallback queue, just for iFrame
 	global js_queue
-	while len(js_queue) != 0 and iFrame_domDone and iFrameDummy_domDone:
+	while len(js_queue) != 0 and iFrame_domDone and iFrameDummy_domDone and mw.state == 'review':
 		i = js_queue.pop(0)
 		js = i[0]
 		cb = i[1]
@@ -213,13 +213,14 @@ def stateChange(new_state, old_state, *args):
 	global last_state
 	config = mw.addonManager.getConfig(__name__)
 
-	#print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
-	if mw.state == 'review': #triggers on NDFS_review and review states
-		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and mw.state == 'review' and last_state != mw.state: #filters out self generated NDFS_review state changes
+	print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
+	if mw.state == 'review':
+		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and last_state != mw.state:
 			toggle() #sets ndfs_enabled to true
 		if ndfs_enabled:
 			ndfs_inReview = True
 			setupWeb()
+			curIdleTimer.countdown()
 	elif ndfs_enabled:
 		ndfs_inReview = False
 		curIdleTimer.showCursor()
@@ -228,7 +229,7 @@ def stateChange(new_state, old_state, *args):
 			if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
 				toggle()
 
-	if ndfs_enabled:
+	if ndfs_enabled and mw.reviewer.bottom.web.isVisible():
 		mw.reviewer.bottom.web.hide() #screen reset shows bottom bar
 
 	if mw.state != 'resetRequired':
@@ -304,14 +305,14 @@ def toggle():
 
 			mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
 			mw.toolbar.web.hide()
+			mw.mainLayout.removeWidget(mw.reviewer.bottom.web) #removing from layout resolves quick reformatting changes when automatically shown
 			mw.reviewer.bottom.web.hide() #iFrame handles bottom bar
 
 			if config['cursor_idle_timer'] >= 0:
 				mw.installEventFilter(curIdleTimer)
-				curIdleTimer.countdown()
 
 			mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
-			setupWeb() #invokes statechange hook
+			stateChange(None, None) #will setup web and cursor
 
 			def scaleChange():
 				if ndfs_inReview:
@@ -341,6 +342,7 @@ def toggle():
 				isFullscreen = False
 
 			mw.toolbar.web.show()
+			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
 			mw.reviewer.bottom.web.show()
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
 			mw.removeEventFilter(curIdleTimer)
@@ -378,6 +380,7 @@ class cursor_eventFilter(QObject):
 
 	def countdown(self):
 		self.timer.start(self.cursorIdleTimer)
+		print('countdown')
 
 	def updateIdleTimer(self):
 		config = mw.addonManager.getConfig(__name__)
@@ -462,8 +465,11 @@ def recheckBoxes(*args):
 	lock_shortcut = config['lock_answer_bar_hotkey']
 	dragLocked = config['answer_bar_locked']
 	auto_tog = config['auto_toggle_when_reviewing']
-
+	rendering_delay = config['rendering_delay']
 	curIdleTimer.updateIdleTimer()
+
+	if rendering_delay < 0:
+		config['rendering_delay'] = 0
 
 	if op == 1:
 		mouseover_default.setChecked(True)
@@ -474,6 +480,8 @@ def recheckBoxes(*args):
 
 	if cursorIdleTimer >= 0:
 		enable_cursor_hide.setChecked(True)
+	else:
+		enable_cursor_hide.setChecked(False)
 
 	if last_toggle == 'windowed':
 		windowed.setShortcut(fs_shortcut)
@@ -484,15 +492,23 @@ def recheckBoxes(*args):
 
 	if w_onTop:
 		keep_on_top.setChecked(True)
+	else:
+		keep_on_top.setChecked(False)
 
 	if dragLocked:
 		lockDrag.setChecked(True)
+	else:
+		lockDrag.setChecked(False)
 
 	if auto_tog:
 		auto_toggle.setChecked(True)
+	else:
+		auto_toggle.setChecked(False)
+
+	lockDrag.setShortcut(lock_shortcut)
 
 	mw.addonManager.writeConfig(__name__, config)
-	lockDrag.setShortcut(lock_shortcut)
+
 
 #updates settings on menu action
 def user_settings():
