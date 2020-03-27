@@ -75,6 +75,7 @@ def reviewer_wrapper(func):
 			mw.reviewer.bottom.web.eval(bbBkgnd_html_manip)
 		else:
 			mw.reviewer.bottom.web.eval('//<<<FOR BKGND>>>//\n $("#container").hide();')
+			mw.reviewer.bottom.web.eval('//<<<FOR ACTUAL>>>//\n $("td.stat").hide();')
 
 		mw.reviewer.web.eval(card_padding)
 		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #prettify iframe

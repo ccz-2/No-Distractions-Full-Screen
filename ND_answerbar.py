@@ -57,13 +57,12 @@ def NDAB_showEaseButtons():
     NDAB_answerButtons()
 
 def NDAB_showAnswerButton():
-    #Actually showing answer button is done on _answerCard wrapper
     mw.reviewer.bottom.web.eval(f'insertQuesBut("{mw.reviewer._remaining()}")')
     if mw.reviewer.card.shouldShowTimer():
         maxTime = mw.reviewer.card.timeLimit() / 1000
     else:
         maxTime = 0
-    mw.reviewer.bottom.web.eval(f"maxTime = {maxTime};")
+    mw.reviewer.bottom.web.eval(f"showQuestion('',{maxTime});")
     mw.reviewer.bottom.web.adjustHeightToFit()
 
 def NDAB_answerCard(func):
