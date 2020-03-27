@@ -288,6 +288,9 @@ def toggle():
 
 			mw.setUpdatesEnabled(False) #pauses drawing to screen to prevent flickering
 
+			reset_bar.setVisible(True) #menu items visible for context menu
+			lockDrag.setVisible(True)
+
 			if config['last_toggle'] == 'full_screen': #Fullscreen mode
 				if isMac: #kicks out of OSX maximize if on
 					mw.showNormal()
@@ -326,7 +329,7 @@ def toggle():
 			if config['cursor_idle_timer'] >= 0:
 				mw.installEventFilter(curIdleTimer)
 			if config['ND_AnswerBar_enabled']:
-				enable_ND_bottomBar()
+				enable_ND_bottomBar(isNightMode)
 			mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
 			stateChange(None, None) #will setup web and cursor
 
@@ -365,6 +368,9 @@ def toggle():
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
 			mw.removeEventFilter(curIdleTimer)
 			curIdleTimer.showCursor()
+
+			reset_bar.setVisible(False)
+			lockDrag.setVisible(False)
 
 			mw.windowHandle().screenChanged.disconnect(DPIScaler)
 			mw.show()
@@ -485,6 +491,7 @@ def recheckBoxes(*args):
 	auto_tog = config['auto_toggle_when_reviewing']
 	rendering_delay = config['rendering_delay']
 	NDAB = config['ND_AnswerBar_enabled']
+	ans_conf_time = config['answer_conf_time']
 	curIdleTimer.updateIdleTimer()
 
 	if rendering_delay < 0:
@@ -530,6 +537,12 @@ def recheckBoxes(*args):
 	else:
 		nd_answerBar.setChecked(False)
 
+	if ans_conf_time > 0:
+		ans_conf.setChecked(False)
+	else:
+		config['answer_conf_time'] = 0
+		ans_conf.setChecked(True)
+
 	autoSettings()
 	mw.addonManager.writeConfig(__name__, config)
 
@@ -569,18 +582,28 @@ def user_settings():
 		ndab = False
 	config['ND_AnswerBar_enabled']= ndab
 
+	if ans_conf.isChecked():
+		config['answer_conf_time']= 0
+	else:
+		config['answer_conf_time']= 0.5
+
 	autoSettings()
 	mw.addonManager.writeConfig(__name__, config)
 
 #conditional settings
 def autoSettings():
+	config = mw.addonManager.getConfig(__name__)
 	if nd_answerBar.isChecked():
 		lockDrag.setEnabled(False)
+		lockDrag.setChecked(True)
+		config['answer_bar_locked'] = True
 		reset_bar.setEnabled(False)
+		ans_conf.setEnabled(True)
 	else:
 		lockDrag.setEnabled(True)
 		reset_bar.setEnabled(True)
-
+		ans_conf.setEnabled(False)
+	mw.addonManager.writeConfig(__name__, config)
 
 
 ########## Hooks ##########
@@ -621,8 +644,21 @@ auto_toggle.triggered.connect(user_settings)
 
 menu.addSeparator()
 
-mouseover = QActionGroup(mw)
+nd_answerBar = QAction('Enable No Distractions Answer Bar (drag disabled)', mw)
+nd_answerBar.setCheckable(True)
+nd_answerBar.setChecked(False)
+menu.addAction(nd_answerBar)
+nd_answerBar.triggered.connect(user_settings)
 
+ans_conf = QAction('    Disable Answer Confirmation', mw)
+ans_conf.setCheckable(True)
+ans_conf.setChecked(False)
+menu.addAction(ans_conf)
+ans_conf.triggered.connect(user_settings)
+
+menu.addSeparator()
+
+mouseover = QActionGroup(mw)
 mouseover_default = QAction('Do Not Hide Answer Buttons', mouseover)
 mouseover_default.setCheckable(True)
 menu.addAction(mouseover_default)
@@ -641,22 +677,6 @@ mouseover_translucent.triggered.connect(user_settings)
 
 menu.addSeparator()
 
-nd_answerBar = QAction('Enable No Distractions Answer Bar', mw)
-nd_answerBar.setCheckable(True)
-nd_answerBar.setChecked(False)
-menu.addAction(nd_answerBar)
-nd_answerBar.triggered.connect(user_settings)
-
-lockDrag = QAction('Lock Answer Bar Position', mw)
-lockDrag.setCheckable(True)
-menu.addAction(lockDrag)
-lockDrag.triggered.connect(toggleBar)
-
-reset_bar = QAction('Reset Answer Bar Position', mw)
-menu.addAction(reset_bar)
-reset_bar.triggered.connect(resetPos)
-menu.addSeparator()
-
 enable_cursor_hide = QAction('Enable Idle Cursor Hide', mw)
 enable_cursor_hide.setCheckable(True)
 enable_cursor_hide.setChecked(True)
@@ -664,8 +684,21 @@ menu.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(user_settings)
 
 menu.addSeparator()
+
 advanced_settings = QAction('Advanced Settings (Config)', mw)
 menu.addAction(advanced_settings)
 advanced_settings.triggered.connect(on_advanced_settings)
+
+#Hidden actions - accessible through right click
+lockDrag = QAction('Lock Answer Bar Position', mw)
+lockDrag.setCheckable(True)
+menu.addAction(lockDrag)
+lockDrag.triggered.connect(toggleBar)
+lockDrag.setVisible(False)
+
+reset_bar = QAction('Reset Answer Bar Position', mw)
+menu.addAction(reset_bar)
+reset_bar.triggered.connect(resetPos)
+reset_bar.setVisible(False)
 
 recheckBoxes()

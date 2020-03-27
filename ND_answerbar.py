@@ -13,17 +13,29 @@ from .ND_answerbar import *
 import os
 
 def NDAB_bottomHTML():
+    config = mw.addonManager.getConfig(__name__)
+    animTime = config['answer_conf_time']
+    if isNightMode:
+        color = config['answer_button_border_color_night']
+    else:
+        color = config['answer_button_border_color_normal']
+
     NDAB_css = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.css')).read()
     NDAB_js = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.js')).read()
     NDAB_html = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.html')).read()
+    NDAB_css = f"""
+        :root {{
+            --bkgndColor: {color};
+             --animTime: {animTime}s;
+            }} \n {NDAB_css}"""
     return f"""
-    <script> {NDAB_js} </script>
-    <style> {NDAB_css} </style>
-    {NDAB_html}
-    <script>
-    time = {mw.reviewer.card.timeTaken()};
-    </script>
-    """
+        <script> {NDAB_js} </script>
+        <style> {NDAB_css} </style>
+        {NDAB_html}
+        <script>
+            time = {mw.reviewer.card.timeTaken()};
+        </script>
+        """
 
 def NDAB_answerButtons():
     default = mw.reviewer._defaultEase()
@@ -60,8 +72,12 @@ def NDAB_answerCard(func):
         mw.reviewer.bottom.web.eval(f'ansConf({ease}, "{mw.reviewer._remaining()}")')
     return confAns
 
-def enable_ND_bottomBar():
+
+def enable_ND_bottomBar(nightMode = False):
     global og_bottomHTML, og_answerButtons, og_bottomTime, og_showEaseButtons, og_showAnswerButton, og_answerCard
+    global isNightMode
+    isNightMode = nightMode
+
     og_bottomHTML = mw.reviewer._bottomHTML
     og_answerButtons = mw.reviewer._answerButtons
     og_bottomTime = mw.reviewer._buttonTime

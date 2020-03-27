@@ -18,7 +18,10 @@
   Color of border around answer buttons for normal/night mode. Supports both Night Mode Addon (1496166067) for legacy Anki versions and native Anki Night Mode. Accepts HTML color codes. For help, see: [Color Picker](https://www.hexcolortool.com/#6e6e6e,0.8)  
 
 -  <span style="color:dodgerblue">**`answer_button_opacity`**</span>: Pre-mousehover opacity of the answer buttons  
-  <span style="color:indianred">`0` = hidden, `1` = solid. Must add leading `0` (e.g. `0.5`)</span>
+  <span style="color:indianred">`0` = hidden, `1` = solid. Must add leading `0` (e.g. `0.5`)</span>  
+
+-  <span style="color:dodgerblue">**`answer_conf_time`**</span>: Number of seconds the answer confirmation animation lasts. Only applies if No Distractions Answer Bar is enabled.  
+  <span style="color:indianred">Setting to `0` will disable animation</span>  
 
 -  <span style="color:dodgerblue">**`cursor_idle_timer`**</span>: Milliseconds to wait before hiding cursor. Negative values disable cursor hide.
 
