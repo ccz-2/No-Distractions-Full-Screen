@@ -1,0 +1,141 @@
+#outer{
+  border: 0;
+}
+
+table:not([id="innertable"]) {
+  width: 100%;
+}
+
+table#innertable{
+  padding: 0;
+}
+
+#defease{
+  font-size: 1.2em;
+  background-color: initial;
+  color: initial;
+}
+
+#container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  //border: 1px solid red;
+}
+
+.ans {
+  height: 2.5em;
+  margin-right: 2em;
+  //border: 1px solid blue;
+  flex-basis: 8em;
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+}
+
+.platform {
+  min-height: 70%;
+  width: 100%;
+  //border: 1px solid orange;
+  border-radius: 5px 5px 0px 0px;
+  opacity: 1;
+  overflow:hidden;
+  text-align: center;
+}
+
+.nobold, .platform {
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
+  font-size: 1.2em;
+  font-weight: 1000;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  padding-top: 0.2em;
+}
+
+.nobold {
+  padding-top: 0;
+}
+
+#Again .platform {
+  background-color: #d60202 !important;
+  color: #990000 !important;
+  text-shadow: 0px 2px 3px #ff5757 !important;
+}
+
+#Hard .platform {
+  background-color: #ffa900 !important;
+  color: #a16c03 !important;
+  text-shadow: 0px 2px 3px #ffc552 !important;
+}
+
+#Good .platform {
+  background-color: #00d407 !important;
+  color: #008a05 !important;
+  text-shadow: 0px 2px 3px #52ff58 !important;
+}
+
+#Easy .platform {
+  background-color: #0049f2 !important;
+  color: #002d96 !important;
+  text-shadow: 0px 2px 3px #6994fa !important;
+}
+
+#ques .platform {
+  background-color: #474747 !important;
+  text-shadow: 0px 2px 3px #555 !important;
+}
+
+@keyframes ansConf {
+  0% {
+    min-height: 30%;
+  }
+
+  70% {
+    min-height: 100%;
+    opacity: 1;
+  }
+
+  100% {
+    min-height: 100%;
+    opacity: 0;
+  }
+}
+
+.ansConf {
+  animation-name: ansConf;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-out;
+  animation-delay: 0s;
+  animation-direction: normal;
+  animation-iteration-count: 1;
+  animation-fill-mode: none;
+  animation-play-state: running;
+}
+
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.fadeOut {
+  animation-name: fadeOut;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-out;
+  animation-delay: 0s;
+  animation-direction: normal;
+  animation-iteration-count: 1;
+  animation-fill-mode: none;
+  animation-play-state: running;
+}

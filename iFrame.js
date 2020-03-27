@@ -51,7 +51,7 @@ function finishedLoad(){
 function fitContent(){
   var iframe = $('#bottomiFrame')[0]
   var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
-  if (target != null){
+  if (target != null) {
     newheight = target.scrollHeight;
     newwidth = target.scrollWidth;
     iframe.height = newheight + 1 + "px";
@@ -59,7 +59,9 @@ function fitContent(){
     $("div.bottomWrapper").outerHeight(newheight);
     $("div.bottomWrapper").outerWidth(newwidth);
     resize();
-    fitInWindow(); //called from draggable.js
+    if (fitInWindow) {
+      fitInWindow(); //called from draggable.js
+    }
   }
 }
 

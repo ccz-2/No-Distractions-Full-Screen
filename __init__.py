@@ -32,6 +32,7 @@ from aqt.addons import *
 import urllib
 from anki import version as anki_version
 from .toolbar import *
+from .ND_answerbar import *
 import os
 
 ########## Wrappers ##########
@@ -45,15 +46,18 @@ def reviewer_wrapper(func):
 	card_padding = open(os.path.join(os.path.dirname(__file__), 'card_padding.js')).read()
 	interact = open(os.path.join(os.path.dirname(__file__), 'interact.min.js')).read()
 	iframe = open(os.path.join(os.path.dirname(__file__), 'iFrame.js')).read()
-	bottom_bar = open(os.path.join(os.path.dirname(__file__), 'bottom_bar.js')).read()
-	bottom_bar_bkgnd = open(os.path.join(os.path.dirname(__file__), 'bottom_bar_bkgnd.js')).read()
+	bbActual_html_manip = open(os.path.join(os.path.dirname(__file__), 'bbActual_html_manip.js')).read()
+	bbBkgnd_html_manip = open(os.path.join(os.path.dirname(__file__), 'bbBkgnd_html_manip.js')).read()
+	bottom_bar_sizing = open(os.path.join(os.path.dirname(__file__), 'bottom_bar_sizing.js')).read()
 	config = mw.addonManager.getConfig(__name__)
 
 	def _initReviewerWeb(*args):
 
 		config = mw.addonManager.getConfig(__name__)
 		op = config['answer_button_opacity']
-		if isNightMode:
+		if config['ND_AnswerBar_enabled']:
+			color = 'transparent'
+		elif isNightMode:
 			color = config['answer_button_border_color_night']
 		else:
 			color = config['answer_button_border_color_normal']
@@ -61,12 +65,19 @@ def reviewer_wrapper(func):
 		iFrameDummy_domDone = False
 		func()
 		mw.reviewer.web.eval(f'window.defaultScale = {getScale()}') #sets scale factor for javascript functions
+
+		
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
+		
 		mw.reviewer.web.eval(card_padding)
 		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #prettify iframe
-		mw.reviewer.bottom.web.eval(f"var color = '{color}'; var scale = {getScale()}; {bottom_bar}")
-		mw.reviewer.bottom.web.eval(f"var scale = {getScale()}; {bottom_bar_bkgnd}")
+
+		mw.reviewer.bottom.web.eval(bbBkgnd_html_manip)
+		mw.reviewer.bottom.web.eval(f'var color = "{color}"; {bbActual_html_manip}')
+
+		mw.reviewer.bottom.web.eval(f"var scale = {getScale()}; {bottom_bar_sizing}")
+
 		mw.reviewer.bottom.web.eval(f"finishedLoad();")
 		mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
 	return _initReviewerWeb
@@ -175,7 +186,7 @@ def setupWeb():
 		updateBottom()
 		mw.reviewer.bottom.web.reload() #breaks currently running scripts in bottom
 
-	elif not ndfs_enabled:
+	elif not ndfs_enabled: #disabling NDFS
 		AnkiWebView._setHtml = og_setHtml
 		AnkiWebView._evalWithCallback = og_evalWithCallback
 		if mw.state == 'review':
@@ -213,7 +224,7 @@ def stateChange(new_state, old_state, *args):
 	global last_state
 	config = mw.addonManager.getConfig(__name__)
 
-	print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
+	#print(last_state + "->" + mw.state +" :: " + str(old_state) + " -> " + str(new_state))
 	if mw.state == 'review':
 		if config['auto_toggle_when_reviewing'] and not ndfs_enabled and last_state != mw.state:
 			toggle() #sets ndfs_enabled to true
@@ -310,7 +321,8 @@ def toggle():
 
 			if config['cursor_idle_timer'] >= 0:
 				mw.installEventFilter(curIdleTimer)
-
+			if config['ND_AnswerBar_enabled']:
+				enable_ND_bottomBar()
 			mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
 			stateChange(None, None) #will setup web and cursor
 
@@ -327,6 +339,8 @@ def toggle():
 			mw.reviewer.bottom.web.adjustHeightToFit = og_adjustHeightToFit
 			if mw.state == 'review':
 				mw.reviewer.web.eval('disableResize();')
+			if config['ND_AnswerBar_enabled']:
+				disable_ND_bottomBar()
 			setupWeb()
 
 			if isFullscreen and fs_compat_mode:
@@ -380,7 +394,6 @@ class cursor_eventFilter(QObject):
 
 	def countdown(self):
 		self.timer.start(self.cursorIdleTimer)
-		print('countdown')
 
 	def updateIdleTimer(self):
 		config = mw.addonManager.getConfig(__name__)
@@ -409,7 +422,8 @@ def resetPos():
 	updateBottom()
 
 def on_context_menu_event(web, menu):
-	if ndfs_inReview:
+	config = mw.addonManager.getConfig(__name__)
+	if ndfs_inReview and not config['ND_AnswerBar_enabled']:
 		menu.addAction(lockDrag)
 		menu.addAction(reset_bar)
 	else:
@@ -466,6 +480,7 @@ def recheckBoxes(*args):
 	dragLocked = config['answer_bar_locked']
 	auto_tog = config['auto_toggle_when_reviewing']
 	rendering_delay = config['rendering_delay']
+	NDAB = config['ND_AnswerBar_enabled']
 	curIdleTimer.updateIdleTimer()
 
 	if rendering_delay < 0:
@@ -505,6 +520,11 @@ def recheckBoxes(*args):
 	else:
 		auto_toggle.setChecked(False)
 
+	if NDAB:
+		nd_answerBar.setChecked(True)
+	else:
+		nd_answerBar.setChecked(False)
+
 	lockDrag.setShortcut(lock_shortcut)
 
 	mw.addonManager.writeConfig(__name__, config)
@@ -538,6 +558,12 @@ def user_settings():
 	else:
 		auto_tog = False
 	config['auto_toggle_when_reviewing'] = auto_tog
+
+	if nd_answerBar.isChecked():
+		ndab = True
+	else:
+		ndab = False
+	config['ND_AnswerBar_enabled']= ndab
 
 	mw.addonManager.writeConfig(__name__, config)
 
@@ -601,6 +627,12 @@ menu.addAction(mouseover_translucent)
 mouseover_translucent.triggered.connect(user_settings)
 
 menu.addSeparator()
+
+nd_answerBar = QAction('Enable No Distractions Answer Bar', mw)
+nd_answerBar.setCheckable(True)
+nd_answerBar.setChecked(False)
+menu.addAction(nd_answerBar)
+nd_answerBar.triggered.connect(user_settings)
 
 lockDrag = QAction('Lock Answer Bar Position', mw)
 lockDrag.setCheckable(True)

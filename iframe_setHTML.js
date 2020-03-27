@@ -38,7 +38,8 @@ if (!$('#bottomiFrame').length){
 	    height: 15px;
 	    bottom: 0px;
 	    left: 0px;
-	    //z-index: 2;
+	    //background-color: red;
+	    z-index: -1;
 	}
 	
 	#outer{
@@ -79,7 +80,7 @@ if (!$('#bottomiFrame').length){
 	}
 
 	#bottomiFrameBkgnd {
-	  //background-color: red;
+	  //background-color: yellow;
 	  display:block;
 	  margin: 0px;
 	  position: fixed;
