@@ -331,6 +331,7 @@ def toggle():
 				mw.installEventFilter(curIdleTimer)
 			if config['ND_AnswerBar_enabled']:
 				enable_ND_bottomBar(isNightMode)
+				NDAB_alert()
 			mw.reviewer._initWeb = reviewer_wrapper(og_reviewer) #tried to use triggers instead but is called prematurely upon suspend/bury
 			stateChange(None, None) #will setup web and cursor
 
@@ -380,6 +381,20 @@ def toggle():
 			mw.setUpdatesEnabled(True)
 		QTimer.singleShot(delay, unpause)
 
+def NDAB_alert():
+	config = mw.addonManager.getConfig(__name__)
+	if config['do_not_show_NDAB_warning'] or not config['ND_AnswerBar_enabled']:
+		return
+	msgBox = QMessageBox(QMessageBox.Information, 'No Distractions Full Screen', '<b>No Distractions <u>Answer Bar</u></b> is enabled!\nThis is a minimalistic reimagining of Anki\'s answer buttons and uses custom code that may be incompatibile with other addons.')
+	msgBox.setInformativeText("If you run into issues, please disable this feature via the menu.\nHappy studying! 😊");
+	msgBox.setStandardButtons(QMessageBox.Ok);
+	msgBox.setDefaultButton(QMessageBox.Ok);
+	doNotShowAgain = QCheckBox('Do not show again')
+	msgBox.setCheckBox(doNotShowAgain)
+	msgBox.exec();
+	if doNotShowAgain.isChecked():
+		config['do_not_show_NDAB_warning'] = True
+		mw.addonManager.writeConfig(__name__, config)
 
 
 ########## Idle Cursor Functions ##########
