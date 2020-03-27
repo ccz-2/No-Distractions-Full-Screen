@@ -1,17 +1,17 @@
 function ansConf(ease, remaining){
   var pressed = '.platform[data-ease='+ ease +']';
-  $(pressed).parent().siblings('div').css({'opacity':'0'})
+  $(pressed).parent().siblings('div').css({'opacity':'0', 'transition': '0.3s'})
   $(pressed).addClass('ansConf')
   $(pressed).on("animationend", function(){
-    $('.ans').remove();
+    $('.button').remove();
     insertQuesBut(remaining);
   });
 }
 
 function insertAnsBut(due, extra, i, label) {
-  $('#ques').remove();
+  $('.ques').remove();
   $('#container').append(`
-  <div id='`+ label +`' class='ans'>
+  <div id='`+ label +`' class='ans button'>
     <div `+ extra +` class='platform' data-ease='`+ i +`' onclick='pycmd("ease`+ i +`")'>`+ due +`</div>
   </div>
   `)
@@ -19,8 +19,9 @@ function insertAnsBut(due, extra, i, label) {
 
 function insertQuesBut(remaining) {
   if ($('.ans')[0] == null) {
+    $('.ques').remove();
     $('#container').append(`
-    <div id='ques' class='ans'>
+    <div class='ques button'>
       <div class='platform' onclick='pycmd("ans");'>`+ remaining +`</div>
     </div>
     `)
@@ -28,5 +29,5 @@ function insertQuesBut(remaining) {
 }
 
 function clearButs() {
-  $('.ans').remove();
+  $('.button').remove();
 }

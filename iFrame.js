@@ -33,10 +33,16 @@ $('body').append(`
 //Queued from python after _initWeb and _showAnswer/_showQuestion scripts are queued 
 function finishedLoad(){
   var iframe = $('#bottomiFrame')[0]
-  var target = iframe.contentDocument.getElementById('middle')
+  if (window.NDAB) {
+    var target = iframe.contentDocument.getElementById('container')    
+  }
+  else {
+    var target = iframe.contentDocument.getElementById('middle')    
+  }
   var observer = new MutationObserver(function(mutations, observer) {
       fitContent()
       fitContentDummy();
+      resize();
       iframe.contentWindow.resize()
   });
   observer.observe(target, {
@@ -46,20 +52,27 @@ function finishedLoad(){
   });
   fitContent();
   fitContentDummy();
+  resize();
 }
 
 function fitContent(){
-  var iframe = $('#bottomiFrame')[0]
-  var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
+  if (window.NDAB) {
+    fitNDAB();
+    return
+  }
+  else {
+    var iframe = $('#bottomiFrame')[0]
+    var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
+  }
   if (target != null) {
-    newheight = target.scrollHeight;
-    newwidth = target.scrollWidth;
-    iframe.height = newheight + 1 + "px";
-    iframe.width = newwidth + 1 + "px";
+    newheight = target.scrollHeight + 1;
+    newwidth = target.scrollWidth + 1;
+    iframe.height = newheight + "px";
+    iframe.width = newwidth + "px";
     $("div.bottomWrapper").outerHeight(newheight);
     $("div.bottomWrapper").outerWidth(newwidth);
     resize();
-    if (fitInWindow) {
+    if (!window.NDAB) {
       fitInWindow(); //called from draggable.js
     }
   }
@@ -70,8 +83,20 @@ function fitContentDummy(){
   var target = iframe.contentDocument.body;
   if (target != null){
     newheight = target.scrollHeight;
-    newwidth = target.scrollWidth;
     iframe.height= newheight + 1 + "px";
+  }
+}
+
+function fitNDAB(){
+  var iframe = $('#bottomiFrame')[0]
+  var target = iframe.contentDocument.body;
+  if (target != null){
+    newheight = target.scrollHeight;
+    iframe.height= newheight + "px";
+    $("div.bottomWrapper").outerHeight(newheight);
+    $("div.bottomWrapper").css({'position':'fixed','left':'0','bottom':'0','width':'100%'});
+    $(iframe).css('width','100%');
+    $("div.bottomWrapper")[0].style.transform = 'translate(0px, 0px)'
   }
 }
 

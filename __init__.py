@@ -63,19 +63,21 @@ def reviewer_wrapper(func):
 			color = config['answer_button_border_color_normal']
 		iFrame_domDone = False #set to true after HTML is injected
 		iFrameDummy_domDone = False
+		NDAB = int(config['ND_AnswerBar_enabled'])
+
 		func()
 		mw.reviewer.web.eval(f'window.defaultScale = {getScale()}') #sets scale factor for javascript functions
-
-		
+		mw.reviewer.web.eval(f'window.NDAB = {NDAB}') #sets scale factor for javascript functions	
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
-		
+		if not config['ND_AnswerBar_enabled']:
+			mw.reviewer.bottom.web.eval(f'var color = "{color}"; {bbActual_html_manip}')
+			mw.reviewer.bottom.web.eval(bbBkgnd_html_manip)
+		else:
+			mw.reviewer.bottom.web.eval('//<<<FOR BKGND>>>//\n $("#container").hide();')
+
 		mw.reviewer.web.eval(card_padding)
 		mw.reviewer.web.eval(f'var op = {op}; {iframe}') #prettify iframe
-
-		mw.reviewer.bottom.web.eval(bbBkgnd_html_manip)
-		mw.reviewer.bottom.web.eval(f'var color = "{color}"; {bbActual_html_manip}')
-
 		mw.reviewer.bottom.web.eval(f"var scale = {getScale()}; {bottom_bar_sizing}")
 
 		mw.reviewer.bottom.web.eval(f"finishedLoad();")
@@ -232,6 +234,8 @@ def stateChange(new_state, old_state, *args):
 			ndfs_inReview = True
 			setupWeb()
 			curIdleTimer.countdown()
+			if config['ND_AnswerBar_enabled']:
+				resetPos()
 	elif ndfs_enabled:
 		ndfs_inReview = False
 		curIdleTimer.showCursor()
@@ -249,7 +253,7 @@ def stateChange(new_state, old_state, *args):
 def padCards():
 	def padCardsCallback(height):
 		mw.reviewer.web.eval(f"calcPadding({height});")
-	mw.reviewer.bottom.web.evalWithCallback('getHeight();', padCardsCallback)
+	mw.reviewer.web.evalWithCallback('$("#bottomiFrame").contents().height()', padCardsCallback) #not exact height but does not need to be precise
 
 ndfs_enabled = False
 ndfs_inReview = False
@@ -514,6 +518,7 @@ def recheckBoxes(*args):
 		lockDrag.setChecked(True)
 	else:
 		lockDrag.setChecked(False)
+	lockDrag.setShortcut(lock_shortcut)
 
 	if auto_tog:
 		auto_toggle.setChecked(True)
@@ -525,8 +530,7 @@ def recheckBoxes(*args):
 	else:
 		nd_answerBar.setChecked(False)
 
-	lockDrag.setShortcut(lock_shortcut)
-
+	autoSettings()
 	mw.addonManager.writeConfig(__name__, config)
 
 
@@ -565,8 +569,17 @@ def user_settings():
 		ndab = False
 	config['ND_AnswerBar_enabled']= ndab
 
+	autoSettings()
 	mw.addonManager.writeConfig(__name__, config)
 
+#conditional settings
+def autoSettings():
+	if nd_answerBar.isChecked():
+		lockDrag.setEnabled(False)
+		reset_bar.setEnabled(False)
+	else:
+		lockDrag.setEnabled(True)
+		reset_bar.setEnabled(True)
 
 
 

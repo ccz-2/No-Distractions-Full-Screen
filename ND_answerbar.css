@@ -1,9 +1,8 @@
-#outer{
-  border: 0;
-}
-
-table:not([id="innertable"]) {
-  width: 100%;
+body, #outer{
+  background: transparent !important;
+  border-top-color: transparent !important;
+  overflow: hidden;
+  margin: 0;
 }
 
 table#innertable{
@@ -13,7 +12,8 @@ table#innertable{
 #defease{
   font-size: 1.2em;
   background-color: initial;
-  color: initial;
+  border: 2px solid #42ffec;
+  border-bottom: none;
 }
 
 #container {
@@ -22,17 +22,20 @@ table#innertable{
   align-items: center;
   justify-content: center;
   height: auto;
-  //border: 1px solid red;
+  width: auto;
+  //border: 1px solid skyblue;
 }
 
-.ans {
+.ans, .ques {
   height: 2.5em;
-  margin-right: 2em;
+  margin-right: 1.5em;
+  margin-left: 1.5em;
   //border: 1px solid blue;
   flex-basis: 8em;
   display: flex;
   justify-content: flex-end;
   flex-direction: column;
+  user-select: none;
 }
 
 .platform {
@@ -43,6 +46,12 @@ table#innertable{
   opacity: 1;
   overflow:hidden;
   text-align: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.platform:hover {
+  box-shadow: inset 0px 40px 112px -8px rgba(255,255,255,0.32);;
 }
 
 .nobold, .platform {
@@ -60,45 +69,45 @@ table#innertable{
 
 #Again .platform {
   background-color: #d60202 !important;
-  color: #990000 !important;
-  text-shadow: 0px 2px 3px #ff5757 !important;
+  color: #330000 !important;
+  text-shadow: 0px 2px 3px #de8181 !important;
 }
 
 #Hard .platform {
   background-color: #ffa900 !important;
-  color: #a16c03 !important;
-  text-shadow: 0px 2px 3px #ffc552 !important;
+  color: #332200 !important;
+  text-shadow: 0px 2px 3px #debf81 !important;
 }
 
 #Good .platform {
   background-color: #00d407 !important;
-  color: #008a05 !important;
-  text-shadow: 0px 2px 3px #52ff58 !important;
+  color: #013300 !important;
+  text-shadow: 0px 2px 3px #81dea2 !important;
 }
 
 #Easy .platform {
   background-color: #0049f2 !important;
-  color: #002d96 !important;
-  text-shadow: 0px 2px 3px #6994fa !important;
+  color: #000033 !important;
+  text-shadow: 0px 2px 3px #818fde !important;
 }
 
-#ques .platform {
+.ques .platform {
   background-color: #474747 !important;
   text-shadow: 0px 2px 3px #555 !important;
 }
 
 @keyframes ansConf {
   0% {
-    min-height: 30%;
+    min-height: 70%;
   }
 
   70% {
-    min-height: 100%;
+    min-height: 90%;
     opacity: 1;
   }
 
   100% {
-    min-height: 100%;
+    min-height: 90%;
     opacity: 0;
   }
 }

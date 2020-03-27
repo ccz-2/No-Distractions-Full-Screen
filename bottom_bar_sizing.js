@@ -9,14 +9,4 @@ function changeScale(x){ //called from parent
   resize();
 }
 
-function getHeight() {
-  if ($('table:not([id="innertable"])')[0] != null){
-  	height = $('table:not([id="innertable"])').height();
-  }
-  else {
-  	height = document.body.getBoundingClientRect().height;
-  }
-  return height
-}
-
 window.visualViewport.addEventListener('resize', resize);
