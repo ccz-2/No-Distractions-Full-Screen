@@ -10,4 +10,8 @@ function changeScale(x){ //called from parent
   resize();
 }
 
+//Hack to remove wallpaper applied by Dancing Baloney addon
+//$('body').append('<style>.before::before {content:none}</style>');
+//$('body').addClass('before')
+
 window.visualViewport.addEventListener('resize', resize);

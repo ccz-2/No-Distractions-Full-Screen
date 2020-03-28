@@ -18,46 +18,52 @@ scriptsDummy = `
 
 if (!$('#bottomiFrame').length){
 	$('body').append(`
-
+	<div id='bottomHover'>
 	  <div id='outer'>
 	    <div class="bottomWrapper">
-	      <iframe id='bottomiFrame' frameborder="0" scrolling="no"">
+	      <iframe id='bottomiFrame' frameborder="0" scrolling="no">
 	      </iframe>
 	      <div id = 'cover'></div>
 	    </div>
-	      <iframe id='bottomiFrameBkgnd' frameborder="0" scrolling="no"">
+	      <iframe id='bottomiFrameBkgnd' frameborder="0" scrolling="no">
 	      </iframe>
-  		<div id='bottomHover'></div>
 	  </div>
+  	</div>
 
 
 	<style>
 	#bottomHover {
+	    //background-color: red;
 	    position: fixed;
 	    width:100%;
 	    height: 15px;
 	    bottom: 0px;
 	    left: 0px;
-	    //background-color: red;
-	    z-index: -1;
+	    z-index: 1;
+	    pointer-events: none;
 	}
 	
 	#outer{
+	  //background-color: navy;
 	  bottom: 0;
 	  position: fixed;
+	  pointer-events: none;
 	  left: 50%;
-	  //z-index: -10;
+	  z-index: -10;
 	}
 	
 	#cover{
+    	//background-color: hotpink;
+    	pointer-events: auto;
 		position: absolute;
 		top: 0;
 		height: 100%;
 		width: 100%;
-    	//background-color: hotpink;
+		z-index: 5;
 	}
 
 	.bottomWrapper {
+	  //background-color: purple;
 	  position: relative;
 	  left: -50%;
 	  border-radius: 5px;
@@ -66,7 +72,6 @@ if (!$('#bottomiFrame').length){
 	  touch-action: none;
 	  user-select: none;
 	  overflow: hidden;
-	  //background-color: purple;
 	}
 	
 	#bottomiFrame {
@@ -76,7 +81,7 @@ if (!$('#bottomiFrame').length){
 	  overflow: hidden;
 	  bottom: 0;
 	  user-select: none;
-	  z-index: -1;
+	  z-index: 1;
 	}
 
 	#bottomiFrameBkgnd {
@@ -90,7 +95,7 @@ if (!$('#bottomiFrame').length){
 	  user-select: none;
 	  touch-action: none;
 	  pointer-events: none;
-	  //z-index: -2;
+	  z-index: -10;
 	}
 	</style>
 	`);

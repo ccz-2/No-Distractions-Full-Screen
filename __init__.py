@@ -214,7 +214,6 @@ def updateBottom(*args):
 		posX = config['answer_bar_posX']
 		posY = config['answer_bar_posY']
 		mw.reviewer.web.eval(f"updatePos({posX}, {posY});")
-		mw.reviewer.web.eval("activateHover();")
 		padCards()
 		setLock()
 		if isFullscreen:

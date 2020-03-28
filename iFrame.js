@@ -9,25 +9,13 @@ $('body').append(`
 <style>
 
 #bottomiFrame {
-  opacity: ` + op + `;
+  opacity: `+op+`;
+  transition: 0.15s;
 }
 
-.fade-in {
-  animation-name: fadeInOpacity;
-  animation-iteration-count: 1;
-  animation-timing-function: ease-in-out;
-  animation-duration: 0.15s;
+#bottomiFrame:hover {
+  opacity: 1;
 }
-
-@keyframes fadeInOpacity {
-  0% {
-    opacity: ` + op + `;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
 </style>
 `);
 
@@ -115,59 +103,10 @@ function changeScale(x) { //Adjusts to new scale e.g. changing screen DPI; calls
   resize();
 }
 
-function activateHover(){
-  target = $('#bottomiFrame')[0]
-  $(target).css('opacity', op);
-  $(target).on({
-      mouseenter: function(){
-        fade_in();
-      },
-      mouseleave: function(){
-        fade_out()
-      },
-      touchstart: function(){
-        fade_in();
-      },
-      touchend: function(){
-        fade_out()
-      }
-  });
-}
-
 function enable_bottomHover(){
-  $("#bottomHover").on({
-    mouseenter: function(){
-      fade_in();
-    },
-    mouseleave: function(){
-      fade_out();
-    }
-  });
-}
-
-function fade_in(){
-  target = $('#bottomiFrame')[0]
-  if (!currDrag) { //prevents changes when dragging
-    $(target).css('animation-direction','normal');
-    $(target).addClass('fade-in');
-    $(target).css('opacity','1');
-    $(target).on("animationend", function(){
-      $(target).removeClass('fade-in');
-      });
-  }
-}
-
-function fade_out(){
-  target = $('#bottomiFrame')[0]
-  if (currDrag) {
-    $(target).removeClass('fade-out');
-  }
-  else { //prevents changes when dragging
-    $(target).css('animation-direction','reverse');
-    $(target).addClass('fade-in');
-    $(target).css('opacity', op);  
-    $(target).on("animationend", function(){
-      $(target).removeClass('fade-in');
-      });
-  }
+  $("body").append(`<style>
+    #bottomHover:hover #bottomiFrame{
+      opacity: 1;
+    }</style>`);
+  $("#bottomHover").css(`pointer-events`,'auto');
 }
