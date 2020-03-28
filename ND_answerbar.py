@@ -33,12 +33,15 @@ def NDAB_bottomHTML():
         color = config['answer_button_border_color_normal']
 
     NDAB_css = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.css')).read()
+    NDAB_css_settings = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar_settings.css')).read()
     NDAB_html = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.html')).read()
     NDAB_css = f"""
+        {NDAB_css_settings}
         :root {{
             --bkgndColor: {color};
              --animTime: {animTime}s;
-            }} \n {NDAB_css}"""
+            }}
+        {NDAB_css}"""
     return f"""
         <style> {NDAB_css} </style>
         {NDAB_html}

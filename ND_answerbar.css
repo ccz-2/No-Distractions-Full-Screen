@@ -1,8 +1,5 @@
 /*No Distractions Full Screen v4.0*/
-/*:root {
-  --bkgndColor: #474747;
-  --animTime: 0.5s;
-}*/
+/*To change ND Answer Bar apperance, please modify ND_answerbar_settings.css*/
 
 body, #outer{
   background: transparent !important;
@@ -22,14 +19,14 @@ table#innertable{
   flex-direction: row;
   align-items: flex-end;
   justify-content: center;
-  height: 2.5em;
+  height: auto;
   width: 100%;
   //border: 1px solid skyblue;
   pointer-events: none;
 }
 
 .ans, .ques {
-  height: 2.5em;
+  height: var(--buttonHeight);
   margin-right: 1.5em;
   margin-left: 1.5em;
   //border: 1px solid blue;
@@ -40,7 +37,8 @@ table#innertable{
 }
 
 .ans {
-  flex-basis: 10em;
+  flex-basis: var(--buttonWidth);
+  line-height: var(--fontVerticalOffset);
 }
 
 .ques {
@@ -51,6 +49,7 @@ table#innertable{
   max-height: 70%;
   min-height: 70%;
   width: 100%;
+  box-sizing: border-box;
   //border: 1px solid orange;
   border-radius: 5px 5px 0px 0px;
   opacity: 1;
@@ -66,17 +65,16 @@ table#innertable{
 }
 
 .nobold, .platform {
-  font-size: 1.2em;
+  font-size: var(--fontSize);
   font-weight: 700;
   padding-left: 0.5em;
   padding-right: 0.5em;
-  padding-top: 0em;
 }
 
 #defease{
-  font-size: 1.2em;
+  font-size: var(--fontSize);
   background-color: initial;
-  border: 2px solid #42ffec;
+  border: 2px solid var(--default_ease_highlightColor);
   border-bottom: none;
 }
 
@@ -85,27 +83,27 @@ table#innertable{
 }
 
 #Again .platform {
-  background-color: #d60202 !important;
-  color: #330000 !important;
-  text-shadow: 0px 2px 3px #de8181 !important;
+  background-color: var(--Again_buttonColor) !important;
+  color: var(--Again_fontColor) !important;
+  text-shadow: 0px 2px 3px var(--Again_fontShadow) !important;
 }
 
 #Hard .platform {
-  background-color: #ffa900 !important;
-  color: #332200 !important;
-  text-shadow: 0px 2px 3px #debf81 !important;
+  background-color: var(--Hard_buttonColor) !important;
+  color: var(--Hard_fontColor) !important;
+  text-shadow: 0px 2px 3px var(--Hard_fontShadow) !important;
 }
 
 #Good .platform {
-  background-color: #00d407 !important;
-  color: #013300 !important;
-  text-shadow: 0px 2px 3px #81dea2 !important;
+  background-color: var(--Good_buttonColor) !important;
+  color: var(--Good_fontColor) !important;
+  text-shadow: 0px 2px 3px var(--Good_fontShadow) !important;
 }
 
 #Easy .platform {
-  background-color: #0049f2 !important;
-  color: #000033 !important;
-  text-shadow: 0px 2px 3px #818fde !important;
+  background-color: var(--Easy_buttonColor) !important;
+  color: var(--Easy_fontColor) !important;
+  text-shadow: 0px 2px 3px var(--Easy_fontShadow) !important;
 }
 
 .ques .platform {
@@ -115,7 +113,7 @@ table#innertable{
 
 @keyframes ansConf {
   0% {
-    min-height: 50%;
+    min-height: 70%;
   }
 
   70% {
@@ -124,7 +122,7 @@ table#innertable{
   }
 
   100% {
-    min-height: 50%;
+    min-height: 90%;
     opacity: 0;
   }
 }

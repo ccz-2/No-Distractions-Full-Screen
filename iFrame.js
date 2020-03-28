@@ -80,13 +80,14 @@ function fitContentDummy(){
 function fitNDAB(){
   var iframe = $('#bottomiFrame')[0]
   var target = iframe.contentDocument.body;
+  var factor = (window.devicePixelRatio/window.defaultScale);
   if (target != null){
-    newheight = 50//target.scrollHeight;
+    newheight = target.scrollHeight;
     iframe.height= newheight + "px";
     $("div.bottomWrapper").outerHeight(newheight);
-    $("div.bottomWrapper").css({'width':'600px'});
+    //$("div.bottomWrapper").css({'width':'600px'});
     //$("div.bottomWrapper").css({'position':'fixed','left':'0','bottom':'0','width':'100%'});
-    $(iframe).css('width','300px');
+    $(iframe).css('width',window.innerWidth * factor);
     $("div.bottomWrapper")[0].style.transform = 'translate(0px, 0px)'
   }
 }
@@ -99,18 +100,6 @@ function resize(){
 }
 
 window.visualViewport.addEventListener('resize', resize);
-
-var on = false;
-setInterval(function(){
-  if (on){
-    $('body').css('overflow-y','')
-    on = false;
-  }
-  else {
-    $('body').css('overflow-y','scroll')
-    on = true; 
-  }  
-}, 500);
 
 function changeScale(x) { //Adjusts to new scale e.g. changing screen DPI; calls iFrame function to update scale
   window.defaultScale = x;

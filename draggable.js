@@ -11,6 +11,9 @@ function getTarget(){
 
 //moves target to within window boundaries
 function fitInWindow() {
+  if (window.NDAB) {
+    return
+  }
   getTarget()
   if (target !== null && target.getBoundingClientRect().height != 0){
     var rect = target.getBoundingClientRect();

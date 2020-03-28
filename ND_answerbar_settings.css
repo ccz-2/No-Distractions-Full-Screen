@@ -1,0 +1,25 @@
+/*No Distractions Full Screen v4.0*/
+/*Enter user settings here*/
+:root {
+  --fontSize: 1.1em;
+  --fontVerticalOffset: 1.7em;
+  --buttonHeight: 2.5em;
+  --buttonWidth: 10em;
+
+  --Again_fontColor:#330000;
+  --Hard_fontColor:#332200;
+  --Good_fontColor:#013300;
+  --Easy_fontColor:#000033;
+
+  --Again_fontShadow:#de8181;
+  --Hard_fontShadow:#debf81;
+  --Good_fontShadow:#81dea2;
+  --Easy_fontShadow:#818fde;
+
+  --Again_buttonColor:#d60202;
+  --Hard_buttonColor:#ffa900;
+  --Good_buttonColor:#00d407;
+  --Easy_buttonColor:#0049f2;
+
+  --default_ease_highlightColor:#42ffec;
+}
