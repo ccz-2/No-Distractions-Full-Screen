@@ -10,7 +10,8 @@ $('body').append(`
 
 #bottomiFrame {
   opacity: `+op+`;
-  transition: 0.15s;
+  transition-duration: 0.15s;
+  transition-property: opacity;
 }
 
 #bottomiFrame:hover {
@@ -80,21 +81,36 @@ function fitNDAB(){
   var iframe = $('#bottomiFrame')[0]
   var target = iframe.contentDocument.body;
   if (target != null){
-    newheight = target.scrollHeight;
+    newheight = 50//target.scrollHeight;
     iframe.height= newheight + "px";
     $("div.bottomWrapper").outerHeight(newheight);
-    $("div.bottomWrapper").css({'position':'fixed','left':'0','bottom':'0','width':'100%'});
-    $(iframe).css('width','100%');
+    $("div.bottomWrapper").css({'width':'600px'});
+    //$("div.bottomWrapper").css({'position':'fixed','left':'0','bottom':'0','width':'100%'});
+    $(iframe).css('width','300px');
     $("div.bottomWrapper")[0].style.transform = 'translate(0px, 0px)'
   }
 }
 
 function resize(){
   var factor = (window.defaultScale/(window.devicePixelRatio));
-  $('#outer')[0].style.zoom = (factor);
+  $( ".noZoom" ).each(function() {
+    this.style.zoom = (factor);
+  });
 }
 
 window.visualViewport.addEventListener('resize', resize);
+
+var on = false;
+setInterval(function(){
+  if (on){
+    $('body').css('overflow-y','')
+    on = false;
+  }
+  else {
+    $('body').css('overflow-y','scroll')
+    on = true; 
+  }  
+}, 500);
 
 function changeScale(x) { //Adjusts to new scale e.g. changing screen DPI; calls iFrame function to update scale
   window.defaultScale = x;

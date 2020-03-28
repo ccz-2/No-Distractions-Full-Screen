@@ -9,27 +9,23 @@ body, #outer{
   border-top-color: transparent !important;
   overflow: hidden;
   margin: 0;
+  padding: 0;
 }
 
 table#innertable{
   padding: 0;
-}
-
-#defease{
-  font-size: 1.2em;
-  background-color: initial;
-  border: 2px solid #42ffec;
-  border-bottom: none;
+  margin: 0;
 }
 
 #container {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  height: auto;
-  width: auto;
+  height: 2.5em;
+  width: 100%;
   //border: 1px solid skyblue;
+  pointer-events: none;
 }
 
 .ans, .ques {
@@ -52,6 +48,7 @@ table#innertable{
 }
 
 .platform {
+  max-height: 70%;
   min-height: 70%;
   width: 100%;
   //border: 1px solid orange;
@@ -59,6 +56,7 @@ table#innertable{
   opacity: 1;
   overflow:hidden;
   text-align: center;
+  pointer-events: auto;
   cursor: pointer;
   transition: 0.3s;
 }
@@ -72,7 +70,14 @@ table#innertable{
   font-weight: 700;
   padding-left: 0.5em;
   padding-right: 0.5em;
-  padding-top: 0.2em;
+  padding-top: 0em;
+}
+
+#defease{
+  font-size: 1.2em;
+  background-color: initial;
+  border: 2px solid #42ffec;
+  border-bottom: none;
 }
 
 .nobold {
@@ -110,7 +115,7 @@ table#innertable{
 
 @keyframes ansConf {
   0% {
-    min-height: 70%;
+    min-height: 50%;
   }
 
   70% {
@@ -119,7 +124,7 @@ table#innertable{
   }
 
   100% {
-    min-height: 90%;
+    min-height: 50%;
     opacity: 0;
   }
 }

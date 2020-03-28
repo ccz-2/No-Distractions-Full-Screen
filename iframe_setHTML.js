@@ -19,24 +19,25 @@ scriptsDummy = `
 if (!$('#bottomiFrame').length){
 	$('body').append(`
 	<div id='bottomHover'>
-	  <div id='outer'>
-	    <div class="bottomWrapper">
-	      <iframe id='bottomiFrame' frameborder="0" scrolling="no">
-	      </iframe>
-	      <div id = 'cover'></div>
-	    </div>
-	      <iframe id='bottomiFrameBkgnd' frameborder="0" scrolling="no">
-	      </iframe>
-	  </div>
+    <div id='outer'>
+      <div class="bottomWrapper noZoom">
+        <iframe id='bottomiFrame' frameborder="0" scrolling="no">
+        </iframe>
+        <div id = 'cover'></div>
+      </div>
+        <iframe id='bottomiFrameBkgnd' class='noZoom' frameborder="0" scrolling="no">
+        </iframe>
+    </div>
   	</div>
 
 
 	<style>
 	#bottomHover {
 	    //background-color: red;
+	    border: 1px solid black;
 	    position: fixed;
 	    width:100%;
-	    height: 15px;
+	    height: 2%;
 	    bottom: 0px;
 	    left: 0px;
 	    z-index: 1;
@@ -44,16 +45,44 @@ if (!$('#bottomiFrame').length){
 	}
 	
 	#outer{
-	  //background-color: navy;
+	  background-color: navy;
+	  width: auto;
+	  height: auto;
 	  bottom: 0;
 	  position: fixed;
 	  pointer-events: none;
-	  left: 50%;
+	  left: 50vw;
 	  z-index: -10;
 	}
+
+	.bottomWrapper {
+	  //background-color: purple;
+	  border: 1px solid purple;
+	  position: relative;
+	  left: -50%;
+	  border-radius: 5px;
+	  margin: 0px;
+	  padding: 0px;
+	  pointer-events: auto;
+	  touch-action: none;
+	  user-select: none;
+	  overflow: hidden;
+	}
 	
+	#bottomiFrame {
+	  border: 1px solid orange;
+	  margin: 0px;
+	  padding: 0px;
+	  overflow: hidden;
+	  user-select: none;
+	  z-index: 1;
+	  position: relative;
+	  bottom: 0;
+	  left: 0;
+	}
+
 	#cover{
-    	//background-color: hotpink;
+    	background-color: hotpink;
     	pointer-events: auto;
 		position: absolute;
 		top: 0;
@@ -62,30 +91,9 @@ if (!$('#bottomiFrame').length){
 		z-index: 5;
 	}
 
-	.bottomWrapper {
-	  //background-color: purple;
-	  position: relative;
-	  left: -50%;
-	  border-radius: 5px;
-	  margin: 0px;
-	  pointer-events: auto;
-	  touch-action: none;
-	  user-select: none;
-	  overflow: hidden;
-	}
-	
-	#bottomiFrame {
-	  display:block;
-	  margin: 0px;
-	  position: absolute;
-	  overflow: hidden;
-	  bottom: 0;
-	  user-select: none;
-	  z-index: 1;
-	}
-
 	#bottomiFrameBkgnd {
 	  //background-color: yellow;
+	  overflow: hidden;
 	  display:block;
 	  margin: 0px;
 	  position: fixed;
