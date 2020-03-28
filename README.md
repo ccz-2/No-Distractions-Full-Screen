@@ -1,7 +1,7 @@
 # No Distractions Full Screen
-Eliminates <i>everything</i> unnecessary during reviews giving you maximum usable screen space and a clean, adjustable interface that supports touch.
-
 ### To install, please visit the <a href="https://ankiweb.net/shared/info/1049863218">addon page</a>
+
+Eliminates <i>everything</i> unnecessary during reviews giving you maximum usable screen space and a clean, adjustable interface that supports touch.
 
 <b><code>TL;DR:</code></b>  
 <b>Press F11 for fullscreen</b> or use menu option <i>(View -&gt; Full Screen)</i>.
@@ -9,13 +9,13 @@ Eliminates <i>everything</i> unnecessary during reviews giving you maximum usabl
 <b><code>Features:</code></b>
 - <b>Hides all menu bars</b> including bottom bar ("More, Edit") and both top bars ("File, Edit..." and "Decks, Add...").
 - <b>Superimposes answer buttons</b> over cards, with <b>adjustable opacity</b>. Becomes opaque on mouse-over.
-- <b>Draggable answer buttons</b> that support touch. Position can be locked with right click option, hotkey or menu button.
+- <b>Draggable answer buttons</b> that support touch. Enable with right click menu option or hotkey.
 - <b>No Distractions Answer Bar</b>: Minimalistic reimagining of answer bar with animated answer confirmations
 - <b>Hides mouse cursor</b> if idle.
 - <b>No Distractions Windowed Mode</b>: Same clean interface in a resizable window. Accessible through menu. Can set to <b>always be on top</b>.
 - <b>Auto-toggle</b> No Distractions mode when starting/leaving reviews
 - <b>Highly customizable</b>: Common settings can be changed in menu options (<i>View -&gt; Full Screen</i>). Further settings can be changed in config, accessible through the <i>Advanced Settings</i> menu option. Detailed descriptions within.
-- <b> Highly compatible</b>: Supports wide range of addons (tested list in notes section below), Win/Mac/Linux, hardware/software rendering modes and legacy clients (at least 2.1.15 and probably lower).
+- <b>Highly compatible</b>: Supports wide range of addons (tested list in notes section below), Win/Mac/Linux, hardware/software rendering modes and legacy clients (at least 2.1.15 and probably lower).
 - <b>Review with minimal mouse movement</b>: allows card scrolling even when hovering over answer buttons (ideal for mouse users).
 
 <b><code>In Action:</code></b>  
@@ -26,7 +26,7 @@ No Distractions Answer Bar with animated answer confirmation enabled:
 <img src="https://i.ibb.co/p0YLTVS/HKASp-GFBt-W.gif">
 
 <b><code>Notes:</code></b>  
-- No Distractions <u>Answer Bar</u> uses a custom layout and may not play well with other addons. Feel free to report issues, and I will try my best, but widespread compatibility may not be possible.
+- No Distractions Answer Bar uses a custom layout and may not play well with other addons. Feel free to report issues, and I will try my best, but widespread compatibility may not be possible.
 - Automatically switches colors for normal/night mode with support for Night Mode Addon
 - The F11 shortcut will automatically toggle the last enabled mode (either fullscreen or windowed).
 - In Fullscreen mode, moving the mouse to the bottom of the screen will unhide answer buttons (if hidden).
