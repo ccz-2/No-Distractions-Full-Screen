@@ -13,10 +13,10 @@ from .ND_answerbar import *
 import os
 
 def linkHandler_wrapper(self, url):
-    if url == "NDFS_showAns":
+    if url == "NDFS_showAns" and NDAB_enabled:
         NDAB_showAnswerButs()
-    elif url == "NDFS_showQues":
-        mw.reviewer.bottom.web.eval(f'ansConf({last_ease}, "{mw.reviewer._remaining()}")')
+    elif url == "NDFS_showQues" and NDAB_enabled:
+        mw.reviewer.bottom.web.eval(f'ansConf({last_ease}, `{mw.reviewer._remaining()}`)')
     else:
         origLinkHandler(self, url)
 origLinkHandler = Reviewer._linkHandler
@@ -51,7 +51,7 @@ def NDAB_initWeb(func):
         func(*args)
         html = NDAB_bottomHTML()
         html = urllib.parse.quote(html, safe='')
-        mw.reviewer.bottom.web.eval(f'var url = decodeURIComponent("{html}"); $("#outer")[0].innerHTML = url')
+        mw.reviewer.bottom.web.eval(f'var url = decodeURIComponent(`{html}`); $("#outer")[0].innerHTML = url')
         mw.reviewer.bottom.web.eval(NDAB_js)
     return wrap
 
@@ -63,7 +63,7 @@ def NDAB_showAnswerButs():
         else:
             extra = ""
         due = mw.reviewer._buttonTime(ease)
-        mw.reviewer.bottom.web.eval(f'insertAnsBut("{due}", "{extra}", {ease}, "{label}")')
+        mw.reviewer.bottom.web.eval(f'insertAnsBut(`{due}`, `{extra}`, {ease}, `{label}`)')
 
     mw.reviewer.bottom.web.eval('clearButs();')
     for ease, label in mw.reviewer._answerButtonList():
@@ -80,17 +80,18 @@ def NDAB_answerCard(func):
         last_ease = ease
     return confAns
 
+NDAB_enabled = False
 def enable_ND_bottomBar(nightMode = False):
     global og_initWeb, og_answerCard
     global isNightMode
+    global NDAB_enabled
+    NDAB_enabled = True
     isNightMode = nightMode
-
     og_initWeb = mw.reviewer._initWeb
     og_answerCard = mw.reviewer._answerCard
-
     mw.reviewer._answerCard  = NDAB_answerCard(mw.reviewer._answerCard)
     mw.reviewer._initWeb = NDAB_initWeb(mw.reviewer._initWeb)
 
 def disable_ND_bottomBar():
-    mw.reviewer._initWeb = og_initWeb
-    mw.reviewer._answerCard  = og_answerCard
+    global NDAB_enabled
+    NDAB_enabled = False

@@ -36,11 +36,18 @@ table#innertable{
   margin-right: 1.5em;
   margin-left: 1.5em;
   //border: 1px solid blue;
-  flex-basis: 8em;
   display: flex;
   justify-content: flex-end;
   flex-direction: column;
   user-select: none;
+}
+
+.ans {
+  flex-basis: 10em;
+}
+
+.ques {
+  flex-basis: auto;
 }
 
 .platform {
