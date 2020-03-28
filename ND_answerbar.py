@@ -12,6 +12,16 @@ from .toolbar import *
 from .ND_answerbar import *
 import os
 
+def linkHandler_wrapper(self, url):
+    if url == "NDFS_showAns":
+        NDAB_showAnswerButs()
+    elif url == "NDFS_showQues":
+        mw.reviewer.bottom.web.eval(f'ansConf({last_ease}, "{mw.reviewer._remaining()}")')
+    else:
+        origLinkHandler(self, url)
+origLinkHandler = Reviewer._linkHandler
+Reviewer._linkHandler = linkHandler_wrapper
+
 def NDAB_bottomHTML():
     config = mw.addonManager.getConfig(__name__)
     animTime = config['answer_conf_time']
@@ -21,7 +31,6 @@ def NDAB_bottomHTML():
         color = config['answer_button_border_color_normal']
 
     NDAB_css = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.css')).read()
-    NDAB_js = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.js')).read()
     NDAB_html = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.html')).read()
     NDAB_css = f"""
         :root {{
@@ -29,7 +38,6 @@ def NDAB_bottomHTML():
              --animTime: {animTime}s;
             }} \n {NDAB_css}"""
     return f"""
-        <script> {NDAB_js} </script>
         <style> {NDAB_css} </style>
         {NDAB_html}
         <script>
@@ -37,9 +45,18 @@ def NDAB_bottomHTML():
         </script>
         """
 
-def NDAB_answerButtons():
-    default = mw.reviewer._defaultEase()
+def NDAB_initWeb(func):
+    NDAB_js = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar.js')).read()
+    def wrap(*args):
+        func(*args)
+        html = NDAB_bottomHTML()
+        html = urllib.parse.quote(html, safe='')
+        mw.reviewer.bottom.web.eval(f'var url = decodeURIComponent("{html}"); $("#outer")[0].innerHTML = url')
+        mw.reviewer.bottom.web.eval(NDAB_js)
+    return wrap
 
+def NDAB_showAnswerButs():
+    default = mw.reviewer._defaultEase()
     def but(ease, label):
         if ease == default:
             extra = "id=defease"
@@ -53,46 +70,27 @@ def NDAB_answerButtons():
         but(ease, label)
     mw.reviewer.bottom.web.eval('$(function () { $("#defease").focus(); });')
 
-def NDAB_showEaseButtons():
-    NDAB_answerButtons()
-
-def NDAB_showAnswerButton():
-    mw.reviewer.bottom.web.eval(f'insertQuesBut("{mw.reviewer._remaining()}")')
-    if mw.reviewer.card.shouldShowTimer():
-        maxTime = mw.reviewer.card.timeLimit() / 1000
-    else:
-        maxTime = 0
-    mw.reviewer.bottom.web.eval(f"showQuestion('',{maxTime});")
-    mw.reviewer.bottom.web.adjustHeightToFit()
-
+last_ease = 1
+#Grabs the last ease - used in linkhandler for answer confirmation
 def NDAB_answerCard(func):
+    global last_ease
     def confAns(ease):
+        global last_ease
         func(ease)
-        mw.reviewer.bottom.web.eval(f'ansConf({ease}, "{mw.reviewer._remaining()}")')
+        last_ease = ease
     return confAns
 
-
 def enable_ND_bottomBar(nightMode = False):
-    global og_bottomHTML, og_answerButtons, og_bottomTime, og_showEaseButtons, og_showAnswerButton, og_answerCard
+    global og_initWeb, og_answerCard
     global isNightMode
     isNightMode = nightMode
 
-    og_bottomHTML = mw.reviewer._bottomHTML
-    og_answerButtons = mw.reviewer._answerButtons
-    og_bottomTime = mw.reviewer._buttonTime
-    og_showEaseButtons = mw.reviewer._showEaseButtons
-    og_showAnswerButton = mw.reviewer._showAnswerButton
+    og_initWeb = mw.reviewer._initWeb
     og_answerCard = mw.reviewer._answerCard
 
-    mw.reviewer._bottomHTML = NDAB_bottomHTML
-    mw.reviewer._answerButtons = NDAB_answerButtons
-    mw.reviewer._showEaseButtons = NDAB_showEaseButtons
-    mw.reviewer._showAnswerButton = NDAB_showAnswerButton
     mw.reviewer._answerCard  = NDAB_answerCard(mw.reviewer._answerCard)
+    mw.reviewer._initWeb = NDAB_initWeb(mw.reviewer._initWeb)
 
 def disable_ND_bottomBar():
-    mw.reviewer._bottomHTML = og_bottomHTML
-    mw.reviewer._answerButtons = og_answerButtons
-    mw.reviewer._showEaseButtons = og_showEaseButtons
-    mw.reviewer._showAnswerButton = og_showAnswerButton
+    mw.reviewer._initWeb = og_initWeb
     mw.reviewer._answerCard  = og_answerCard
