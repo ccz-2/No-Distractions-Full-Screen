@@ -1,3 +1,4 @@
+/*No Distractions Full Screen v4.0*/
 /*:root {
   --bkgndColor: #474747;
   --animTime: 0.5s;
@@ -67,9 +68,8 @@ table#innertable{
 }
 
 .nobold, .platform {
-  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
   font-size: 1.2em;
-  font-weight: 1000;
+  font-weight: 700;
   padding-left: 0.5em;
   padding-right: 0.5em;
   padding-top: 0.2em;
@@ -105,7 +105,7 @@ table#innertable{
 
 .ques .platform {
   background-color: var(--bkgndColor) !important;
-  text-shadow: 0px 2px 3px #555 !important;
+  //text-shadow: 0px 2px 3px #555 !important;
 }
 
 @keyframes ansConf {

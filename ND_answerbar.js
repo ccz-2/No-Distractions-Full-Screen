@@ -1,3 +1,5 @@
+//No Distractions Full Screen v4.0
+
 function ansConf(ease, remaining){
   var pressed = '.platform[data-ease='+ ease +']';
   if ($(pressed)[0] != null) {

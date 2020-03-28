@@ -1,5 +1,6 @@
 //No Distractions Full Screen v4.0
 //var op = 0.5; //Defined in python
+
 var newheight;
 var newwidth;
 

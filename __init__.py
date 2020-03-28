@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.0 3/26/2020
+# v4.0 3/27/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -21,7 +21,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from aqt.reviewer import Reviewer, ReviewerBottomBar
+from aqt.reviewer import Reviewer
 from aqt.qt import *
 from aqt import *
 from aqt.webview import AnkiWebView

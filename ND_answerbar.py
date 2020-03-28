@@ -1,4 +1,6 @@
-from aqt.reviewer import Reviewer, ReviewerBottomBar
+# No Distractions Full Screen v4.0 
+
+from aqt.reviewer import Reviewer
 from aqt.qt import *
 from aqt import *
 from aqt.webview import AnkiWebView
