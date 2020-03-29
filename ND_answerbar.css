@@ -43,6 +43,7 @@ table#innertable{
 
 .ques {
   flex-basis: auto;
+  line-height: var(--fontVerticalOffset);
 }
 
 .platform {
@@ -61,7 +62,7 @@ table#innertable{
 }
 
 .platform:hover {
-  box-shadow: inset 0px 40px 112px -8px rgba(255,255,255,0.32);;
+  box-shadow: inset 0px 40px 112px -8px rgba(255,255,255,0.32);
 }
 
 .nobold, .platform {
@@ -74,8 +75,11 @@ table#innertable{
 #defease{
   font-size: var(--fontSize);
   background-color: initial;
-  border: 2px solid var(--default_ease_highlightColor);
-  border-bottom: none;
+  box-shadow: 0 0 0 2px var(--default_ease_highlightColor);
+}
+
+#defease:hover {
+  box-shadow: 0 0 0 2px var(--default_ease_highlightColor), inset 0px 40px 112px -8px rgba(255,255,255,0.32);
 }
 
 .nobold {
