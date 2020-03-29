@@ -1,4 +1,4 @@
-//No Distractions Full Screen v4.0
+//No Distractions Full Screen v4.1
 //var url = '';
 url = decodeURIComponent(url);
 scripts = `

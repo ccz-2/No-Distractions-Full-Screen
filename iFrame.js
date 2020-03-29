@@ -1,4 +1,4 @@
-//No Distractions Full Screen v4.0
+//No Distractions Full Screen v4.1
 //var op = 0.5; //Defined in python
 
 var newheight;
@@ -85,8 +85,6 @@ function fitNDAB(){
     newheight = target.scrollHeight;
     iframe.height= newheight + "px";
     $("div.bottomWrapper").outerHeight(newheight);
-    //$("div.bottomWrapper").css({'width':'600px'});
-    //$("div.bottomWrapper").css({'position':'fixed','left':'0','bottom':'0','width':'100%'});
     $(iframe).css('width',window.innerWidth * factor);
     $("div.bottomWrapper")[0].style.transform = 'translate(0px, 0px)'
   }

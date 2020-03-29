@@ -1,5 +1,6 @@
-/*No Distractions Full Screen v4.0*/
-/*Enter user settings here*/
+/* Enter user settings below
+  !!!These settings will not save when updating the addon - persistent settings will come in a future release
+  Toggling in and out of No Distractions mode will apply settings */
 :root {
   --fontSize: 1.1em;
   --fontVerticalOffset: 1.7em;
@@ -16,10 +17,10 @@
   --Good_fontShadow:#81dea2;
   --Easy_fontShadow:#818fde;
 
-  --Again_buttonColor:#d60202;
+  --Again_buttonColor:#ff6961;
   --Hard_buttonColor:#ffa900;
-  --Good_buttonColor:#00d407;
-  --Easy_buttonColor:#0049f2;
+  --Good_buttonColor:#61ffb8;
+  --Easy_buttonColor:#61a8ff;
 
   --default_ease_highlightColor:#42ffec;
 }
