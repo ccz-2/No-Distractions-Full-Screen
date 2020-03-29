@@ -26,7 +26,7 @@ table#innertable{
 }
 
 .ans, .ques {
-  height: var(--buttonHeight);
+  height: var(--AnswerButtonHeight);
   margin-right: 1.5em;
   margin-left: 1.5em;
   //border: 1px solid blue;
@@ -37,7 +37,7 @@ table#innertable{
 }
 
 .ans {
-  flex-basis: var(--buttonWidth);
+  flex-basis: var(--AnswerButtonWidth);
   line-height: var(--fontVerticalOffset);
 }
 

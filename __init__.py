@@ -683,6 +683,10 @@ enable_cursor_hide.triggered.connect(user_settings)
 
 menu.addSeparator()
 
+ndab_settings = QAction('ND Answer Bar Appearance Settings', mw)
+menu.addAction(ndab_settings)
+ndab_settings.triggered.connect(on_ndab_settings)
+
 advanced_settings = QAction('Advanced Settings (Config)', mw)
 menu.addAction(advanced_settings)
 advanced_settings.triggered.connect(on_advanced_settings)

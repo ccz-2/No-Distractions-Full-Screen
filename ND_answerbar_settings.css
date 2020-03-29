@@ -1,11 +1,10 @@
-/* Enter user settings below
-  !!!These settings will not save when updating the addon - persistent settings will come in a future release
-  Toggling in and out of No Distractions mode will apply settings */
 :root {
+  --NDABversion: "1.0";
+
   --fontSize: 1.1em;
   --fontVerticalOffset: 1.7em;
-  --buttonHeight: 2.5em;
-  --buttonWidth: 10em;
+  --AnswerButtonHeight: 2.5em;
+  --AnswerButtonWidth: 10em;
 
   --Again_fontColor:#330000;
   --Hard_fontColor:#332200;
@@ -22,5 +21,5 @@
   --Good_buttonColor:#42ff9a;
   --Easy_buttonColor:#61a8ff;
 
-  --default_ease_highlightColor:#00b7ff;
+  --default_ease_highlightColor:#8373ff;
 }
