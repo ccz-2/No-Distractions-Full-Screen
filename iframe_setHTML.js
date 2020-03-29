@@ -86,8 +86,9 @@ if (!$('#bottomiFrame').length){
 	}
 
 	#cover{
-      //background-color: hotpink;
-      pointer-events: auto;
+          background-color: white;
+	  mix-blend-mode: saturation;
+          pointer-events: auto;
 	  position: absolute;
 	  top: 0;
 	  height: 100%;

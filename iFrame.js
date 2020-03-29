@@ -55,12 +55,17 @@ function fitContent(){
     var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
   }
   if (target != null) {
-    newheight = target.scrollHeight + 1;
-    newwidth = target.scrollWidth + 1;
-    iframe.height = newheight + "px";
-    iframe.width = newwidth + "px";
-    $("div.bottomWrapper").outerHeight(newheight);
-    $("div.bottomWrapper").outerWidth(newwidth);
+    boundingBox = target.getBoundingClientRect()
+    newheight = boundingBox.height
+    newwidth = boundingBox.width
+    x = boundingBox.x
+    y = boundingBox.y
+    windowHeight = $('#bottomiFrame')[0].contentWindow.eval('window.innerHeight')
+    windowWidth = $('#bottomiFrame')[0].contentWindow.eval('window.innerWidth')
+    console.log(boundingBox)
+    console.log(window.innerHeight, window.innerWidth)
+    $('#bottomiFrame').css({'width':windowWidth,'height':windowHeight,'margin-top':-y,'margin-left':-x});
+    $("div.bottomWrapper").css({'max-width':newwidth,'max-height':newheight});
     resize();
     if (!window.NDAB) {
       fitInWindow(); //called from draggable.js
