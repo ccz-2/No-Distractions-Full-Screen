@@ -1,4 +1,4 @@
-# No Distractions Full Screen v4.0.1
+# No Distractions Full Screen v4.1.1
 
 from aqt.reviewer import Reviewer
 from aqt.qt import *
@@ -71,9 +71,20 @@ def NDAB_showAnswerButs():
         mw.reviewer.bottom.web.eval(f'insertAnsBut(`{due}`, `{extra}`, {ease}, `{label}`)')
 
     mw.reviewer.bottom.web.eval('clearButs();')
-    for ease, label in mw.reviewer._answerButtonList():
+    for ease, label in NDAB_answerButtonList():
         but(ease, label)
     mw.reviewer.bottom.web.eval('$(function () { $("#defease").focus(); });')
+
+# Reimplemented Anki method without multilingual support, to set language-agnostic class names
+def NDAB_answerButtonList():
+    l = ((1, ("Again")),)
+    cnt = mw.col.sched.answerButtons(mw.reviewer.card)
+    if cnt == 2:
+        return l + ((2, ("Good")),)
+    elif cnt == 3:
+        return l + ((2, ("Good")), (3, ("Easy")))
+    else:
+        return l + ((2, ("Hard")), (3, ("Good")), (4, ("Easy")))
 
 last_ease = 1
 #Grabs the last ease - used in linkhandler for answer confirmation
@@ -149,7 +160,7 @@ def on_ndab_settings():
         save()
 
     def sizeHintOverload():
-        return QSize(500, 400) 
+        return QSize(600, 400) 
 
     buttons.accepted.connect(save)
     buttons.rejected.connect(window.close)
