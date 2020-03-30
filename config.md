@@ -6,9 +6,9 @@
 
  <b><span style="color:mediumaquamarine">If you are updating from an old version,</span></b> many values may be obsolete. Please note your current config and click "Restore Defaults" to remove non-functional values.  
 
- <b>Changing the appearance of the No Distractions Answer Bar can be done through the ND Full Screen menu option.</b>
+ <b><span style="color:mediumaquamarine">Changing the appearance of the No Distractions Answer Bar</span></b> can be done through the NDFS toolbar menu option (not here). However clicking "Restore Defaults" on this screen <u>will</u> reset your No Distractions Answer Bar appearance settings.
 
- <b>All changes are effective immediately.</b> Note that changing settings through menu buttons will override respective values.  
+ <b><span style="color:mediumaquamarine">All changes are effective immediately.</span></b> Note that changing settings through menu buttons will override respective values.  
 
 -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_compatibility_mode`**</span>:
   Only applies to Microsoft Windows. Enabled by default; resolves numerous graphical issues when in Fullscreen mode (e.g. persistent task bar, flickering with overlays, hidden right click-menus).  

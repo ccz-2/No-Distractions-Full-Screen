@@ -70,6 +70,7 @@ table#innertable{
   font-weight: 700;
   padding-left: 0.5em;
   padding-right: 0.5em;
+  color: inherit !important;
 }
 
 #defease{
