@@ -129,8 +129,9 @@ def on_ndab_settings():
     text_editor.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
 
     msg = QLabel('''
-        <b>Toggling No Distractions Mode will apply settings.</b>
-        <br>Note: To change the background color of the "Show Question" button equivalent, see addon config
+        The following CSS variables can be adjusted to change the appearance of No Distractions Answer Bar
+        <br><b>Toggling No Distractions Mode will apply settings.</b>
+        <br>Note: The background color of the review statistics button is defined in the Addon-config (not here).
         <br>
         <br>This window can be kept open to make on-the-fly changes eaiser''')
     msg.setTextFormat(Qt.RichText)
