@@ -62,7 +62,7 @@ if (!$('#bottomiFrame').length){
 	}
 
 	.bottomWrapper {
-	  //border: 2px solid purple;
+	  //border: 1px solid purple;
 	  position: relative;
 	  left: -50%;
 	  border-radius: 5px;

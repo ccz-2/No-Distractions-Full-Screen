@@ -55,22 +55,21 @@ function fitContent(){
     var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
   }
   if (target != null) {
-    var zF = (window.defaultScale/window.devicePixelRatio)
+    var factor = (window.devicePixelRatio/window.defaultScale);
     boundingBox = target.getBoundingClientRect()
-    newheight = boundingBox.height * zF
-    newwidth = boundingBox.width * zF
-    x = boundingBox.x * zF
-    y = boundingBox.y * zF
+    newheight = boundingBox.height
+    newwidth = boundingBox.width
+    x = boundingBox.x
+    y = boundingBox.y
+    console.log(x,y)
     //iframe is fixed to size of bottombar
-    $('#bottomiFrame').css({'height':$('#bottomiFrame')[0].contentWindow.eval('window.innerHeight'),'width':'100vw'});
+    $(iframe).css({'height':$('#bottomiFrame')[0].contentWindow.eval('window.innerHeight') * factor});
+    $(iframe).css('width',window.innerWidth * factor);
     //pushes iframe contents so that buttons are in top left corner
     $('#bottomiFrame').css({'margin-top':-y,'margin-left':-x});
     //div is wrapped around iframe to show only buttons
     $('div.bottomWrapper').css({'max-width':newwidth,'max-height':newheight});
     resize();
-    if (!window.NDAB) {
-      fitInWindow(); //called from draggable.js
-    }
   }
 }
 
@@ -101,7 +100,13 @@ function resize(){
   $( ".noZoom" ).each(function() {
     this.style.zoom = (factor);
   });
-
+  if (window.NDAB){
+    fitNDAB()
+  }
+  else {
+    $(iframe).css({'height':$('#bottomiFrame')[0].contentWindow.eval('window.innerHeight') * factor});
+    $(iframe).css('width',window.innerWidth * factor);
+  }
 }
 
 window.visualViewport.addEventListener('resize', resize);
