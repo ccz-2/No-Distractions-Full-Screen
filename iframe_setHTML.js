@@ -48,17 +48,21 @@ if (!$('#bottomiFrame').length){
 	
 	#outer{
 	  //background-color: navy;
-	  width: auto;
+	  width: 100vw;
 	  height: auto;
 	  bottom: 0;
 	  position: fixed;
 	  pointer-events: none;
 	  left: 50vw;
 	  z-index: -10;
+	  display: flex;
+	  flex-direction: row;
+	  align-items: flex-end;
+	  justify-content: center;
 	}
 
 	.bottomWrapper {
-	  //border: 1px solid purple;
+	  //border: 2px solid purple;
 	  position: relative;
 	  left: -50%;
 	  border-radius: 5px;
@@ -68,12 +72,13 @@ if (!$('#bottomiFrame').length){
 	  touch-action: none;
 	  user-select: none;
 	  overflow: hidden;
-	  width: auto;
+	  width: 100%;
 	  height: auto;
 	}
 	
 	#bottomiFrame {
 	  //border: 1px solid orange;
+	  //background-color: orange;
 	  margin: 0px;
 	  padding: 0px;
 	  overflow: hidden;
@@ -81,6 +86,7 @@ if (!$('#bottomiFrame').length){
 	  z-index: 1;
 	  position: relative;
 	  display: block;
+	  width: 100%;
 	  bottom: 0;
 	  left: 0;
 	}

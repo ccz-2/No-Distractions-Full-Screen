@@ -55,12 +55,18 @@ function fitContent(){
     var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
   }
   if (target != null) {
-    newheight = target.scrollHeight;
-    newwidth = target.scrollWidth;
-    iframe.height = newheight + "px";
-    iframe.width = newwidth + "px";
-    $("div.bottomWrapper").outerHeight(newheight);
-    $("div.bottomWrapper").outerWidth(newwidth);
+    var zF = (window.defaultScale/window.devicePixelRatio)
+    boundingBox = target.getBoundingClientRect()
+    newheight = boundingBox.height * zF
+    newwidth = boundingBox.width * zF
+    x = boundingBox.x * zF
+    y = boundingBox.y * zF
+    //iframe is fixed to size of bottombar
+    $('#bottomiFrame').css({'height':$('#bottomiFrame')[0].contentWindow.eval('window.innerHeight'),'width':'100vw'});
+    //pushes iframe contents so that buttons are in top left corner
+    $('#bottomiFrame').css({'margin-top':-y,'margin-left':-x});
+    //div is wrapped around iframe to show only buttons
+    $('div.bottomWrapper').css({'max-width':newwidth,'max-height':newheight});
     resize();
     if (!window.NDAB) {
       fitInWindow(); //called from draggable.js
@@ -95,6 +101,7 @@ function resize(){
   $( ".noZoom" ).each(function() {
     this.style.zoom = (factor);
   });
+
 }
 
 window.visualViewport.addEventListener('resize', resize);

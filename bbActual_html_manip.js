@@ -11,14 +11,10 @@ $('body').append(`
 <style>
 table:not([id="innertable"]) {
   position: absolute;
-  left: 0;
-  bottom: 0;
   z-index: 999;
   padding: 0px;
-  border-radius: 5px;
   background-color: ` + color + `;
   user-select: none;
-  touch-action: none;
   vertical-align: bottom;
 }
 
