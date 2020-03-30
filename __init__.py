@@ -642,7 +642,7 @@ auto_toggle.triggered.connect(user_settings)
 
 menu.addSeparator()
 
-nd_answerBar = QAction('Enable No Distractions Answer Bar (drag disabled)', mw)
+nd_answerBar = QAction('Enable No Distractions Answer Bar', mw)
 nd_answerBar.setCheckable(True)
 nd_answerBar.setChecked(False)
 menu.addAction(nd_answerBar)
@@ -657,21 +657,22 @@ ans_conf.triggered.connect(user_settings)
 menu.addSeparator()
 
 mouseover = QActionGroup(mw)
-mouseover_default = QAction('Do Not Hide Answer Buttons', mouseover)
+mouseover_default = QAction('Do Not Hide Buttons', mouseover)
 mouseover_default.setCheckable(True)
 menu.addAction(mouseover_default)
 mouseover_default.setChecked(True)
 mouseover_default.triggered.connect(user_settings)
 
-mouseover_hidden = QAction('Hide Answer Buttons Until Mouseover', mouseover)
-mouseover_hidden.setCheckable(True)
-menu.addAction(mouseover_hidden)
-mouseover_hidden.triggered.connect(user_settings)
-
-mouseover_translucent = QAction('Translucent Answer Buttons Until Mouseover', mouseover)
+mouseover_translucent = QAction('Translucent Buttons Until Mouseover', mouseover)
 mouseover_translucent.setCheckable(True)
 menu.addAction(mouseover_translucent)
 mouseover_translucent.triggered.connect(user_settings)
+
+
+mouseover_hidden = QAction('Hide Buttons Until Mouseover', mouseover)
+mouseover_hidden.setCheckable(True)
+menu.addAction(mouseover_hidden)
+mouseover_hidden.triggered.connect(user_settings)
 
 menu.addSeparator()
 
@@ -682,14 +683,16 @@ menu.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(user_settings)
 
 menu.addSeparator()
+settings = QMenu(('Advanced Settings'), mw)
+menu.addMenu(settings)
+
+advanced_settings = QAction('General Settings (Config)', mw)
+settings.addAction(advanced_settings)
+advanced_settings.triggered.connect(on_advanced_settings)
 
 ndab_settings = QAction('ND Answer Bar Appearance Settings', mw)
-menu.addAction(ndab_settings)
+settings.addAction(ndab_settings)
 ndab_settings.triggered.connect(on_ndab_settings)
-
-advanced_settings = QAction('Advanced Settings (Config)', mw)
-menu.addAction(advanced_settings)
-advanced_settings.triggered.connect(on_advanced_settings)
 
 #Hidden actions - accessible through right click
 lockDrag = QAction('Lock Answer Bar Position', mw)

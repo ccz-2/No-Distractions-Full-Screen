@@ -103,10 +103,10 @@ def disable_ND_bottomBar():
 
 def get_css_settings():
     config = mw.addonManager.getConfig(__name__)
-    css = config['NDAB_css']
+    css = config['NDAB_css_v1']
     if not css: #if empty (running for first time)
-        css = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar_settings.css')).read()
-        config['NDAB_css'] = css
+        css = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar_default_settings.css')).read()
+        config['NDAB_css_v1'] = css
         mw.addonManager.writeConfig(__name__, config)
     return css
 
@@ -118,7 +118,7 @@ def on_ndab_settings():
         return
     css = get_css_settings() 
 
-    window = QDialog()
+    window = QDialog(mw)
     window.setWindowTitle("No-Distractions-Answer-Bar Appearance Settings")
     buttons = QDialogButtonBox()
     buttons.setStandardButtons(QDialogButtonBox.Save | QDialogButtonBox.Close | QDialogButtonBox.RestoreDefaults)
@@ -139,11 +139,11 @@ def on_ndab_settings():
     def save():
         css = text_editor.document().toPlainText()
         config = mw.addonManager.getConfig(__name__)
-        config['NDAB_css'] = css
+        config['NDAB_css_v1'] = css
         mw.addonManager.writeConfig(__name__, config)
 
     def restore_defaults():
-        NDAB_css_settings = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar_settings.css')).read()
+        NDAB_css_settings = open(os.path.join(os.path.dirname(__file__), 'ND_answerbar_default_settings.css')).read()
         text_editor.setPlainText(NDAB_css_settings)
         save()
 
@@ -153,9 +153,6 @@ def on_ndab_settings():
     buttons.accepted.connect(save)
     buttons.rejected.connect(window.close)
     buttons.button(QDialogButtonBox.RestoreDefaults).clicked.connect(restore_defaults)
-
-    dummy = QVBoxLayout()
-    dummy.addWidget(window)
 
     layout = QVBoxLayout()
     layout.addWidget(msg)

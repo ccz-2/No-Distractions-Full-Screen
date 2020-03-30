@@ -86,9 +86,9 @@ if (!$('#bottomiFrame').length){
 	}
 
 	#cover{
-          background-color: white;
+      background-color: white;
 	  mix-blend-mode: saturation;
-          pointer-events: auto;
+      pointer-events: auto;
 	  position: absolute;
 	  top: 0;
 	  height: 100%;
