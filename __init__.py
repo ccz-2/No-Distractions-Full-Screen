@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.0 3/27/2020
+# v4.1.2 3/31/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -36,10 +36,6 @@ from .ND_answerbar import *
 import os
 
 ########## Wrappers ##########
-#monkey patched function to disable height adjustment
-def adjustHeightToFit_override(*args):
-	return
-
 #CSS/JS injection
 def reviewer_wrapper(func):
 	draggable = open(os.path.join(os.path.dirname(__file__), 'draggable.js')).read()
@@ -152,6 +148,7 @@ def setupWeb():
 	global iFrame_domDone
 	global iFrameDummy_domDone
 	global ndfs_inReview
+
 	def setHtml_wrapper(self, html, _old):
 		if self == mw.reviewer.bottom.web:
 			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
@@ -168,15 +165,25 @@ def setupWeb():
 		else:
 			_old(self, js, cb)
 
+	def reviewerSetFocus_wrapper(func):
+		def reviewerFocus(*args):
+			func(*args)
+			mw.reviewer.bottom.web.eval('parent.focus()')
+			print('wrapped focus')
+		return reviewerFocus
+
 	if mw.state == 'review' and ndfs_enabled:
 		ndfs_inReview = True
 		iFrame_domDone = False
 		iFrameDummy_domDone = False
+
 		AnkiWebView._setHtml = wrap(AnkiWebView._setHtml,setHtml_wrapper, "around")
 		AnkiWebView._evalWithCallback = wrap(AnkiWebView._evalWithCallback,evalWithCallback_wrapper, "around")
+		mw.reviewer.web.setFocus = reviewerSetFocus_wrapper(mw.reviewer.web.setFocus)
 		try:
 			reviewState = mw.reviewer.state
 			mw.reviewer._initWeb() #reviewer_wrapper is run
+			mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
 			mw.reviewer._showQuestion()
 			if reviewState == 'answer':
 				try:
@@ -192,11 +199,11 @@ def setupWeb():
 	elif not ndfs_enabled: #disabling NDFS
 		AnkiWebView._setHtml = og_setHtml
 		AnkiWebView._evalWithCallback = og_evalWithCallback
+		mw.reviewer.web.setFocus = og_setFocus
 		if mw.state == 'review':
 			try:
 				reviewState = mw.reviewer.state
 				mw.reviewer._initWeb() #reviewer_wrapper is run
-				mw.reviewer.bottom.web.hide() #automatically shown in _initWeb
 				mw.reviewer._showQuestion()
 				if reviewState == 'answer':
 					try:
@@ -271,20 +278,20 @@ def toggle():
 		global isFullscreen
 		global fs_compat_mode
 		global DPIScaler
-		global og_setHtml
-		global og_evalWithCallback
+		global og_setHtml,og_evalWithCallback, og_setFocus
 		config = mw.addonManager.getConfig(__name__)
 		checkNightMode()
 
 		if not ndfs_enabled:
 			ndfs_enabled = True
 			window_flags_set = False
-			og_adjustHeightToFit = mw.reviewer.bottom.web.adjustHeightToFit
 			og_window_state = mw.windowState()
 			og_window_flags = mw.windowFlags() #stores initial flags
 			og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
+
 			og_setHtml = AnkiWebView._setHtml
 			og_evalWithCallback = AnkiWebView._evalWithCallback
+			og_setFocus = mw.reviewer.web.setFocus
 
 			mw.setUpdatesEnabled(False) #pauses drawing to screen to prevent flickering
 
@@ -343,7 +350,6 @@ def toggle():
 			ndfs_inReview = False
 			mw.setUpdatesEnabled(False) #pauses updates to screen
 			mw.reviewer._initWeb = og_reviewer #reassigns initial constructor
-			mw.reviewer.bottom.web.adjustHeightToFit = og_adjustHeightToFit
 			if mw.state == 'review':
 				mw.reviewer.web.eval('disableResize();')
 			if config['ND_AnswerBar_enabled']:
