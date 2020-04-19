@@ -80,29 +80,23 @@ function resize(){
   if (target != null) {
     var factor = (window.devicePixelRatio/window.defaultScale);
     //iframe is fixed to size of bottombar
-
-    $(iframe).css({'height':$('#bottomiFrame')[0].contentWindow.eval('window.innerHeight') * factor});
-    $(iframe).css('width',window.innerWidth * factor);
+    $(iframe).css('width',window.outerWidth);
 
     boundingBox = target.getBoundingClientRect()
     newheight = boundingBox.height
     newwidth = boundingBox.width
     x = boundingBox.x
     y = boundingBox.y
-    console.log(x, y)
 
+    //iframe is cropped to only show target
+    $('#bottomiFrame').css({'top':-y-1,'left':-x-1});
 
-      //pushes iframe contents so that buttons are in top left corner
-      //$('#bottomiFrame').css({'margin-top':-y,'margin-left':-x});
-      //div is wrapped around iframe to show only buttons
-      //debugger;
-      //$('div.bottomWrapper').hide()
-      $('div.bottomWrapper').css({'width':'','height':''});
-      setTimeout(function(){
-        $('div.bottomWrapper').css({'width':newwidth,'height':newheight});
-        $('#bottomiFrame').css({'margin-top':-y,'margin-left':-x});
-      //$('div.bottomWrapper').css({'min-width':newwidth,'min-height':newheight});
-      },1)
+    //does not resize properly unless width is unset
+    $(iframe).css('width','');
+    setTimeout(function(){
+      $(iframe).css('width',window.outerWidth);
+      $('div.bottomWrapper').css({'width':newwidth-1,'height':newheight-1});
+    },1)
 
   }
 }
