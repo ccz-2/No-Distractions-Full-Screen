@@ -85,7 +85,6 @@ function resize(){
   var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
 
   if (target != null) {
-
     //iframe is fixed to size of bottombar
     $(iframe).css('width',window.outerWidth);
 
@@ -98,6 +97,7 @@ function resize(){
     //iframe is cropped to only show target
     $('#bottomiFrame').css({'top':-y,'left':-x});
     $('div.bottomWrapper').css({'width':newwidth,'height':newheight});
+    fitInWindow()
   }
 }
 

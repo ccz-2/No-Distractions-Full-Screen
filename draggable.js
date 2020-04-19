@@ -11,6 +11,7 @@ function getTarget(){
 
 //moves target to within window boundaries
 function fitInWindow() {
+
   if (window.NDAB) {
     return
   }
@@ -88,7 +89,6 @@ function enable_drag(){
   $("#cover").show();
   $(target).css({'box-shadow': '0 19px 38px rgba(0, 0, 0, 0.40), 0 15px 12px rgba(0, 0, 0, 0.25)'});
   currLock = false;
-  fitInWindow()
 }
 
 // Zoom factor
@@ -118,5 +118,4 @@ function disable_drag(){
   $(target).css({'filter': ''});
   $("#cover").hide();
   currLock = true;
-  fitInWindow()
 }
