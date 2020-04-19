@@ -30,8 +30,6 @@ function finishedLoad(){
     var target = iframe.contentDocument.getElementById('middle')    
   }
   var observer = new MutationObserver(function(mutations, observer) {
-      fitContent()
-      fitContentDummy();
       resize();
       iframe.contentWindow.resize()
   });
@@ -40,40 +38,10 @@ function finishedLoad(){
     attributes: true,
     childList: true
   });
-  fitContent();
-  fitContentDummy();
   resize();
 }
 
-function fitContent(){
-  if (window.NDAB) {
-    fitNDAB();
-    return
-  }
-  else {
-    var iframe = $('#bottomiFrame')[0]
-    var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
-  }
-  if (target != null) {
-    var factor = (window.devicePixelRatio/window.defaultScale);
-    boundingBox = target.getBoundingClientRect()
-    newheight = boundingBox.height
-    newwidth = boundingBox.width
-    x = boundingBox.x
-    y = boundingBox.y
-    console.log(x,y)
-    //iframe is fixed to size of bottombar
-    $(iframe).css({'height':$('#bottomiFrame')[0].contentWindow.eval('window.innerHeight') * factor});
-    $(iframe).css('width',window.innerWidth * factor);
-    //pushes iframe contents so that buttons are in top left corner
-    $('#bottomiFrame').css({'margin-top':-y,'margin-left':-x});
-    //div is wrapped around iframe to show only buttons
-    $('div.bottomWrapper').css({'max-width':newwidth,'max-height':newheight});
-    resize();
-  }
-}
-
-function fitContentDummy(){
+function resizeDummyFrame(){
   var iframe = $('#bottomiFrameBkgnd')[0]
   var target = iframe.contentDocument.body;
   if (target != null){
@@ -100,12 +68,33 @@ function resize(){
   $( ".noZoom" ).each(function() {
     this.style.zoom = (factor);
   });
-  if (window.NDAB){
-    fitNDAB()
+
+  resizeDummyFrame()
+
+  if (window.NDAB) {
+    fitNDAB();
+    return
   }
-  else {
+  var iframe = $('#bottomiFrame')[0]
+  var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
+  if (target != null) {
+    var factor = (window.devicePixelRatio/window.defaultScale);
+    //iframe is fixed to size of bottombar
     $(iframe).css({'height':$('#bottomiFrame')[0].contentWindow.eval('window.innerHeight') * factor});
     $(iframe).css('width',window.innerWidth * factor);
+
+    boundingBox = target.getBoundingClientRect()
+    newheight = boundingBox.height
+    newwidth = boundingBox.width
+    x = boundingBox.x
+    y = boundingBox.y
+    //pushes iframe contents so that buttons are in top left corner
+    $('#bottomiFrame').css({'margin-top':-y,'margin-left':-x});
+    //div is wrapped around iframe to show only buttons
+    $('div.bottomWrapper').css({'width':newwidth,'height':newheight});
+    //resize();
+    console.log('iframe:' + iframe.scrollWidth)
+    console.log('wrapper:' + $('div.bottomWrapper')[0].scrollWidth)
   }
 }
 

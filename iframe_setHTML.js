@@ -77,7 +77,7 @@ if (!$('#bottomiFrame').length){
 	}
 	
 	#bottomiFrame {
-	  //border: 1px solid orange;
+	  border: 1px solid orange;
 	  //background-color: orange;
 	  margin: 0px;
 	  padding: 0px;
