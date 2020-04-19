@@ -30,8 +30,8 @@ function finishedLoad(){
     var target = iframe.contentDocument.getElementById('middle')    
   }
   var observer = new MutationObserver(function(mutations, observer) {
+      iframe.contentWindow.resize() //must be before resize to get correct bounding box coords
       resize();
-      iframe.contentWindow.resize()
   });
   observer.observe(target, {
     subtree: true,
@@ -65,7 +65,6 @@ function fitNDAB(){
 
 var oldZoom;
 function resize(){
-  //debugger;
   var factor = (window.defaultScale/(window.devicePixelRatio));
   $( ".noZoom" ).each(function() {
     this.style.zoom = (factor);
@@ -97,18 +96,8 @@ function resize(){
     y = boundingBox.y
 
     //iframe is cropped to only show target
-
     $('#bottomiFrame').css({'top':-y,'left':-x});
     $('div.bottomWrapper').css({'width':newwidth,'height':newheight});
-
-    //sometimes does not resize properly, so need to unset width to get it to register (only occurs when DPI is 1???)
-    if (Math.round($('div.bottomWrapper')[0].getBoundingClientRect().x - x) != Math.round($('#bottomiFrame')[0].getBoundingClientRect().x)) {
-      $(iframe).css('width','');
-      setTimeout(function(){
-        $(iframe).css('width',window.outerWidth);
-        $('div.bottomWrapper').css({'width':newwidth,'height':newheight});
-      },1)     
-    }
   }
 }
 

@@ -78,7 +78,7 @@ if (!$('#bottomiFrame').length){
 	
 	#bottomiFrame {
 	  //border: 5px solid orange;
-	  //background-color: orange;
+	  background-color: ` + color + ` !important;
 	  margin: 0px;
 	  padding: 0px;
 	  overflow: hidden;

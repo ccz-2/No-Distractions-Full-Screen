@@ -51,12 +51,6 @@ def reviewer_wrapper(func):
 
 		config = mw.addonManager.getConfig(__name__)
 		op = config['answer_button_opacity']
-		if config['ND_AnswerBar_enabled']:
-			color = 'transparent'
-		elif isNightMode:
-			color = config['answer_button_border_color_night']
-		else:
-			color = config['answer_button_border_color_normal']
 		iFrame_domDone = False #set to true after HTML is injected
 		iFrameDummy_domDone = False
 		NDAB = int(config['ND_AnswerBar_enabled'])
@@ -67,7 +61,7 @@ def reviewer_wrapper(func):
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
 		if not config['ND_AnswerBar_enabled']:
-			mw.reviewer.bottom.web.eval(f'var color = "{color}"; {bbActual_html_manip}')
+			mw.reviewer.bottom.web.eval(bbActual_html_manip)
 			mw.reviewer.bottom.web.eval(bbBkgnd_html_manip)
 		else:
 			mw.reviewer.bottom.web.eval('//<<<FOR BKGND>>>//\n $("#container").hide();')
@@ -149,11 +143,19 @@ def setupWeb():
 	global iFrameDummy_domDone
 	global ndfs_inReview
 
+	config = mw.addonManager.getConfig(__name__)
+	if config['ND_AnswerBar_enabled']:
+		color = 'transparent'
+	elif isNightMode:
+		color = config['answer_button_border_color_night']
+	else:
+		color = config['answer_button_border_color_normal']
+
 	def setHtml_wrapper(self, html, _old):
 		if self == mw.reviewer.bottom.web:
 			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
 			html = urllib.parse.quote(html, safe='')
-			mw.reviewer.web.eval(f"var url = `{html}`; {iframe_setHTML}")
+			mw.reviewer.web.eval(f"var url = `{html}`; var color = '{color}'; {iframe_setHTML}")
 		else:
 			_old(self, html)
 
