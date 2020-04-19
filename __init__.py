@@ -452,7 +452,6 @@ def toggleBar():
 
 def setLock():
 	if ndfs_inReview:
-		print('blah')
 		if lockDrag.isChecked():
 			mw.reviewer.web.eval("disable_drag();")
 		else:

@@ -63,6 +63,7 @@ function fitNDAB(){
   }
 }
 
+var oldZoom;
 function resize(){
   var factor = (window.defaultScale/(window.devicePixelRatio));
   $( ".noZoom" ).each(function() {
@@ -73,6 +74,11 @@ function resize(){
 
   if (window.NDAB) {
     fitNDAB();
+    return
+  }
+
+  if (factor != oldZoom) { //resize is a zoom event, skip iframe adjustment
+    oldZoom = factor;
     return
   }
   var iframe = $('#bottomiFrame')[0]
@@ -89,13 +95,13 @@ function resize(){
     y = boundingBox.y
 
     //iframe is cropped to only show target
-    $('#bottomiFrame').css({'top':-y-1,'left':-x-1});
-
+    //$('#bottomiFrame').css({'top':-y-1,'left':-x-1});
+    $('#bottomiFrame').css({'top':-y,'left':-x});
     //does not resize properly unless width is unset
     $(iframe).css('width','');
     setTimeout(function(){
       $(iframe).css('width',window.outerWidth);
-      $('div.bottomWrapper').css({'width':newwidth-1,'height':newheight-1});
+      $('div.bottomWrapper').css({'width':newwidth,'height':newheight});
     },1)
 
   }
