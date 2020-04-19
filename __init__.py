@@ -169,7 +169,6 @@ def setupWeb():
 		def reviewerFocus(*args):
 			func(*args)
 			mw.reviewer.bottom.web.eval('parent.focus()')
-			print('wrapped focus')
 		return reviewerFocus
 
 	if mw.state == 'review' and ndfs_enabled:
@@ -453,6 +452,7 @@ def toggleBar():
 
 def setLock():
 	if ndfs_inReview:
+		print('blah')
 		if lockDrag.isChecked():
 			mw.reviewer.web.eval("disable_drag();")
 		else:

@@ -38,6 +38,7 @@ function fitInWindow() {
       dy = rect.bottom - windowH;
       updatePos(x, y - dy );
     }
+    console.log('fit')
   }
 }
 
@@ -119,4 +120,5 @@ function disable_drag(){
   $("#cover").hide();
   currLock = true;
   fitInWindow()
+  console.log('fit disable')
 }
