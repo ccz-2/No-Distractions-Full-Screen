@@ -30,45 +30,18 @@ function finishedLoad(){
     var target = iframe.contentDocument.getElementById('middle')    
   }
   var observer = new MutationObserver(function(mutations, observer) {
-      fitContent()
-      fitContentDummy();
+      iframe.contentWindow.resize() //must be before resize to get correct bounding box coords
       resize();
-      iframe.contentWindow.resize()
   });
   observer.observe(target, {
     subtree: true,
     attributes: true,
     childList: true
   });
-  fitContent();
-  fitContentDummy();
   resize();
 }
 
-function fitContent(){
-  if (window.NDAB) {
-    fitNDAB();
-    return
-  }
-  else {
-    var iframe = $('#bottomiFrame')[0]
-    var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
-  }
-  if (target != null) {
-    newheight = target.scrollHeight;
-    newwidth = target.scrollWidth;
-    iframe.height = newheight + "px";
-    iframe.width = newwidth + "px";
-    $("div.bottomWrapper").outerHeight(newheight);
-    $("div.bottomWrapper").outerWidth(newwidth);
-    resize();
-    if (!window.NDAB) {
-      fitInWindow(); //called from draggable.js
-    }
-  }
-}
-
-function fitContentDummy(){
+function resizeDummyFrame(){
   var iframe = $('#bottomiFrameBkgnd')[0]
   var target = iframe.contentDocument.body;
   if (target != null){
@@ -90,11 +63,42 @@ function fitNDAB(){
   }
 }
 
+var oldZoom;
 function resize(){
   var factor = (window.defaultScale/(window.devicePixelRatio));
   $( ".noZoom" ).each(function() {
     this.style.zoom = (factor);
   });
+
+  resizeDummyFrame()
+
+  if (window.NDAB) {
+    fitNDAB();
+    return
+  }
+
+  if (factor != oldZoom) { //resize is a zoom event, skip iframe adjustment
+    oldZoom = factor;
+    return
+  }
+  var iframe = $('#bottomiFrame')[0]
+  var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
+
+  if (target != null) {
+    //iframe is fixed to size of bottombar
+    $(iframe).css('width',window.outerWidth);
+
+    boundingBox = target.getBoundingClientRect()
+    newheight = boundingBox.height
+    newwidth = boundingBox.width
+    x = boundingBox.x
+    y = boundingBox.y
+
+    //iframe is cropped to only show target
+    $('#bottomiFrame').css({'top':-y,'left':-x});
+    $('div.bottomWrapper').css({'width':newwidth,'height':newheight});
+    fitInWindow()
+  }
 }
 
 window.visualViewport.addEventListener('resize', resize);
