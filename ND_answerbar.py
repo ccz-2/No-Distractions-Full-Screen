@@ -141,10 +141,12 @@ def on_ndab_settings():
 
     msg = QLabel('''
         The following CSS variables can be adjusted to change the appearance of No Distractions Answer Bar
-        <br><b>Toggling No Distractions Mode will apply settings.</b>
-        <br>Note: The background color of the review statistics button is defined in the Addon-config (not here).
+        <br><span style='color:mediumaquamarine'><b>Toggling No Distractions Mode will apply settings.
+        <br>This window can be kept open to make on-the-fly changes eaiser.</b></span>
         <br>
-        <br>This window can be kept open to make on-the-fly changes eaiser''')
+        <br>Note: To change the background color of the "Show Answer" button equivalent, change the 
+            <code><span style="color:dodgerblue">answer_button_border_color_night</span></code> and 
+            <code><span style="color:dodgerblue">answer_button_border_color_normal</span></code> values in the <b>addon-config</b> (not here).''')
     msg.setTextFormat(Qt.RichText)
     msg.setWordWrap(True)
 

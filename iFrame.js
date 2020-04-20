@@ -65,6 +65,7 @@ function fitNDAB(){
 
 var oldZoom;
 function resize(){
+
   var factor = (window.defaultScale/(window.devicePixelRatio));
   $( ".noZoom" ).each(function() {
     this.style.zoom = (factor);

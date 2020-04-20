@@ -11,35 +11,37 @@ function getTarget(){
 
 //moves target to within window boundaries
 function fitInWindow() {
-
   if (window.NDAB) {
     return
   }
-  getTarget()
-  if (target !== null && target.getBoundingClientRect().height != 0){
-    var rect = target.getBoundingClientRect();
-    var x = parseFloat(target.getAttribute('data-x'));
-    var y = parseFloat(target.getAttribute('data-y'));
-    windowW = ($("html").prop("clientWidth") * zF()) + 1
-    windowH = ($("html").prop("clientHeight") * zF()) + 1
-    if (rect.left < 0){
-      updatePos(x - rect.left, y);
-      x = parseFloat(target.getAttribute('data-x'));
+  setTimeout(function(){ //delay since often called prematurely before target is fully dimensioned
+    getTarget()
+    if (target !== null && target.getBoundingClientRect().height != 0){
+      //debugger;
+      var rect = target.getBoundingClientRect();
+      var x = parseFloat(target.getAttribute('data-x'));
+      var y = parseFloat(target.getAttribute('data-y'));
+      windowW = ($("html").prop("clientWidth") * zF()) + 1
+      windowH = ($("html").prop("clientHeight") * zF()) + 1
+      if (rect.left < 0){
+        updatePos(x - rect.left, y);
+        x = parseFloat(target.getAttribute('data-x'));
+      }
+      if (rect.right > windowW) {
+        dx = rect.right - windowW;
+        updatePos(x - dx , y);
+        x = parseFloat(target.getAttribute('data-x'));
+      }
+      if (rect.top < 0) {
+        updatePos(x, y - rect.top);
+        y = parseFloat(target.getAttribute('data-y'));
+      }
+      if (rect.bottom > windowH) {
+        dy = rect.bottom - windowH;
+        updatePos(x, y - dy );
+      }
     }
-    if (rect.right > windowW) {
-      dx = rect.right - windowW;
-      updatePos(x - dx , y);
-      x = parseFloat(target.getAttribute('data-x'));
-    }
-    if (rect.top < 0) {
-      updatePos(x, y - rect.top);
-      y = parseFloat(target.getAttribute('data-y'));
-    }
-    if (rect.bottom > windowH) {
-      dy = rect.bottom - windowH;
-      updatePos(x, y - dy );
-    }
-  }
+  },100)
 }
 
 function updatePos(x, y){
@@ -52,8 +54,14 @@ function updatePos(x, y){
   pycmd("NDFS-draggable_pos: " + x + ", " + y);
 }
 
+var oldzF = null;
 $(window).resize(function() {
-  fitInWindow();
+  if (oldzF == zF())
+  {
+    fitInWindow();
+  } else {
+    oldzF = zF()
+  }
 });
 
 //Used when toggling off, since screen is redrawn before this javascript is unloaded
