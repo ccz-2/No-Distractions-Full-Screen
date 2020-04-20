@@ -1,4 +1,4 @@
-//No Distractions Full Screen v4.1.3
+//No Distractions Full Screen v4.1.4
 //var url = '';
 url = decodeURIComponent(url);
 scripts = `
@@ -21,15 +21,15 @@ if (!$('#bottomiFrame').length){
 	//bottomiFrame is needed for draggable.js (need to be parent of cover)
 	$('body').append(`
 	<div id='bottomHover'>
-    <div id='outer'>
-      <div class="bottomWrapper noZoom">
-        <iframe id='bottomiFrame' frameborder="0" scrolling="no">
-        </iframe>
-        <div id = 'cover'></div>
-      </div>
-        <iframe id='bottomiFrameBkgnd' class='noZoom' frameborder="0" scrolling="no">
-        </iframe>
-    </div>
+	    <div id='outer'>
+	      <div class="bottomWrapper noZoom">
+	        <iframe id='bottomiFrame' frameborder="0" scrolling="no">
+	        </iframe>
+	        <div id = 'cover'></div>
+	      </div>
+	        <iframe id='bottomiFrameBkgnd' class='noZoom' frameborder="0" scrolling="no">
+	        </iframe>
+	    </div>
   	</div>
 
 
@@ -42,7 +42,7 @@ if (!$('#bottomiFrame').length){
       height: 2%;
       bottom: 0px;
       left: 0px;
-      z-index: 1;
+      z-index: 999;
       pointer-events: none;
 	}
 	
