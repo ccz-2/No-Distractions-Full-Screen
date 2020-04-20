@@ -1,9 +1,10 @@
 
 //<<<FOR ACTUAL>>>//
 
-//No Distractions Full Screen v4.0
-//var color = 'rgba(110, 110, 200, 0.8)'; //Defined in python
+//No Distractions Full Screen v4.1.3
 
+$('table:not([id="innertable"])').parents().siblings().hide()
+$('td.stat').hide()
 
 $('body').append(`
 <style>

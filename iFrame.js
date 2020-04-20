@@ -1,4 +1,4 @@
-//No Distractions Full Screen v4.1
+//No Distractions Full Screen v4.1.3
 //var op = 0.5; //Defined in python
 
 var newheight;
@@ -24,7 +24,7 @@ $('body').append(`
 function finishedLoad(){
   var iframe = $('#bottomiFrame')[0]
   if (window.NDAB) {
-    var target = iframe.contentDocument.getElementById('container')    
+    var target = iframe.contentDocument.getElementById('container')  
   }
   else {
     var target = iframe.contentDocument.getElementById('middle')    
@@ -71,6 +71,11 @@ function resize(){
     this.style.zoom = (factor);
   });
 
+  if (factor != oldZoom) { //resize is a zoom event, skip iframe adjustment
+    oldZoom = factor;
+    return
+  }
+
   resizeDummyFrame()
 
   if (window.NDAB) {
@@ -78,10 +83,6 @@ function resize(){
     return
   }
 
-  if (factor != oldZoom) { //resize is a zoom event, skip iframe adjustment
-    oldZoom = factor;
-    return
-  }
   var iframe = $('#bottomiFrame')[0]
   var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
 

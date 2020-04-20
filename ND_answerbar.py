@@ -1,4 +1,4 @@
-# No Distractions Full Screen v4.1.1
+# No Distractions Full Screen v4.1.3
 
 from aqt.reviewer import Reviewer
 from aqt.qt import *
