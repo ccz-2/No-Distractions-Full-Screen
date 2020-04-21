@@ -22,7 +22,7 @@ table#innertable{
   pointer-events: none;
 }
 
-.butt_cnt {
+.button_container {
   /*border: 1px solid blue;*/
   height: var(--AnswerButtonHeight);
   display: flex;
@@ -60,20 +60,12 @@ table#innertable{
   align-items: flex-start;
 }
 
-.butt_cnt.top {
+.button_container.top {
   align-items: flex-start;
 }
 
-.butt_cnt.bottom {
+.button_container.bottom {
   align-items: flex-end;
-}
-
-.bottom {
-  line-height: var(--textVerticalOffset_bottomPos);
-}
-
-.top {
-  line-height: var(--textVerticalOffset_topPos);
 }
 
 .button {
@@ -96,6 +88,7 @@ table#innertable{
 
 .nobold, .button {
   font-size: var(--fontSize);
+  line-height: calc(var(--AnswerButtonHeight) * 0.7);
   font-weight: 700;
   padding-left: 1em;
   padding-right: 1em;

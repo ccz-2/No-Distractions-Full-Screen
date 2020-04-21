@@ -12,11 +12,11 @@
 
 -  <span style="color:dodgerblue">**`MS_Windows_fullscreen_compatibility_mode`**</span>:
   Only applies to Microsoft Windows. Enabled by default; resolves numerous graphical issues when in Fullscreen mode (e.g. persistent task bar, flickering with overlays, hidden right click-menus).  
-  <span style="color:indianred">If on Windows and experiencing grpahical issues, try setting to `false`.</span>
+  <span style="color:indianred">If on Windows and experiencing graphical issues, try setting to `false`.</span>
 
 -  <span style="color:dodgerblue">**`answer_button_border_color_normal`**</span>,  
   <span style="color:dodgerblue">**`answer_button_border_color_night`**</span>:  
-  Color of border around answer buttons for normal/night mode. Supports both the <u>Night Mode</u> Addon for legacy Anki versions and native Anki Night Mode. Accepts HTML color codes. For help, see: [Color Picker](https://www.hexcolortool.com/#6e6e6e,0.8)  
+  Color of border around answer buttons for normal/night mode. Supports both the Night Mode Addon for legacy Anki versions and native Anki Night Mode. Accepts HTML color codes. For help, see: [Color Picker](https://www.hexcolortool.com/#6e6e6e,0.8)  
   <span style="color:indianred">This value is used in both the default answer bar and No Distractions Answer Bar</span> 
 
 -  <span style="color:dodgerblue">**`answer_button_opacity`**</span>: Opacity of the answer buttons. Note that mouse-hovers will make the answer buttons opaque.  

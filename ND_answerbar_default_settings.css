@@ -1,12 +1,9 @@
 :root {
   --NDABversion: "1.1";
 
-  --fontSize: 1rem;
-  --AnswerButtonHeight: 2rem;
-  --AnswerButtonWidth: 7rem;
-
-  --textVerticalOffset_bottomPos: 1.7em;
-  --textVerticalOffset_topPos: 1.7em;
+  --fontSize: 14.5px;
+  --AnswerButtonHeight: 30px;
+  --AnswerButtonWidth: 120px;
 
   --Again_fontColor:#330000;
   --Hard_fontColor:#332200;
