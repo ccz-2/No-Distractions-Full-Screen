@@ -1,5 +1,4 @@
 /*No Distractions Full Screen v4.0.2*/
-/*To change ND Answer Bar apperance, please modify ND_answerbar_settings.css*/
 
 body, #outer{
   background: transparent !important;
@@ -15,62 +14,93 @@ table#innertable{
 }
 
 #container {
+  /*border: 1px solid skyblue;*/
   display: flex;
-  flex-direction: row;
-  align-items: flex-end;
   justify-content: center;
   height: auto;
   width: 100%;
-  //border: 1px solid skyblue;
   pointer-events: none;
 }
 
-.ans, .ques {
+.butt_cnt {
+  /*border: 1px solid blue;*/
   height: var(--AnswerButtonHeight);
+  display: flex;
   margin-right: 1.5em;
   margin-left: 1.5em;
-  //border: 1px solid blue;
-  display: flex;
-  justify-content: flex-end;
-  flex-direction: column;
   user-select: none;
 }
 
 .ans {
   flex-basis: var(--AnswerButtonWidth);
-  line-height: var(--fontVerticalOffset);
 }
 
 .ques {
   flex-basis: auto;
-  line-height: var(--fontVerticalOffset);
 }
 
-.platform {
-  max-height: 70%;
-  min-height: 70%;
+/* POSITIONING CSS */
+#container.top{
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+#container.bottom {
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.button.top {
+  border-radius: 0px 0px 5px 5px;
+  align-items: flex-end;
+}
+
+.button.bottom {
+  border-radius: 5px 5px 0px 0px;
+  align-items: flex-start;
+}
+
+.butt_cnt.top {
+  align-items: flex-start;
+}
+
+.butt_cnt.bottom {
+  align-items: flex-end;
+}
+
+.bottom {
+  line-height: var(--textVerticalOffset_bottomPos);
+}
+
+.top {
+  line-height: var(--textVerticalOffset_topPos);
+}
+
+.button {
+  /*border: 1px solid orange;*/
+  height: 70%;
   width: 100%;
   box-sizing: border-box;
-  //border: 1px solid orange;
-  border-radius: 5px 5px 0px 0px;
   opacity: 1;
+  display: flex;
+  justify-content: center;
   overflow:hidden;
-  text-align: center;
   pointer-events: auto;
   cursor: pointer;
   transition: 0.3s;
 }
 
-.platform:hover {
+.button:hover {
   box-shadow: inset 0px 40px 112px -8px rgba(255,255,255,0.32);
 }
 
-.nobold, .platform {
+.nobold, .button {
   font-size: var(--fontSize);
   font-weight: 700;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
+  padding-left: 1em;
+  padding-right: 1em;
   color: inherit !important;
+  padding-top: 0;
 }
 
 #defease{
@@ -83,37 +113,32 @@ table#innertable{
   box-shadow: 0 0 0 2px var(--default_ease_highlightColor), inset 0px 40px 112px -8px rgba(255,255,255,0.32);
 }
 
-.nobold {
-  padding-top: 0;
-}
-
-#Again .platform {
+#Again .button {
   background-color: var(--Again_buttonColor) !important;
   color: var(--Again_fontColor) !important;
   text-shadow: 0px 2px 3px var(--Again_fontShadow) !important;
 }
 
-#Hard .platform {
+#Hard .button {
   background-color: var(--Hard_buttonColor) !important;
   color: var(--Hard_fontColor) !important;
   text-shadow: 0px 2px 3px var(--Hard_fontShadow) !important;
 }
 
-#Good .platform {
+#Good .button {
   background-color: var(--Good_buttonColor) !important;
   color: var(--Good_fontColor) !important;
   text-shadow: 0px 2px 3px var(--Good_fontShadow) !important;
 }
 
-#Easy .platform {
+#Easy .button {
   background-color: var(--Easy_buttonColor) !important;
   color: var(--Easy_fontColor) !important;
   text-shadow: 0px 2px 3px var(--Easy_fontShadow) !important;
 }
 
-.ques .platform {
+.ques .button {
   background-color: var(--bkgndColor) !important;
-  //text-shadow: 0px 2px 3px #555 !important;
 }
 
 @keyframes ansConf {

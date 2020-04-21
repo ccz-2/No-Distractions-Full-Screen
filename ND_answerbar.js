@@ -1,17 +1,17 @@
 //No Distractions Full Screen v4.0
 
 function ansConf(ease, remaining){
-  var pressed = '.platform[data-ease='+ ease +']';
+  var pressed = '.button[data-ease='+ ease +']';
   if ($(pressed)[0] != null) {
     $(pressed).parent().siblings('div').css({'opacity':'0', 'transition': '0.3s'})
     $(pressed).addClass('ansConf')
     $(pressed).on("animationend", function(){
-      $('.button').remove();
+      $('.butt_cnt').remove();
       insertQuesBut(remaining);
     });
   }
   else {
-      $('.button').remove();
+      $('.butt_cnt').remove();
       insertQuesBut(remaining);
   }
 }
@@ -19,25 +19,37 @@ function ansConf(ease, remaining){
 function insertAnsBut(due, extra, i, label) {
   $('.ques').remove();
   $('#container').append(`
-  <div id='`+ label +`' class='ans button'>
-    <div `+ extra +` class='platform' data-ease='`+ i +`' onclick='pycmd("ease`+ i +`")'>`+ due +`</div>
+  <div id='`+ label +`' class='ans butt_cnt'>
+    <div `+ extra +` class='button' data-ease='`+ i +`' onclick='pycmd("ease`+ i +`")'>`+ due +`</div>
   </div>
   `)
+  positionBar()
 }
 
 function insertQuesBut(remaining) {
   if ($('.ans')[0] == null) {
     $('.ques').remove();
     $('#container').append(`
-    <div class='ques button'>
-      <div class='platform' onclick='pycmd("ans");'>`+ remaining +`</div>
+    <div class='ques butt_cnt'>
+      <div class='button' onclick='pycmd("ans");'>`+ remaining +`</div>
     </div>
     `)
+    positionBar()
   }
 }
 
 function clearButs() {
-  $('.button').remove();
+  $('.butt_cnt').remove();
+}
+
+window.barPos = 'bottom';
+function positionBar() {
+  if (window.barPos == 'top'){
+    $('#container,.ans,.ques,.button').addClass('top');
+  }
+  else {
+    $('#container,.ans,.ques,.button').addClass('bottom');
+  }
 }
 
 
@@ -55,7 +67,7 @@ if (showAnswer.wrapped == null){
   window.showAnswer = function(txt) {
     og_showAnswer.call(this, txt);
     $("#middle")[0].innerHTML = '';
-    pycmd("NDFS_showAns");
+    pycmd("NDFS_showAns"); 
   }
   showAnswer.wrapped = true
 }
