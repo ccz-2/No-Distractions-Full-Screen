@@ -47,6 +47,12 @@ function positionBar() {
   if (window.barPos == 'top'){
     $('#container,.ans,.ques,.button').addClass('top');
   }
+  else if (window.barPos == 'left'){
+    $('#container,.ans,.ques,.button').addClass('left');
+  }
+  else if (window.barPos == 'right'){
+    $('#container,.ans,.ques,.button').addClass('right');
+  }
   else {
     $('#container,.ans,.ques,.button').addClass('bottom');
   }

@@ -44,34 +44,70 @@ table#innertable{
   flex-direction: row;
   align-items: flex-start;
 }
-
 #container.bottom {
   flex-direction: row;
   align-items: flex-end;
 }
+#container.right {
+  flex-direction: column-reverse;
+
+  /*align-items: stretch;*/
+}
+#container.left {
+  flex-direction: column-reverse;
+
+  flex: 1;
+  /*align-items: stretch;*/
+}
 
 .button.top {
+  height: 70%;
+  width: 100%;
   border-radius: 0px 0px 5px 5px;
   align-items: flex-end;
 }
-
 .button.bottom {
+  height: 70%;
+  width: 100%;
   border-radius: 5px 5px 0px 0px;
   align-items: flex-start;
+}
+.button.right {
+  height: 100%;
+  width: 70%;
+  border-radius: 5px 0px 0px 5px;
+  align-items: flex-start;
+}
+.button.left {
+  height: 100%;
+  width: 70%;
+  border-radius: 0px 5px 5px 0px;
+  align-items: center;
 }
 
 .button_container.top {
   align-items: flex-start;
 }
-
 .button_container.bottom {
   align-items: flex-end;
+}
+.button_container.left {
+  align-items: center;
+}
+.button_container.right {
+  align-items: center;
+}
+
+.bottom {
+  line-height: calc(var(--AnswerButtonHeight) * 0.7 + var(--text_verticalOffset));
+}
+
+.top {
+  line-height: calc(var(--AnswerButtonHeight) * 0.7 - var(--text_verticalOffset));
 }
 
 .button {
   /*border: 1px solid orange;*/
-  height: 70%;
-  width: 100%;
   box-sizing: border-box;
   opacity: 1;
   display: flex;
@@ -88,7 +124,6 @@ table#innertable{
 
 .nobold, .button {
   font-size: var(--fontSize);
-  line-height: calc(var(--AnswerButtonHeight) * 0.7);
   font-weight: 700;
   padding-left: 1em;
   padding-right: 1em;

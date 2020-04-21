@@ -2,8 +2,16 @@
   --NDABversion: "1.1";
 
   --fontSize: 14.5px;
+  --text_verticalOffset: -2px;
   --AnswerButtonHeight: 30px;
   --AnswerButtonWidth: 120px;
+
+  --default_ease_highlightColor:#8373ff;
+
+  --Again_buttonColor:#ff6961;
+  --Hard_buttonColor:#ffa900;
+  --Good_buttonColor:#42ff9a;
+  --Easy_buttonColor:#61a8ff;
 
   --Again_fontColor:#330000;
   --Hard_fontColor:#332200;
@@ -14,11 +22,4 @@
   --Hard_fontShadow:#debf81;
   --Good_fontShadow:#81dea2;
   --Easy_fontShadow:#818fde;
-
-  --Again_buttonColor:#ff6961;
-  --Hard_buttonColor:#ffa900;
-  --Good_buttonColor:#42ff9a;
-  --Easy_buttonColor:#61a8ff;
-
-  --default_ease_highlightColor:#8373ff;
 }
