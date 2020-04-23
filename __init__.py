@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.1.4 4/20/2020
+# v4.1.5 4/23/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -280,6 +280,7 @@ def toggle():
 		global fs_compat_mode
 		global DPIScaler
 		global og_setHtml,og_evalWithCallback, og_setFocus
+		global curIdleTimer
 		config = mw.addonManager.getConfig(__name__)
 		checkNightMode()
 
@@ -293,6 +294,8 @@ def toggle():
 			og_setHtml = AnkiWebView._setHtml
 			og_evalWithCallback = AnkiWebView._evalWithCallback
 			og_setFocus = mw.reviewer.web.setFocus
+			curIdleTimer = cursorHide()
+			curIdleTimer.enable()
 
 			mw.setUpdatesEnabled(False) #pauses drawing to screen to prevent flickering
 
@@ -334,8 +337,6 @@ def toggle():
 			mw.mainLayout.removeWidget(mw.reviewer.bottom.web) #removing from layout resolves quick reformatting changes when automatically shown
 			mw.reviewer.bottom.web.hide() #iFrame handles bottom bar
 
-			if config['cursor_idle_timer'] >= 0:
-				mw.installEventFilter(curIdleTimer)
 			if config['ND_AnswerBar_enabled']:
 				enable_ND_bottomBar(isNightMode)
 			mw.reviewer._initWeb = reviewer_wrapper(mw.reviewer._initWeb) #tried to use triggers instead but is called prematurely upon suspend/bury
@@ -373,8 +374,7 @@ def toggle():
 			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
 			mw.reviewer.bottom.web.show()
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
-			mw.removeEventFilter(curIdleTimer)
-			curIdleTimer.showCursor()
+			curIdleTimer.disable()
 
 			reset_bar.setVisible(False)
 			lockDrag.setVisible(False)
@@ -388,12 +388,22 @@ def toggle():
 
 ########## Idle Cursor Functions ##########
 #Intercepts events to detect when focus is lost to show mouse cursor
-class cursor_eventFilter(QObject):
+class cursorHide(QObject):
 	def __init__(self):
 		QObject.__init__(self)
+		self.config = mw.addonManager.getConfig(__name__)
 		self.timer = QTimer()
 		self.timer.timeout.connect(self.hideCursor)
-		self.updateIdleTimer()
+		self.cursorIdleTimer = self.config['cursor_idle_timer']
+
+	def enable(self):
+		if self.config['cursor_idle_timer'] >= 0:
+			mw.installEventFilter(curIdleTimer)
+			self.countdown()
+
+	def disable(self):
+		mw.removeEventFilter(curIdleTimer)
+		curIdleTimer.showCursor()		
 
 	def eventFilter(self, obj, event):
 		if ndfs_inReview:
@@ -401,18 +411,15 @@ class cursor_eventFilter(QObject):
 				self.showCursor()
 				self.timer.stop()
 			elif event.type() == QEvent.HoverMove:
-				self.showCursor()
+				if self.config['cursor_idle_timer'] > 0:
+					self.showCursor()
 				self.countdown()
 			elif event.type() == QEvent.WindowActivate:
-				self.countdown()			
+				self.countdown()
 		return False
 
 	def countdown(self):
 		self.timer.start(self.cursorIdleTimer)
-
-	def updateIdleTimer(self):
-		config = mw.addonManager.getConfig(__name__)
-		self.cursorIdleTimer = config['cursor_idle_timer']
 
 	def showCursor(self):
 		self.timer.stop()
@@ -420,13 +427,12 @@ class cursor_eventFilter(QObject):
 			return
 		if QGuiApplication.overrideCursor().shape() == Qt.BlankCursor: #hidden cursor
 			QGuiApplication.restoreOverrideCursor()
-			QGuiApplication.restoreOverrideCursor() #need to call twice	
+			QGuiApplication.restoreOverrideCursor() #need to clear stack, call twice
 
 	def hideCursor(self):
 		self.timer.stop()
-		QGuiApplication.setOverrideCursor(Qt.BlankCursor)
-
-curIdleTimer = cursor_eventFilter()
+		if QGuiApplication.overrideCursor() is None:
+			QGuiApplication.setOverrideCursor(Qt.BlankCursor)
 
 ########## Menu actions ##########
 def resetPos():
@@ -497,7 +503,6 @@ def recheckBoxes(*args):
 	rendering_delay = config['rendering_delay']
 	NDAB = config['ND_AnswerBar_enabled']
 	ans_conf_time = config['answer_conf_time']
-	curIdleTimer.updateIdleTimer()
 
 	if rendering_delay < 0:
 		config['rendering_delay'] = 0
@@ -553,7 +558,7 @@ def recheckBoxes(*args):
 
 
 #updates settings on menu action
-def user_settings():
+def user_settings(*args):
 	config = mw.addonManager.getConfig(__name__)
 	if mouseover_default.isChecked():
 		op = 1

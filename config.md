@@ -25,7 +25,8 @@
 -  <span style="color:dodgerblue">**`answer_conf_time`**</span>: Number of seconds the answer confirmation animation lasts. Only applies if No Distractions Answer Bar is enabled.  
   <span style="color:indianred">Setting to `0` will disable animation</span>  
 
--  <span style="color:dodgerblue">**`cursor_idle_timer`**</span>: Milliseconds to wait before hiding cursor. Negative values disable cursor hide.
+-  <span style="color:dodgerblue">**`cursor_idle_timer`**</span>: Milliseconds to wait before hiding cursor.  
+  <span style="color:indianred">Setting to `0` will always hide cursor. Negative values will disable cursor hide.</span>  
 
 -  <span style="color:dodgerblue">**`fullscreen_hotkey`**</span>: Keybinding that toggles fullscreen/windowed mode  
   <span style="color:indianred">Examples:  `F11`,  `Ctrl+F`,  `Shift+D`,  `P`. For more details, see: [QKeySequence](https://doc.qt.io/qtforpython/PySide2/QtGui/QKeySequence.html?highlight=qkeysequence#PySide2.QtGui.QKeySequence)</span>
