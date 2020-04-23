@@ -295,7 +295,7 @@ def toggle():
 			og_evalWithCallback = AnkiWebView._evalWithCallback
 			og_setFocus = mw.reviewer.web.setFocus
 			curIdleTimer = cursorHide()
-			curIdleTimer.install()
+			curIdleTimer.install(mw)
 
 			mw.setUpdatesEnabled(False) #pauses drawing to screen to prevent flickering
 
@@ -374,7 +374,7 @@ def toggle():
 			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
 			mw.reviewer.bottom.web.show()
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
-			curIdleTimer.uninstall()
+			curIdleTimer.uninstall(mw)
 
 			reset_bar.setVisible(False)
 			lockDrag.setVisible(False)
@@ -396,14 +396,14 @@ class cursorHide(QObject):
 		self.cursorIdleTimer = self.config['cursor_idle_timer']
 		self.enabled = False
 
-	def install(self):
+	def install(self, widget):
 		if self.config['cursor_idle_timer'] >= 0:
-			mw.installEventFilter(self)
-			self.countdown()
+			widget.installEventFilter(self)
+			self.enable()
 
-	def uninstall(self):
-		mw.removeEventFilter(self)
-		self.showCursor()	
+	def uninstall(self, widget):
+		widget.removeEventFilter(self)
+		self.disable()
 
 	def enable(self):
 		self.enabled = True
