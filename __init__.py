@@ -241,12 +241,12 @@ def stateChange(new_state, old_state, *args):
 		if ndfs_enabled:
 			ndfs_inReview = True
 			setupWeb()
-			curIdleTimer.countdown()
+			curIdleTimer.enable()
 			if config['ND_AnswerBar_enabled']:
 				resetPos()
 	elif ndfs_enabled:
 		ndfs_inReview = False
-		curIdleTimer.showCursor()
+		curIdleTimer.disable()
 		mw.reviewer.web.eval("$('#outer').remove()") #remove iframe
 		if config['auto_toggle_when_reviewing']: #manually changed screens/finished reviews
 			if last_state == 'review' and mw.state in ['overview', 'deckBrowser']:
@@ -295,7 +295,7 @@ def toggle():
 			og_evalWithCallback = AnkiWebView._evalWithCallback
 			og_setFocus = mw.reviewer.web.setFocus
 			curIdleTimer = cursorHide()
-			curIdleTimer.enable()
+			curIdleTimer.install()
 
 			mw.setUpdatesEnabled(False) #pauses drawing to screen to prevent flickering
 
@@ -331,12 +331,12 @@ def toggle():
 				mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
 				window_flags_set = True
 				mw.show()
+				#QTimer.singleShot(100, curIdleTimer.countdown) #for some reason setting windowflags triggers QEvent.HoverLeave
 
 			mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
 			mw.toolbar.web.hide()
 			mw.mainLayout.removeWidget(mw.reviewer.bottom.web) #removing from layout resolves quick reformatting changes when automatically shown
 			mw.reviewer.bottom.web.hide() #iFrame handles bottom bar
-
 			if config['ND_AnswerBar_enabled']:
 				enable_ND_bottomBar(isNightMode)
 			mw.reviewer._initWeb = reviewer_wrapper(mw.reviewer._initWeb) #tried to use triggers instead but is called prematurely upon suspend/bury
@@ -374,17 +374,16 @@ def toggle():
 			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
 			mw.reviewer.bottom.web.show()
 			mw.menuBar().setMaximumHeight(QWIDGETSIZE_MAX)
-			curIdleTimer.disable()
+			curIdleTimer.uninstall()
 
 			reset_bar.setVisible(False)
 			lockDrag.setVisible(False)
 
 			mw.windowHandle().screenChanged.disconnect(DPIScaler)
 			mw.show()
-		delay = config['rendering_delay']
-		def unpause():
-			mw.setUpdatesEnabled(True)
-		QTimer.singleShot(delay, unpause)
+
+		delay = config['rendering_delay']		
+		QTimer.singleShot(delay, lambda:mw.setUpdatesEnabled(True))
 
 ########## Idle Cursor Functions ##########
 #Intercepts events to detect when focus is lost to show mouse cursor
@@ -395,27 +394,36 @@ class cursorHide(QObject):
 		self.timer = QTimer()
 		self.timer.timeout.connect(self.hideCursor)
 		self.cursorIdleTimer = self.config['cursor_idle_timer']
+		self.enabled = False
 
-	def enable(self):
+	def install(self):
 		if self.config['cursor_idle_timer'] >= 0:
-			mw.installEventFilter(curIdleTimer)
+			mw.installEventFilter(self)
 			self.countdown()
 
+	def uninstall(self):
+		mw.removeEventFilter(self)
+		self.showCursor()	
+
+	def enable(self):
+		self.enabled = True
+		self.countdown()
+
 	def disable(self):
-		mw.removeEventFilter(curIdleTimer)
-		curIdleTimer.showCursor()		
+		self.enabled = False
+		self.showCursor()
 
 	def eventFilter(self, obj, event):
 		if ndfs_inReview:
-			if event.type() in [QEvent.WindowDeactivate, QEvent.HoverLeave]: #Card edit does not trigger these - cursor shown by state change hook
-				self.showCursor()
-				self.timer.stop()
-			elif event.type() == QEvent.HoverMove:
+			if event.type() in [QEvent.WindowDeactivate]: #Card edit does not trigger these - cursor shown by state change hook
+				self.disable()
+			elif event.type() in [QEvent.HoverMove, QEvent.HoverEnter]:
 				if self.config['cursor_idle_timer'] > 0:
 					self.showCursor()
-				self.countdown()
-			elif event.type() == QEvent.WindowActivate:
-				self.countdown()
+				if self.enabled:
+					self.countdown()
+			elif event.type() in [QEvent.WindowActivate]:
+				self.enable()
 		return False
 
 	def countdown(self):
@@ -553,68 +561,23 @@ def recheckBoxes(*args):
 		config['answer_conf_time'] = 0
 		ans_conf.setChecked(True)
 
-	autoSettings()
-	mw.addonManager.writeConfig(__name__, config)
-
-
-#updates settings on menu action
-def user_settings(*args):
-	config = mw.addonManager.getConfig(__name__)
-	if mouseover_default.isChecked():
-		op = 1
-	elif mouseover_hidden.isChecked():
-		op = 0
-	else:
-		op = .5
-	config['answer_button_opacity'] = op
-
-	if enable_cursor_hide.isChecked():
-		cursorIdleTimer = 10000
-	else:
-		cursorIdleTimer = -1
-	config['cursor_idle_timer'] = cursorIdleTimer
-
-	if keep_on_top.isChecked():
-		w_onTop = True
-	else:
-		w_onTop = False
-	config['stay_on_top_windowed'] = w_onTop
-
-	if auto_toggle.isChecked():
-		auto_tog = True
-	else:
-		auto_tog = False
-	config['auto_toggle_when_reviewing'] = auto_tog
-
-	if nd_answerBar.isChecked():
-		ndab = True
-	else:
-		ndab = False
-	config['ND_AnswerBar_enabled']= ndab
-
-	if ans_conf.isChecked():
-		config['answer_conf_time']= 0
-	else:
-		config['answer_conf_time']= 0.5
-
-	autoSettings()
+	ndab_settings_check()
 	mw.addonManager.writeConfig(__name__, config)
 
 #conditional settings
-def autoSettings():
-	config = mw.addonManager.getConfig(__name__)
+def ndab_settings_check():
 	if nd_answerBar.isChecked():
 		lockDrag.setEnabled(False)
 		lockDrag.setChecked(True)
+		config = mw.addonManager.getConfig(__name__)
 		config['answer_bar_locked'] = True
+		mw.addonManager.writeConfig(__name__, config)
 		reset_bar.setEnabled(False)
 		ans_conf.setEnabled(True)
 	else:
 		lockDrag.setEnabled(True)
 		reset_bar.setEnabled(True)
 		ans_conf.setEnabled(False)
-	mw.addonManager.writeConfig(__name__, config)
-
 
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
@@ -625,6 +588,11 @@ mw.addonManager.setConfigUpdatedAction(__name__, recheckBoxes)
 addHook("night_mode_state_changed", checkNightMode) #Night Mode addon (1496166067) support for legacy Anki versions
 
 
+def menu_select(state, confVal):
+	config = mw.addonManager.getConfig(__name__)
+	config[confVal] = state
+	mw.addonManager.writeConfig(__name__, config)
+	ndab_settings_check()
 
 ########## Menu setup ##########
 addon_view_menu = getMenu(mw, "&View")
@@ -641,16 +609,18 @@ windowed = QAction('Toggle Windowed Mode', display)
 windowed.triggered.connect(toggle_window)
 menu.addAction(windowed)
 
+
+test = mw.addonManager.getConfig(__name__)
 keep_on_top = QAction('    Windowed Mode Always On Top', mw)
 keep_on_top.setCheckable(True)
 menu.addAction(keep_on_top)
-keep_on_top.triggered.connect(user_settings)
+keep_on_top.triggered.connect(lambda state, confVal = 'stay_on_top_windowed': menu_select(state,confVal))
 
 auto_toggle = QAction('Auto-Toggle', mw)
 auto_toggle.setCheckable(True)
 auto_toggle.setChecked(False)
 menu.addAction(auto_toggle)
-auto_toggle.triggered.connect(user_settings)
+auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
 
 menu.addSeparator()
 
@@ -658,13 +628,13 @@ nd_answerBar = QAction('Enable No Distractions Answer Bar', mw)
 nd_answerBar.setCheckable(True)
 nd_answerBar.setChecked(False)
 menu.addAction(nd_answerBar)
-nd_answerBar.triggered.connect(user_settings)
+nd_answerBar.triggered.connect(lambda state, confVal = 'ND_AnswerBar_enabled': menu_select(state,confVal))
 
 ans_conf = QAction('    Disable Answer Confirmation', mw)
 ans_conf.setCheckable(True)
 ans_conf.setChecked(False)
 menu.addAction(ans_conf)
-ans_conf.triggered.connect(user_settings)
+ans_conf.triggered.connect(lambda state, confVal = 'answer_conf_time': menu_select(0,confVal) if state else menu_select(0.5,confVal))
 
 menu.addSeparator()
 
@@ -673,18 +643,18 @@ mouseover_default = QAction('Do Not Hide Buttons', mouseover)
 mouseover_default.setCheckable(True)
 menu.addAction(mouseover_default)
 mouseover_default.setChecked(True)
-mouseover_default.triggered.connect(user_settings)
+mouseover_default.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(1,confVal) if state else None)
 
 mouseover_translucent = QAction('Translucent Buttons Until Mouseover', mouseover)
 mouseover_translucent.setCheckable(True)
 menu.addAction(mouseover_translucent)
-mouseover_translucent.triggered.connect(user_settings)
+mouseover_translucent.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(0.5,confVal) if state else None)
 
 
 mouseover_hidden = QAction('Hide Buttons Until Mouseover', mouseover)
 mouseover_hidden.setCheckable(True)
 menu.addAction(mouseover_hidden)
-mouseover_hidden.triggered.connect(user_settings)
+mouseover_hidden.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(0,confVal) if state else None)
 
 menu.addSeparator()
 
@@ -692,7 +662,7 @@ enable_cursor_hide = QAction('Enable Idle Cursor Hide', mw)
 enable_cursor_hide.setCheckable(True)
 enable_cursor_hide.setChecked(True)
 menu.addAction(enable_cursor_hide)
-enable_cursor_hide.triggered.connect(user_settings)
+enable_cursor_hide.triggered.connect(lambda state, confVal = 'cursor_idle_timer': menu_select(10000,confVal) if state else menu_select(-1,confVal))
 
 menu.addSeparator()
 settings = QMenu(('Advanced Settings'), mw)
