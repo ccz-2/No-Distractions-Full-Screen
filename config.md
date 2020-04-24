@@ -26,12 +26,13 @@
   <span style="color:indianred">Setting to `0` will disable animation</span>  
 
 -  <span style="color:dodgerblue">**`cursor_idle_timer`**</span>: Milliseconds to wait before hiding cursor.  
-  <span style="color:indianred">Setting to `0` will always hide cursor. Negative values will disable cursor hide.</span>  
+  <span style="color:indianred">Setting to `0` will keep cursor hidden even when moving. Negative values will disable cursor hide.</span>  
 
 -  <span style="color:dodgerblue">**`fullscreen_hotkey`**</span>: Keybinding that toggles fullscreen/windowed mode  
   <span style="color:indianred">Examples:  `F11`,  `Ctrl+F`,  `Shift+D`,  `P`. For more details, see: [QKeySequence](https://doc.qt.io/qtforpython/PySide2/QtGui/QKeySequence.html?highlight=qkeysequence#PySide2.QtGui.QKeySequence)</span>
 
 -  <span style="color:dodgerblue">**`lock_answer_bar_hotkey`**</span>: Keybinding that toggles whether the answer bar should be draggable.  
+  <span style="color:indianred">Examples:  `Ctrl+C`,  `Shift+R`. For more details, see: [QKeySequence](https://doc.qt.io/qtforpython/PySide2/QtGui/QKeySequence.html?highlight=qkeysequence#PySide2.QtGui.QKeySequence)</span>
 
 -  <span style="color:dodgerblue">**`rendering_delay`**</span>: Milliseconds to wait before window is updated with layout changes. Helps reduce flickering and artifacts when toggling fullscreen/windowed.  
   <span style="color:indianred">Can be adjusted depending on your computer speed and preferences. Higher values = cleaner transitions, but less responsive toggling.</span>

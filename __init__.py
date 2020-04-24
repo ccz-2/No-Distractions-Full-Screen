@@ -427,7 +427,8 @@ class cursorHide(QObject):
 		return False
 
 	def countdown(self):
-		self.timer.start(self.cursorIdleTimer)
+		if self.config['cursor_idle_timer'] >= 0:
+			self.timer.start(self.cursorIdleTimer)
 
 	def showCursor(self):
 		self.timer.stop()
