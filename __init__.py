@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.1.5 4/23/2020
+# v4.1.5 4/25/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -303,7 +303,7 @@ def toggle():
 			lockDrag.setVisible(True)
 
 			if config['last_toggle'] == 'full_screen': #Fullscreen mode
-				if isMac: #kicks out of OSX maximize if on
+				if isMac:
 					mw.showFullScreen()
 				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
 					og_geometry = mw.normalGeometry()
@@ -330,7 +330,6 @@ def toggle():
 				mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
 				window_flags_set = True
 				mw.show()
-				#QTimer.singleShot(100, curIdleTimer.countdown) #for some reason setting windowflags triggers QEvent.HoverLeave
 
 			mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
 			mw.toolbar.web.hide()
