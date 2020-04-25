@@ -304,7 +304,6 @@ def toggle():
 
 			if config['last_toggle'] == 'full_screen': #Fullscreen mode
 				if isMac: #kicks out of OSX maximize if on
-					mw.showNormal()
 					mw.showFullScreen()
 				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
 					og_geometry = mw.normalGeometry()
