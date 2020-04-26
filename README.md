@@ -11,31 +11,38 @@ Eliminates <i>everything</i> unnecessary during reviews giving you maximum usabl
 - <b>Superimposes answer buttons</b> over cards, with <b>adjustable opacity</b>. Becomes opaque on mouse-over.
 - <b>Draggable answer buttons</b> that support touch. Enable with right click menu option or hotkey.
 - <b>No Distractions Answer Bar</b>: Minimalistic reimagining of answer bar with animated answer confirmations
-- <b>Hides mouse cursor</b> if idle.
 - <b>No Distractions Windowed Mode</b>: Same clean interface in a resizable window. Accessible through menu. Can set to <b>always be on top</b>.
+- <b>Hides mouse cursor</b> if idle.
 - <b>Auto-toggle</b> No Distractions mode when starting/leaving reviews
-- <b>Highly customizable</b>: Common settings can be changed in menu options (<i>View -&gt; Full Screen</i>). Further settings can be changed in config, accessible through the <i>Advanced Settings</i> menu option. Detailed descriptions within.
-- <b>Highly compatible</b>: Supports wide range of addons (tested list in notes section below), Win/Mac/Linux, hardware/software rendering modes and legacy clients (at least 2.1.15 and probably lower).
-- <b>Review with minimal mouse movement</b>: allows card scrolling even when hovering over answer buttons (ideal for mouse users).
+- <b>Highly customizable</b>: Common settings can be changed in menu options (<i>View -&gt; Full Screen</i>). Further settings, including ND Answer Bar appearance can be changed through the <i>Advanced Settings</i> menu option. Detailed descriptions are within.
+- <b>Highly compatible</b>: Supports wide range of addons (tested list in notes section below), Win/Mac/Linux, hardware/software rendering modes and legacy clients (tested on 2.1.9 and higher).
+- Plays well with my other add-on, <b><a href="https://ankiweb.net/shared/info/538879081" rel="nofollow">Anki Zoom</a></b> (make use of that extra space!) Is <b>NOT compatible with <a href="https://ankiweb.net/shared/info/1846592880" rel="nofollow">Zoom 2.1</a></b>.
 
 <b><code>In Action:</code></b>  
-No Distractions Windowed Mode shown with <a href="https://ankiweb.net/shared/info/374005964" rel="nofollow">King of Buttons</a> addon:
-<img src="https://i.ibb.co/44JKxCj/01kg-H1au5l.gif">
+<img src="https://i.ibb.co/m0nrVpt/anki-console-5-Ngmb-W2hfm.png">
 
-No Distractions Answer Bar with animated answer confirmation enabled:
-<img src="https://i.ibb.co/p0YLTVS/HKASp-GFBt-W.gif">
+<img src="https://i.ibb.co/QmqCJbS/anki-console-I3-Nk0w-Kd-Ze.png">
+
+<img src="https://i.ibb.co/5kN2kM2/ezgif-com-optimize.gif">
 
 <b><code>Notes:</code></b>  
-- No Distractions Answer Bar uses a custom layout and may not play well with other addons. Feel free to report issues, and I will try my best, but widespread compatibility may not be possible.
 - Automatically switches colors for normal/night mode with support for Night Mode Addon
 - The F11 shortcut will automatically toggle the last enabled mode (either fullscreen or windowed).
 - In Fullscreen mode, moving the mouse to the bottom of the screen will unhide answer buttons (if hidden).
-- Supports all card layouts; cards are dynamically padded so that superimposed answer buttons do not obscure the bottom of cards when scrolled down
-- Tested compatibility with v2.1.15, v2.1.20, v2.1.21, <a href="https://ankiweb.net/shared/info/1829090218" rel="nofollow">Large and Colorful Buttons</a>, <a href="https://ankiweb.net/shared/info/1496166067" rel="nofollow">Night Mode</a>, <a href="https://ankiweb.net/shared/info/538879081" rel="nofollow">Anki Zoom</a>, <a href="https://ankiweb.net/shared/info/1042429613" rel="nofollow">Large Fancy Buttons</a>, <a href="https://ankiweb.net/shared/info/1046608507" rel="nofollow">Speed Focus Mode</a>, <a href="https://ankiweb.net/shared/info/1758045507" rel="nofollow">Anki Habitica</a>, <a href="https://ankiweb.net/shared/info/1933645497" rel="nofollow">Fill the blanks</a>, <a href="https://ankiweb.net/shared/info/385888438" rel="nofollow">Edit field during review</a>, <a href="https://ankiweb.net/shared/info/1024346707" rel="nofollow">Directly Review</a>, <a href="https://ankiweb.net/shared/info/374005964" rel="nofollow">King of Buttons</a>, <a href="https://ankiweb.net/shared/info/378638814" rel="nofollow">Dancing Baloney</a>, <a href="https://ankiweb.net/shared/info/2091361802" rel="nofollow">Progress Bar</a>
+- Supports most card layouts; cards are dynamically padded so that superimposed answer buttons do not obscure the bottom of cards when scrolled down
+- No Distractions Answer Bar uses a custom layout and may not play well with other addons. Feel free to report issues, and I will try my best, but widespread compatibility may not be possible.
+- Tested compatibility with v2.1.9, v2.1.13, v2.1.15, v2.1.20, v2.1.22, <a href="https://ankiweb.net/shared/info/1829090218" rel="nofollow">Large and Colorful Buttons</a>, <a href="https://ankiweb.net/shared/info/1496166067" rel="nofollow">Night Mode</a>, <a href="https://ankiweb.net/shared/info/538879081" rel="nofollow">Anki Zoom</a>, <a href="https://ankiweb.net/shared/info/1046608507" rel="nofollow">Speed Focus Mode</a>, <a href="https://ankiweb.net/shared/info/1758045507" rel="nofollow">Anki Habitica</a>, <a href="https://ankiweb.net/shared/info/1933645497" rel="nofollow">Fill the blanks</a>, <a href="https://ankiweb.net/shared/info/385888438" rel="nofollow">Edit field during review</a>, <a href="https://ankiweb.net/shared/info/1024346707" rel="nofollow">Directly Review</a>, <a href="https://ankiweb.net/shared/info/374005964" rel="nofollow">King of Buttons</a>, <a href="https://ankiweb.net/shared/info/378638814" rel="nofollow">Dancing Baloney</a>, <a href="https://ankiweb.net/shared/info/2091361802" rel="nofollow">Progress Bar</a>, <a href="https://ankiweb.net/shared/info/1642550423" rel="nofollow">Refocus card</a>, <a href="https://ankiweb.net/shared/info/1136455830" rel="nofollow">Advanced Review Bottom Bar</a>
 
 - <b>Please report issues here: <a href="https://github.com/Quip13/No-Distractions-Full-Screen/issues" rel="nofollow">Github</a></b>.
 
 <b><code>Changelog:</code></b>  
+- 4/25/2020 v4.1.5: Bug Fixes: Cursor now remains hidden if <code>cursor_idle_timer</code> is set to <code>0</code>, more consistent window states when toggling on Macs, using certain menu actions no longer improperly overrides custom config
+- 4/20/2020 v4.1.4: Fixed bug where answer buttons would show behind image occlusion
+- 4/19/2020 v4.1.3: Improved compatibility with answer button addons including Advanced Review Bottom Bar and Minimal Big Flat Buttons (&lt;- note will be buggy if trying to zoom)
+- 3/31/2020 v4.1.2: Fixed bug where setFocus was not applying to main screen. Added Zoom 2.1 to incompatible list due to bugs. Please use <a href="https://ankiweb.net/shared/info/538879081" rel="nofollow">Anki Zoom</a> instead
+- 3/30/2020 v4.1.1: Added multilingual support for ND Answer Bar
+- 3/29/2020 v4.1: Added menu option to change ND Answer Bar CSS variables via inbuilt text editor. Settings should persist through updates. Changed appearance of unlocked buttons to better convey they are disabled in that state. Improved Night Mode Addon compatibility
+- 3/28/2020 v4.0.2: Cleaned up layout and animations of ND Answer Bar. Changed ND Answer Bar colors. Added user adjustable css settings in ND_answerbar_settings.css file
 - 3/28/2020 v4.0:
   - Added No Distractions Answer Bar with animated confirmation
   - Added Normal/Night automatic color switching with support for Night Mode Addon
