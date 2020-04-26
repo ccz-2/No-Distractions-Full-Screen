@@ -1,6 +1,23 @@
-//No Distractions Full Screen v4.1.4
+//No Distractions Full Screen v4.1.6
 //var url = '';
+//var drag_hotkey = 'Ctrl+L'
 url = decodeURIComponent(url);
+drag_hotkey = decodeURIComponent(drag_hotkey);
+
+function sanitize(string) {
+  const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      "/": '&#x2F;',
+      '`': '&grave;',
+  };
+  const reg = /[&<>"'`/]/ig;
+  return string.replace(reg, (match)=>(map[match]));
+}
+
 scripts = `
 <script>
 	function pycmd(a){parent.pycmd(a)};
@@ -25,7 +42,7 @@ if (!$('#bottomiFrame').length){
 	      <div class="bottomWrapper noZoom">
 	        <iframe id='bottomiFrame' frameborder="0" scrolling="no">
 	        </iframe>
-	        <div id = 'cover'></div>
+	        <div id = 'cover'>Drag Enabled<font style="color:#9e0000; font-family: 'Consolas'; font-weight: 1000;">(`+sanitize(drag_hotkey)+`)</font></div>
 	      </div>
 	        <iframe id='bottomiFrameBkgnd' class='noZoom' frameborder="0" scrolling="no">
 	        </iframe>
@@ -92,8 +109,17 @@ if (!$('#bottomiFrame').length){
 	}
 
 	#cover{
-      background-color: white;
-	  mix-blend-mode: saturation;
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: center;
+	  align-items: center;
+      background-color: rgba(138, 138, 138, 0.8);
+	  font-size: 14.5px;
+	  font-family: "Segoe UI";
+	  text-shadow: 0px 1px 1px #c4c4c4;
+	  color: #454545;
+	  font-weight: bold;
+	  line-height: normal;
       pointer-events: auto;
 	  position: absolute;
 	  top: 0;

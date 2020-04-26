@@ -1,4 +1,4 @@
-//No Distractions Full Screen v4.1.3
+//No Distractions Full Screen v4.1.6
 //Uses interact.js
 
 var target;
@@ -94,7 +94,7 @@ function enable_drag(){
   else {
       interact(target).draggable({enabled: true})
   }
-  $("#cover").show();
+  $("#cover").fadeIn(80);
   $(target).css({'box-shadow': '0 19px 38px rgba(0, 0, 0, 0.40), 0 15px 12px rgba(0, 0, 0, 0.25)'});
   currLock = false;
 }
@@ -122,8 +122,7 @@ function disable_drag(){
   getTarget();
   interact(target).unset();
   //interact(target).draggable({enabled: false}); //Will occasionally stop working if disabled - better to unset
+  $("#cover").fadeOut(80);
   $(target).css({'-webkit-box-shadow': '', 'border': '', 'background':''});
-  $(target).css({'filter': ''});
-  $("#cover").hide();
   currLock = true;
 }

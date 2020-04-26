@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.1.5 4/25/2020
+# v4.1.6 4/25/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -150,12 +150,13 @@ def setupWeb():
 		color = config['answer_button_border_color_night']
 	else:
 		color = config['answer_button_border_color_normal']
-
+	
+	drag_hotkey = urllib.parse.quote(config['lock_answer_bar_hotkey'], safe='')
 	def setHtml_wrapper(self, html, _old):
 		if self == mw.reviewer.bottom.web:
 			iframe_setHTML = open(os.path.join(os.path.dirname(__file__), 'iframe_setHTML.js')).read()
 			html = urllib.parse.quote(html, safe='')
-			mw.reviewer.web.eval(f"var url = `{html}`; var color = '{color}'; {iframe_setHTML}")
+			mw.reviewer.web.eval(f"var url = `{html}`; var color = '{color}'; var drag_hotkey = `{drag_hotkey}`; {iframe_setHTML}")
 		else:
 			_old(self, html)
 
