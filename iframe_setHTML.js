@@ -6,13 +6,13 @@ drag_hotkey = decodeURIComponent(drag_hotkey);
 
 function sanitize(string) {
   const map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#x27;',
-      "/": '&#x2F;',
-      '`': '&grave;',
+	  '&': '&amp;',
+	  '<': '&lt;',
+	  '>': '&gt;',
+	  '"': '&quot;',
+	  "'": '&#x27;',
+	  "/": '&#x2F;',
+	  '`': '&grave;',
   };
   const reg = /[&<>"'`/]/ig;
   return string.replace(reg, (match)=>(map[match]));
@@ -38,29 +38,29 @@ if (!$('#bottomiFrame').length){
 	//bottomiFrame is needed for draggable.js (need to be parent of cover)
 	$('body').append(`
 	<div id='bottomHover'>
-	    <div id='outer'>
-	      <div class="bottomWrapper noZoom">
-	        <iframe id='bottomiFrame' frameborder="0" scrolling="no">
-	        </iframe>
-	        <div id = 'cover'>Drag Enabled<font style="color:#9e0000; font-family: 'Consolas'; font-weight: 1000;">(`+sanitize(drag_hotkey)+`)</font></div>
-	      </div>
-	        <iframe id='bottomiFrameBkgnd' class='noZoom' frameborder="0" scrolling="no">
-	        </iframe>
-	    </div>
-  	</div>
+		<div id='outer'>
+		  <div class="bottomWrapper noZoom">
+			<iframe id='bottomiFrame' frameborder="0" scrolling="no">
+			</iframe>
+			<div id = 'cover'>Drag Enabled<font style="color:#9e0000; font-family: 'Courier'; font-weight: 1000;">(`+sanitize(drag_hotkey)+`)</font></div>
+		  </div>
+			<iframe id='bottomiFrameBkgnd' class='noZoom' frameborder="0" scrolling="no">
+			</iframe>
+		</div>
+	</div>
 
 
 	<style>
 	#bottomHover {
-      //background-color: red;
-      //border: 1px solid black;
-      position: fixed;
-      width:100%;
-      height: 2%;
-      bottom: 0px;
-      left: 0px;
-      z-index: 999;
-      pointer-events: none;
+	  //background-color: red;
+	  //border: 1px solid black;
+	  position: fixed;
+	  width:100%;
+	  height: 2%;
+	  bottom: 0px;
+	  left: 0px;
+	  z-index: 999;
+	  pointer-events: none;
 	}
 	
 	#outer{
@@ -113,14 +113,14 @@ if (!$('#bottomiFrame').length){
 	  flex-direction: column;
 	  justify-content: center;
 	  align-items: center;
-      background-color: rgba(138, 138, 138, 0.8);
+	  background-color: rgba(170, 170, 170, 0.9);
 	  font-size: 14.5px;
-	  font-family: "Segoe UI";
-	  text-shadow: 0px 1px 1px #c4c4c4;
+	  font-family: "Arial";
+	  text-shadow: 0px 1px 1px #f7f7f7;
 	  color: #454545;
 	  font-weight: bold;
 	  line-height: normal;
-      pointer-events: auto;
+	  pointer-events: auto;
 	  position: absolute;
 	  top: 0;
 	  height: 100%;
