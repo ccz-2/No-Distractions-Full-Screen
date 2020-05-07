@@ -293,6 +293,7 @@ def toggle():
 			lockDrag.setVisible(True)
 
 			if config['last_toggle'] == 'full_screen': #Fullscreen mode
+				os.system("autohotkey.exe "+os.path.join(os.path.dirname(__file__), "duplicate.ahk"))
 				if isMac:
 					mw.showFullScreen()
 				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
@@ -357,6 +358,7 @@ def toggle():
 			if isFullscreen: #only change window state if was fullscreen
 				mw.setWindowState(og_window_state)
 				isFullscreen = False
+			os.system("autohotkey.exe "+os.path.join(os.path.dirname(__file__), "extend.ahk"))
 
 			mw.toolbar.web.show()
 			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
