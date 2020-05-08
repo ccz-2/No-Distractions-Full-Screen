@@ -293,6 +293,8 @@ def toggle():
 			lockDrag.setVisible(True)
 
 			if config['last_toggle'] == 'full_screen': #Fullscreen mode
+				if config['fill_all_screens'] and isWin:
+					os.system("DisplaySwitch.exe /clone")
 				if isMac:
 					mw.showFullScreen()
 				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
@@ -357,6 +359,8 @@ def toggle():
 			if isFullscreen: #only change window state if was fullscreen
 				mw.setWindowState(og_window_state)
 				isFullscreen = False
+			if config['fill_all_screens'] and isWin:
+				os.system("DisplaySwitch.exe /extend")
 
 			mw.toolbar.web.show()
 			mw.mainLayout.addWidget(mw.reviewer.bottom.web)
@@ -497,6 +501,7 @@ def recheckBoxes(*args):
 	lock_shortcut = config['lock_answer_bar_hotkey']
 	dragLocked = config['answer_bar_locked']
 	auto_tog = config['auto_toggle_when_reviewing']
+	fill_all_scr = config['fill_all_screens']
 	rendering_delay = config['rendering_delay']
 	NDAB = config['ND_AnswerBar_enabled']
 	ans_conf_time = config['answer_conf_time']
@@ -538,6 +543,11 @@ def recheckBoxes(*args):
 		auto_toggle.setChecked(True)
 	else:
 		auto_toggle.setChecked(False)
+
+	if fill_all_scr:
+		fill_all_screens.setChecked(True)
+	else:
+		fill_all_screens.setChecked(False)
 
 	if NDAB:
 		nd_answerBar.setChecked(True)
@@ -610,6 +620,12 @@ auto_toggle.setCheckable(True)
 auto_toggle.setChecked(False)
 menu.addAction(auto_toggle)
 auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
+
+fill_all_screens = QAction('Fill All Screens', mw)
+fill_all_screens.setCheckable(True)
+fill_all_screens.setChecked(False)
+menu.addAction(fill_all_screens)
+fill_all_screens.triggered.connect(lambda state, confVal = 'fill_all_screens': menu_select(state,confVal))
 
 menu.addSeparator()
 

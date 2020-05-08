@@ -13,6 +13,7 @@
 	"answer_bar_posY": 0,
 	"rendering_delay": 500,
 	"auto_toggle_when_reviewing": false,
+	"fill_all_screens": false,
 	"ND_AnswerBar_enabled": false,
 	"answer_conf_time": 0.5,
 	"do_not_show_NDAB_warning": false,
