@@ -1,4 +1,4 @@
-//No Distractions Full Screen v4.1.3
+//No Distractions Full Screen v4.1.7
 //var op = 0.5; //Defined in python
 
 var newheight;
@@ -29,6 +29,7 @@ function finishedLoad(){
   else {
     var target = iframe.contentDocument.getElementById('middle')    
   }
+
   var observer = new MutationObserver(function(mutations, observer) {
       iframe.contentWindow.resize() //must be before resize to get correct bounding box coords
       resize();
@@ -87,8 +88,9 @@ function resize(){
   var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
 
   if (target != null) {
-    //iframe is fixed to size of bottombar
-    $(iframe).css('width',window.outerWidth);
+    //iframe is fixed to size of window
+    var refBB = $('#bottomiFrameBkgnd')[0].contentDocument.querySelector('table:not([id="innertable"])').getBoundingClientRect();
+    $(iframe).css('width',refBB.width+20)
 
     boundingBox = target.getBoundingClientRect()
     newheight = boundingBox.height
@@ -97,9 +99,8 @@ function resize(){
     y = boundingBox.y
 
     //iframe is cropped to only show target
-    $('#bottomiFrame').css({'top':-y,'left':-x});
-    $('div.bottomWrapper').css({'width':newwidth,'height':newheight});
-    fitInWindow()
+    $('div.bottomWrapper').css({'width':newwidth+20,'height':newheight});// fitting exactly to BB in v2.1.26 causes offset (? not sure why)  
+    $('#bottomiFrame').css({'top':-y,'left':-x+10});
   }
 }
 

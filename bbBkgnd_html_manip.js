@@ -1,9 +1,9 @@
 
 //<<<FOR BKGND>>>//
 
-//No Distractions Full Screen v4.0
+//No Distractions Full Screen v4.1.7
 
-$('#middle').hide()
+$('#middle').css('visibility','hidden')
 $('button').hide()
 
 $('body').append(`

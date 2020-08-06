@@ -1,4 +1,4 @@
-//No Distractions Full Screen v4.1.6
+//No Distractions Full Screen v4.1.7
 //var url = '';
 //var drag_hotkey = 'Ctrl+L'
 url = decodeURIComponent(url);
@@ -80,6 +80,7 @@ if (!$('#bottomiFrame').length){
 
 	.bottomWrapper {
 	  //border: 1px solid purple;
+	  //resize: horizontal;
 	  position: relative;
 	  left: -50%;
 	  border-radius: 5px;
@@ -94,7 +95,8 @@ if (!$('#bottomiFrame').length){
 	}
 	
 	#bottomiFrame {
-	  //border: 5px solid orange;
+	  //border: 1px solid orange;
+	  box-sizing: border-box;
 	  background-color: ` + color + ` !important;
 	  margin: 0px;
 	  padding: 0px;
