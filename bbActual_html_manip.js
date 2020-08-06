@@ -10,14 +10,13 @@ $('body').append(`
 <style>
 
 table:not([id="innertable"]) {
+  //border-color: coral;
+  //border-style: solid;
   background-color: transparent !important;
-
   position: absolute;
   left: 0;
   bottom: 0;
   padding: 0px;
-  //border-color: coral;
-  //border-style: solid;
 }
 
 body, #outer{

@@ -24,14 +24,13 @@ $('body').append(`
 function finishedLoad(){
   var iframe = $('#bottomiFrame')[0]
   if (window.NDAB) {
-    var target = iframe.contentDocument.getElementById('container')    
+    var target = iframe.contentDocument.getElementById('container')  
   }
   else {
     var target = iframe.contentDocument.getElementById('middle')    
   }
+
   var observer = new MutationObserver(function(mutations, observer) {
-      fitContent()
-      fitContentDummy();
       iframe.contentWindow.resize() //must be before resize to get correct bounding box coords
       resize();
   });
@@ -40,35 +39,10 @@ function finishedLoad(){
     attributes: true,
     childList: true
   });
-  fitContent();
-  fitContentDummy();
   resize();
 }
 
-function fitContent(){
-  if (window.NDAB) {
-    fitNDAB();
-    return
-  }
-  else {
-    var iframe = $('#bottomiFrame')[0]
-    var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
-  }
-  if (target != null) {
-    newheight = target.scrollHeight;
-    newwidth = target.scrollWidth;
-    iframe.height = newheight + "px";
-    iframe.width = newwidth + "px";
-    $("div.bottomWrapper").outerHeight(newheight);
-    $("div.bottomWrapper").outerWidth(newwidth);
-    resize();
-    if (!window.NDAB) {
-      fitInWindow(); //called from draggable.js
-    }
-  }
-}
-
-function fitContentDummy(){
+function resizeDummyFrame(){
   var iframe = $('#bottomiFrameBkgnd')[0]
   var target = iframe.contentDocument.body;
   if (target != null){
@@ -90,11 +64,44 @@ function fitNDAB(){
   }
 }
 
+var oldZoom;
 function resize(){
+
   var factor = (window.defaultScale/(window.devicePixelRatio));
   $( ".noZoom" ).each(function() {
     this.style.zoom = (factor);
   });
+
+  if (factor != oldZoom) { //resize is a zoom event, skip iframe adjustment
+    oldZoom = factor;
+    return
+  }
+
+  resizeDummyFrame()
+
+  if (window.NDAB) {
+    fitNDAB();
+    return
+  }
+
+  var iframe = $('#bottomiFrame')[0]
+  var target = iframe.contentDocument.querySelector('table:not([id="innertable"])');
+
+  if (target != null) {
+    //iframe is fixed to size of window
+    var refBB = $('#bottomiFrameBkgnd')[0].contentDocument.querySelector('table:not([id="innertable"])').getBoundingClientRect();
+    $(iframe).css('width',refBB.width)
+
+    boundingBox = target.getBoundingClientRect()
+    newheight = boundingBox.height
+    newwidth = boundingBox.width
+    x = boundingBox.x
+    y = boundingBox.y
+
+    //iframe is cropped to only show target
+    $('div.bottomWrapper').css({'width':newwidth,'height':newheight}); 
+    $('#bottomiFrame').css({'top':-y,'left':-x});
+  }
 }
 
 window.visualViewport.addEventListener('resize', resize);
