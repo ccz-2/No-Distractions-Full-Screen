@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.1.6 4/25/2020
+# v4.1.7 8/5/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -448,6 +448,11 @@ def resetPos():
 
 def on_context_menu_event(web, menu):
 	config = mw.addonManager.getConfig(__name__)
+	if mw.state == 'review':
+		menu.addAction(contextMenuToggle)
+	else:
+		menu.removeAction(contextMenuToggle)
+
 	if ndfs_inReview and not config['ND_AnswerBar_enabled']:
 		menu.addAction(lockDrag)
 		menu.addAction(reset_bar)
@@ -675,13 +680,12 @@ ndab_settings.triggered.connect(on_ndab_settings)
 #Hidden actions - accessible through right click
 lockDrag = QAction('Lock Answer Bar Position', mw)
 lockDrag.setCheckable(True)
-menu.addAction(lockDrag)
 lockDrag.triggered.connect(toggleBar)
-lockDrag.setVisible(False)
 
 reset_bar = QAction('Reset Answer Bar Position', mw)
-menu.addAction(reset_bar)
 reset_bar.triggered.connect(resetPos)
-reset_bar.setVisible(False)
+
+contextMenuToggle = QAction('Toggle No Distractions', mw)
+contextMenuToggle.triggered.connect(toggle)
 
 recheckBoxes()
