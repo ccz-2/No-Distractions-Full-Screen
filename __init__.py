@@ -449,6 +449,7 @@ def resetPos():
 def on_context_menu_event(web, menu):
 	config = mw.addonManager.getConfig(__name__)
 	if mw.state == 'review':
+		menu.addSection('NDFS')
 		menu.addAction(toggleNDFS)
 	else:
 		menu.removeAction(toggleNDFS)
@@ -533,11 +534,11 @@ def recheckBoxes(*args):
 	else:
 		keep_on_top.setChecked(False)
 
+	lockDrag.setShortcut(lock_shortcut)
 	if dragLocked:
 		lockDrag.setChecked(True)
 	else:
 		lockDrag.setChecked(False)
-	lockDrag.setShortcut(lock_shortcut)
 
 	if auto_tog:
 		auto_toggle.setChecked(True)
@@ -625,18 +626,24 @@ ans_conf.setChecked(False)
 menu.addAction(ans_conf)
 ans_conf.triggered.connect(lambda state, confVal = 'answer_conf_time': menu_select(0,confVal) if state else menu_select(0.5,confVal))
 
-menu.addSeparator()
-
-keep_on_top = QAction('Always On Top', mw)
-keep_on_top.setCheckable(True)
-menu.addAction(keep_on_top)
-keep_on_top.triggered.connect(lambda state, confVal = 'stay_on_top_windowed': menu_select(state,confVal))
+menu.addSection('Quick Settings')
 
 auto_toggle = QAction('Auto-Toggle', mw)
 auto_toggle.setCheckable(True)
 auto_toggle.setChecked(False)
 menu.addAction(auto_toggle)
 auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
+
+keep_on_top = QAction('Always On Top', mw)
+keep_on_top.setCheckable(True)
+menu.addAction(keep_on_top)
+keep_on_top.triggered.connect(lambda state, confVal = 'stay_on_top_windowed': menu_select(state,confVal))
+
+enable_cursor_hide = QAction('Enable Idle Cursor Hide', mw)
+enable_cursor_hide.setCheckable(True)
+enable_cursor_hide.setChecked(True)
+menu.addAction(enable_cursor_hide)
+enable_cursor_hide.triggered.connect(lambda state, confVal = 'cursor_idle_timer': menu_select(10000,confVal) if state else menu_select(-1,confVal))
 
 menu.addSeparator()
 
@@ -652,35 +659,30 @@ mouseover_translucent.setCheckable(True)
 menu.addAction(mouseover_translucent)
 mouseover_translucent.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(0.5,confVal) if state else None)
 
-
 mouseover_hidden = QAction('Hide Buttons Until Mouseover', mouseover)
 mouseover_hidden.setCheckable(True)
 menu.addAction(mouseover_hidden)
 mouseover_hidden.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(0,confVal) if state else None)
 
-menu.addSeparator()
+# menu.addSeparator()
+# settings = QMenu(('Advanced Settings'), mw)
+# menu.addMenu(settings)
 
-enable_cursor_hide = QAction('Enable Idle Cursor Hide', mw)
-enable_cursor_hide.setCheckable(True)
-enable_cursor_hide.setChecked(True)
-menu.addAction(enable_cursor_hide)
-enable_cursor_hide.triggered.connect(lambda state, confVal = 'cursor_idle_timer': menu_select(10000,confVal) if state else menu_select(-1,confVal))
-
-menu.addSeparator()
-settings = QMenu(('Advanced Settings'), mw)
-menu.addMenu(settings)
+menu.addSection('Advanced Settings')
 
 advanced_settings = QAction('General Settings (Config)', mw)
-settings.addAction(advanced_settings)
+menu.addAction(advanced_settings)
 advanced_settings.triggered.connect(on_advanced_settings)
 
 ndab_settings = QAction('ND Answer Bar Appearance Settings', mw)
-settings.addAction(ndab_settings)
+menu.addAction(ndab_settings)
 ndab_settings.triggered.connect(on_ndab_settings)
 
 #Hidden actions - accessible through right click
 lockDrag = QAction('Lock Answer Bar Position', mw)
 lockDrag.setCheckable(True)
+menu.addAction(lockDrag) #need to add for shortcut
+lockDrag.setVisible(False)
 lockDrag.triggered.connect(toggleBar)
 
 reset_bar = QAction('Reset Answer Bar Position', mw)
