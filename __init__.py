@@ -664,6 +664,13 @@ mouseover_hidden.setCheckable(True)
 menu.addAction(mouseover_hidden)
 mouseover_hidden.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(0,confVal) if state else None)
 
+<<<<<<< HEAD
+=======
+# menu.addSeparator()
+# settings = QMenu(('Advanced Settings'), mw)
+# menu.addMenu(settings)
+
+>>>>>>> origin/master
 menu.addSection('Advanced Settings')
 
 advanced_settings = QAction('General Settings (Config)', mw)
