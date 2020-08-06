@@ -449,9 +449,9 @@ def resetPos():
 def on_context_menu_event(web, menu):
 	config = mw.addonManager.getConfig(__name__)
 	if mw.state == 'review':
-		menu.addAction(contextMenuToggle)
+		menu.addAction(toggleNDFS)
 	else:
-		menu.removeAction(contextMenuToggle)
+		menu.removeAction(toggleNDFS)
 
 	if ndfs_inReview and not config['ND_AnswerBar_enabled']:
 		menu.addAction(lockDrag)
@@ -479,18 +479,12 @@ def toggle_full_screen():
 	config['last_toggle'] = 'full_screen'
 	shortcut = config['fullscreen_hotkey']
 	mw.addonManager.writeConfig(__name__, config)
-	fullscreen.setShortcut(shortcut)
-	windowed.setShortcut('')
-	toggle()
 
 def toggle_window():
 	config = mw.addonManager.getConfig(__name__)
 	config['last_toggle'] = 'windowed'
 	shortcut = config['fullscreen_hotkey']
 	mw.addonManager.writeConfig(__name__, config)
-	windowed.setShortcut(shortcut)
-	fullscreen.setShortcut('')
-	toggle()
 
 #opens config screen
 def on_advanced_settings():
@@ -528,12 +522,11 @@ def recheckBoxes(*args):
 	else:
 		enable_cursor_hide.setChecked(False)
 
+	toggleNDFS.setShortcut(fs_shortcut)
 	if last_toggle == 'windowed':
-		windowed.setShortcut(fs_shortcut)
-		fullscreen.setShortcut('')
+		windowed.setChecked(True)
 	else:
-		fullscreen.setShortcut(fs_shortcut)
-		windowed.setShortcut('')
+		fullscreen.setChecked(True)
 
 	if w_onTop:
 		keep_on_top.setChecked(True)
@@ -602,26 +595,21 @@ addon_view_menu.addMenu(menu)
 
 display = QActionGroup(mw)
 
-fullscreen = QAction('Toggle Full Screen Mode', display)
+toggleNDFS = QAction('Toggle No Distractions', mw)
+toggleNDFS.triggered.connect(toggle)
+menu.addAction(toggleNDFS)
+
+fullscreen = QAction('     Full Screen Mode', display)
 fullscreen.triggered.connect(toggle_full_screen)
+fullscreen.setCheckable(True)
+fullscreen.setChecked(True)
 menu.addAction(fullscreen)
 
-windowed = QAction('Toggle Windowed Mode', display)
+windowed = QAction('     Windowed Mode', display)
 windowed.triggered.connect(toggle_window)
+windowed.setCheckable(True)
+windowed.setChecked(True)
 menu.addAction(windowed)
-
-
-test = mw.addonManager.getConfig(__name__)
-keep_on_top = QAction('    Windowed Mode Always On Top', mw)
-keep_on_top.setCheckable(True)
-menu.addAction(keep_on_top)
-keep_on_top.triggered.connect(lambda state, confVal = 'stay_on_top_windowed': menu_select(state,confVal))
-
-auto_toggle = QAction('Auto-Toggle', mw)
-auto_toggle.setCheckable(True)
-auto_toggle.setChecked(False)
-menu.addAction(auto_toggle)
-auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
 
 menu.addSeparator()
 
@@ -636,6 +624,19 @@ ans_conf.setCheckable(True)
 ans_conf.setChecked(False)
 menu.addAction(ans_conf)
 ans_conf.triggered.connect(lambda state, confVal = 'answer_conf_time': menu_select(0,confVal) if state else menu_select(0.5,confVal))
+
+menu.addSeparator()
+
+keep_on_top = QAction('Always On Top', mw)
+keep_on_top.setCheckable(True)
+menu.addAction(keep_on_top)
+keep_on_top.triggered.connect(lambda state, confVal = 'stay_on_top_windowed': menu_select(state,confVal))
+
+auto_toggle = QAction('Auto-Toggle', mw)
+auto_toggle.setCheckable(True)
+auto_toggle.setChecked(False)
+menu.addAction(auto_toggle)
+auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
 
 menu.addSeparator()
 
@@ -684,8 +685,5 @@ lockDrag.triggered.connect(toggleBar)
 
 reset_bar = QAction('Reset Answer Bar Position', mw)
 reset_bar.triggered.connect(resetPos)
-
-contextMenuToggle = QAction('Toggle No Distractions', mw)
-contextMenuToggle.triggered.connect(toggle)
 
 recheckBoxes()
