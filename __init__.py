@@ -448,11 +448,8 @@ def resetPos():
 
 def on_context_menu_event(web, menu):
 	config = mw.addonManager.getConfig(__name__)
-	if mw.state == 'review':
-		menu.addSection('NDFS')
-		menu.addAction(toggleNDFS)
-	else:
-		menu.removeAction(toggleNDFS)
+	menu.addSection('NDFS')
+	menu.addAction(toggleNDFS)
 
 	if ndfs_inReview and not config['ND_AnswerBar_enabled']:
 		menu.addAction(lockDrag)
@@ -478,13 +475,11 @@ def setLock():
 def toggle_full_screen():
 	config = mw.addonManager.getConfig(__name__)
 	config['last_toggle'] = 'full_screen'
-	shortcut = config['fullscreen_hotkey']
 	mw.addonManager.writeConfig(__name__, config)
 
 def toggle_window():
 	config = mw.addonManager.getConfig(__name__)
 	config['last_toggle'] = 'windowed'
-	shortcut = config['fullscreen_hotkey']
 	mw.addonManager.writeConfig(__name__, config)
 
 #opens config screen
@@ -609,8 +604,13 @@ menu.addAction(fullscreen)
 windowed = QAction('     Windowed Mode', display)
 windowed.triggered.connect(toggle_window)
 windowed.setCheckable(True)
-windowed.setChecked(True)
+windowed.setChecked(False)
 menu.addAction(windowed)
+
+if isMac: #uses windowed mode and removes toggle options (FS mode is built in)
+	windowed.setVisible(False)
+	fullscreen.setVisible(False)
+	toggle_window()
 
 menu.addSeparator()
 
@@ -634,7 +634,7 @@ auto_toggle.setChecked(False)
 menu.addAction(auto_toggle)
 auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
 
-keep_on_top = QAction('Always On Top', mw)
+keep_on_top = QAction('Always On Top (Windowed mode)', mw)
 keep_on_top.setCheckable(True)
 menu.addAction(keep_on_top)
 keep_on_top.triggered.connect(lambda state, confVal = 'stay_on_top_windowed': menu_select(state,confVal))
@@ -645,32 +645,26 @@ enable_cursor_hide.setChecked(True)
 menu.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(lambda state, confVal = 'cursor_idle_timer': menu_select(10000,confVal) if state else menu_select(-1,confVal))
 
-menu.addSeparator()
+ABVisMenu = QMenu(('Answer Button Visibility'), mw)
+menu.addMenu(ABVisMenu)
 
 mouseover = QActionGroup(mw)
-mouseover_default = QAction('Do Not Hide Buttons', mouseover)
+mouseover_default = QAction('Do Not Hide', mouseover)
 mouseover_default.setCheckable(True)
-menu.addAction(mouseover_default)
+ABVisMenu.addAction(mouseover_default)
 mouseover_default.setChecked(True)
 mouseover_default.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(1,confVal) if state else None)
 
-mouseover_translucent = QAction('Translucent Buttons Until Mouseover', mouseover)
+mouseover_translucent = QAction('Translucent (Reveals on Mouseover)', mouseover)
 mouseover_translucent.setCheckable(True)
-menu.addAction(mouseover_translucent)
+ABVisMenu.addAction(mouseover_translucent)
 mouseover_translucent.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(0.5,confVal) if state else None)
 
-mouseover_hidden = QAction('Hide Buttons Until Mouseover', mouseover)
+mouseover_hidden = QAction('Hidden (Reveals on Mouseover)', mouseover)
 mouseover_hidden.setCheckable(True)
-menu.addAction(mouseover_hidden)
+ABVisMenu.addAction(mouseover_hidden)
 mouseover_hidden.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(0,confVal) if state else None)
 
-<<<<<<< HEAD
-=======
-# menu.addSeparator()
-# settings = QMenu(('Advanced Settings'), mw)
-# menu.addMenu(settings)
-
->>>>>>> origin/master
 menu.addSection('Advanced Settings')
 
 advanced_settings = QAction('General Settings (Config)', mw)
