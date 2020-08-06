@@ -11,6 +11,11 @@ $('body').append(`
 
 table:not([id="innertable"]) {
   background-color: transparent !important;
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 0px;
   //border-color: coral;
   //border-style: solid;
 }
@@ -18,6 +23,7 @@ table:not([id="innertable"]) {
 body, #outer{
   background: transparent !important;
   border-top-color: transparent !important;
+  overflow: hidden;
 }
 
 </style> `);
