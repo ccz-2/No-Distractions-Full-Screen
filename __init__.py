@@ -330,10 +330,13 @@ def toggle():
 			mw.reviewer._initWeb = reviewer_wrapper(mw.reviewer._initWeb) #tried to use triggers instead but is called prematurely upon suspend/bury
 			stateChange(None, None) #will setup web and cursor
 
-			def scaleChange():
-				if ndfs_inReview:
-					mw.reviewer.web.eval(f'changeScale({getScale()})')
-			DPIScaler = mw.windowHandle().screenChanged.connect(scaleChange)
+			try:
+				def scaleChange():
+					if ndfs_inReview:
+						mw.reviewer.web.eval(f'changeScale({getScale()})')
+				DPIScaler = mw.windowHandle().screenChanged.connect(scaleChange)
+			except:
+				print('NDFS: Screen Change Listener connection error')
 
 		else:
 			ndfs_enabled = False
@@ -367,7 +370,11 @@ def toggle():
 			reset_bar.setVisible(False)
 			lockDrag.setVisible(False)
 
-			mw.windowHandle().screenChanged.disconnect(DPIScaler)
+			try: #resolves disconnection error bug
+				mw.windowHandle().screenChanged.disconnect(DPIScaler)
+			except:
+				print('NDFS: Screen Change Listener disconnection error')
+
 			mw.show()
 
 		delay = config['rendering_delay']		
