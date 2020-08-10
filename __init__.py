@@ -6,7 +6,7 @@
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
+# in the Software without restriction, including without limiattion the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
@@ -380,6 +380,37 @@ def toggle():
 		delay = config['rendering_delay']		
 		QTimer.singleShot(delay, lambda:mw.setUpdatesEnabled(True))
 
+########## Mac Auto Toggle ##########
+class macAutoToggle(QObject):
+	def __init__(self):
+		QObject.__init__(self)
+		self.last_state = mw.windowState()
+
+	def install(self, widget):
+		self.last_state = mw.windowState()
+		widget.installEventFilter(self)
+
+	def uninstall(self, widget):
+		widget.removeEventFilter(self)
+
+	def eventFilter(self, obj, event):
+		if event.type() in [QEvent.Resize]:
+			if mw.isFullScreen() and self.last_state in [Qt.WindowNoState] and not ndfs_inReview:
+				toggle()
+			elif not mw.isFullScreen() and self.last_state in [Qt.WindowFullScreen] and ndfs_inReview:
+				toggle()
+			self.last_state = mw.windowState()
+			print(self.last_state, mw.isFullScreen())
+		return False
+
+macToggle = macAutoToggle()
+def toggleMacAutoToggle():
+	config = mw.addonManager.getConfig(__name__)
+	if config['auto_toggle_when_mac_max_min']:
+		macToggle.install(mw)
+	else:
+		macToggle.uninstall(mw)
+
 ########## Idle Cursor Functions ##########
 #Intercepts events to detect when focus is lost to show mouse cursor
 class cursorHide(QObject):
@@ -392,7 +423,7 @@ class cursorHide(QObject):
 		self.enabled = False
 
 	def install(self, widget):
-		if self.config['cursor_idle_timer'] >= 0:
+		if self.cursorIdleTimer >= 0:
 			widget.installEventFilter(self)
 			self.enable()
 
@@ -472,12 +503,12 @@ def setLock():
 		else:
 			mw.reviewer.web.eval("enable_drag();")
 
-def toggle_full_screen():
+def activate_fs():
 	config = mw.addonManager.getConfig(__name__)
 	config['last_toggle'] = 'full_screen'
 	mw.addonManager.writeConfig(__name__, config)
 
-def toggle_window():
+def activate_windowed():
 	config = mw.addonManager.getConfig(__name__)
 	config['last_toggle'] = 'windowed'
 	mw.addonManager.writeConfig(__name__, config)
@@ -502,6 +533,7 @@ def recheckBoxes(*args):
 	rendering_delay = config['rendering_delay']
 	NDAB = config['ND_AnswerBar_enabled']
 	ans_conf_time = config['answer_conf_time']
+	mac_tog = config['auto_toggle_when_mac_max_min']
 
 	if rendering_delay < 0:
 		config['rendering_delay'] = 0
@@ -551,6 +583,11 @@ def recheckBoxes(*args):
 		config['answer_conf_time'] = 0
 		ans_conf.setChecked(True)
 
+	if mac_tog:
+		macAutoToggle.setChecked(True)
+	else:
+		macAutoToggle.setChecked(False)
+
 	ndab_settings_check()
 	mw.addonManager.writeConfig(__name__, config)
 
@@ -596,13 +633,13 @@ toggleNDFS.triggered.connect(toggle)
 menu.addAction(toggleNDFS)
 
 fullscreen = QAction('     Full Screen Mode', display)
-fullscreen.triggered.connect(toggle_full_screen)
+fullscreen.triggered.connect(activate_fs)
 fullscreen.setCheckable(True)
 fullscreen.setChecked(True)
 menu.addAction(fullscreen)
 
 windowed = QAction('     Windowed Mode', display)
-windowed.triggered.connect(toggle_window)
+windowed.triggered.connect(activate_windowed)
 windowed.setCheckable(True)
 windowed.setChecked(False)
 menu.addAction(windowed)
@@ -610,7 +647,7 @@ menu.addAction(windowed)
 if isMac: #uses windowed mode and removes toggle options (FS mode is built in)
 	windowed.setVisible(False)
 	fullscreen.setVisible(False)
-	toggle_window()
+	activate_windowed()
 
 menu.addSeparator()
 
@@ -628,11 +665,19 @@ ans_conf.triggered.connect(lambda state, confVal = 'answer_conf_time': menu_sele
 
 menu.addSection('Quick Settings')
 
-auto_toggle = QAction('Auto-Toggle', mw)
+auto_toggle = QAction('Auto-Toggle when Reviewing', mw)
 auto_toggle.setCheckable(True)
 auto_toggle.setChecked(False)
 menu.addAction(auto_toggle)
 auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
+
+if True:
+	macAutoToggle = QAction('Auto-Toggle when Max/Min', mw)
+	macAutoToggle.setCheckable(True)
+	macAutoToggle.setChecked(False)
+	menu.addAction(macAutoToggle)
+	macAutoToggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_mac_max_min': menu_select(state,confVal))
+	macAutoToggle.triggered.connect(toggleMacAutoToggle)
 
 keep_on_top = QAction('Always On Top (Windowed mode)', mw)
 keep_on_top.setCheckable(True)
