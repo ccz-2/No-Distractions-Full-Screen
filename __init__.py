@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.1.7 8/5/2020
+# v4.1.7 8/12/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
@@ -483,6 +483,7 @@ def on_context_menu_event(web, menu):
 	else:
 		menu.removeAction(lockDrag)
 		menu.removeAction(reset_bar)
+	menu.addSeparator()
 
 #Qt inverts selection before triggering
 def toggleBar():
@@ -605,7 +606,6 @@ def ndab_settings_check():
 		macToggle.install(mw)
 	else:
 		macToggle.uninstall(mw)
-
 
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)

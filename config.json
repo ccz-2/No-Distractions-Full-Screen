@@ -17,5 +17,5 @@
 	"answer_conf_time": 0.5,
 	"do_not_show_NDAB_warning": false,
 	"NDAB_css_v1": "",
-	"auto_toggle_when_mac_max_min": false
+	"auto_toggle_when_mac_max_min": true
 }
