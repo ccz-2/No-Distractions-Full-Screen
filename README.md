@@ -11,7 +11,8 @@ Eliminates <i>everything</i> unnecessary during reviews giving you maximum usabl
 - <b>Superimposes answer buttons</b> over cards, with <b>adjustable opacity</b>. Becomes opaque on mouse-over.
 - <b>Draggable answer buttons</b> that support touch. Enable with right click menu option or hotkey.
 - <b>No Distractions Answer Bar</b>: Minimalistic reimagining of answer bar with animated answer confirmations
-- <b>No Distractions Windowed Mode</b>: Same clean interface in a resizable window. Accessible through menu. Can set to <b>always be on top</b>.
+- No Distractions works in <b>resizable windows</b> as well. Can set to <b>always be on top</b>.
+     - For Windows: This is a menu option toggle | For Macs: This is the default behavior. To enter full screen mode, maximize the window
 - <b>Hides mouse cursor</b> if idle.
 - <b>Auto-toggle</b> No Distractions mode when starting/leaving reviews
 - <b>Highly customizable</b>: Common settings can be changed in menu options (<i>View -&gt; Full Screen</i>). Further settings, including ND Answer Bar appearance can be changed through the <i>Advanced Settings</i> menu option. Detailed descriptions are within.
@@ -27,15 +28,16 @@ Eliminates <i>everything</i> unnecessary during reviews giving you maximum usabl
 
 <b><code>Notes:</code></b>  
 - Automatically switches colors for normal/night mode with support for Night Mode Addon
-- The F11 shortcut will automatically toggle the last enabled mode (either fullscreen or windowed).
 - In Fullscreen mode, moving the mouse to the bottom of the screen will unhide answer buttons (if hidden).
 - Supports most card layouts; cards are dynamically padded so that superimposed answer buttons do not obscure the bottom of cards when scrolled down
 - No Distractions Answer Bar uses a custom layout and may not play well with other addons. Feel free to report issues, and I will try my best, but widespread compatibility may not be possible.
-- Tested compatibility with v2.1.9, v2.1.13, v2.1.15, v2.1.20, v2.1.22, <a href="https://ankiweb.net/shared/info/1829090218" rel="nofollow">Large and Colorful Buttons</a>, <a href="https://ankiweb.net/shared/info/1496166067" rel="nofollow">Night Mode</a>, <a href="https://ankiweb.net/shared/info/538879081" rel="nofollow">Anki Zoom</a>, <a href="https://ankiweb.net/shared/info/1046608507" rel="nofollow">Speed Focus Mode</a>, <a href="https://ankiweb.net/shared/info/1758045507" rel="nofollow">Anki Habitica</a>, <a href="https://ankiweb.net/shared/info/1933645497" rel="nofollow">Fill the blanks</a>, <a href="https://ankiweb.net/shared/info/385888438" rel="nofollow">Edit field during review</a>, <a href="https://ankiweb.net/shared/info/1024346707" rel="nofollow">Directly Review</a>, <a href="https://ankiweb.net/shared/info/374005964" rel="nofollow">King of Buttons</a>, <a href="https://ankiweb.net/shared/info/378638814" rel="nofollow">Dancing Baloney</a>, <a href="https://ankiweb.net/shared/info/2091361802" rel="nofollow">Progress Bar</a>, <a href="https://ankiweb.net/shared/info/1642550423" rel="nofollow">Refocus card</a>, <a href="https://ankiweb.net/shared/info/1136455830" rel="nofollow">Advanced Review Bottom Bar</a>
+- Tested compatibility with v2.1.9, v2.1.13, v2.1.15, v2.1.20, v2.1.22, v2.1.28, v2.1.29, <a href="https://ankiweb.net/shared/info/1829090218" rel="nofollow">Large and Colorful Buttons</a>, <a href="https://ankiweb.net/shared/info/1496166067" rel="nofollow">Night Mode</a>, <a href="https://ankiweb.net/shared/info/538879081" rel="nofollow">Anki Zoom</a>, <a href="https://ankiweb.net/shared/info/1046608507" rel="nofollow">Speed Focus Mode</a>, <a href="https://ankiweb.net/shared/info/1758045507" rel="nofollow">Anki Habitica</a>, <a href="https://ankiweb.net/shared/info/1933645497" rel="nofollow">Fill the blanks</a>, <a href="https://ankiweb.net/shared/info/385888438" rel="nofollow">Edit field during review</a>, <a href="https://ankiweb.net/shared/info/1024346707" rel="nofollow">Directly Review</a>, <a href="https://ankiweb.net/shared/info/374005964" rel="nofollow">King of Buttons</a>, <a href="https://ankiweb.net/shared/info/378638814" rel="nofollow">Dancing Baloney</a>, <a href="https://ankiweb.net/shared/info/2091361802" rel="nofollow">Progress Bar</a>, <a href="https://ankiweb.net/shared/info/1642550423" rel="nofollow">Refocus card</a>, <a href="https://ankiweb.net/shared/info/1136455830" rel="nofollow">Advanced Review Bottom Bar</a>
 
 - <b>Please report issues here: <a href="https://github.com/Quip13/No-Distractions-Full-Screen/issues" rel="nofollow">Github</a></b>.
 
 <b><code>Changelog:</code></b>  
+- 8/12/2020 v4.1.7: Menu layout changed to be more compact/clear, Toggle option added to right click menu, Auto-toggle option added for inbuilt fullscreen mode on Macs, bug fixes (display offset bug on v2.1.28, screen change listener bug)
+- 4/26/2020 v4.1.6: Overlay on unlocked answer bar is more obvious and displays assigned hotkey
 - 4/25/2020 v4.1.5: Bug Fixes: Cursor now remains hidden if <code>cursor_idle_timer</code> is set to <code>0</code>, more consistent window states when toggling on Macs, using certain menu actions no longer improperly overrides custom config
 - 4/20/2020 v4.1.4: Fixed bug where answer buttons would show behind image occlusion
 - 4/19/2020 v4.1.3: Improved compatibility with answer button addons including Advanced Review Bottom Bar and Minimal Big Flat Buttons (&lt;- note will be buggy if trying to zoom)
