@@ -394,22 +394,17 @@ class macAutoToggle(QObject):
 		widget.removeEventFilter(self)
 
 	def eventFilter(self, obj, event):
-		if event.type() in [QEvent.Resize]:
-			if mw.isFullScreen() and self.last_state in [Qt.WindowNoState] and not ndfs_inReview:
+		if event.type() in [QEvent.WindowStateChange]:
+			print(int(self.last_state), mw.isFullScreen())
+			if mw.isFullScreen() and self.last_state in [Qt.WindowNoState] and not ndfs_enabled:
 				toggle()
-			elif not mw.isFullScreen() and self.last_state in [Qt.WindowFullScreen] and ndfs_inReview:
+			elif not mw.isFullScreen() and self.last_state in [Qt.WindowFullScreen] and ndfs_enabled:
 				toggle()
 			self.last_state = mw.windowState()
-			print(self.last_state, mw.isFullScreen())
+
 		return False
 
 macToggle = macAutoToggle()
-def toggleMacAutoToggle():
-	config = mw.addonManager.getConfig(__name__)
-	if config['auto_toggle_when_mac_max_min']:
-		macToggle.install(mw)
-	else:
-		macToggle.uninstall(mw)
 
 ########## Idle Cursor Functions ##########
 #Intercepts events to detect when focus is lost to show mouse cursor
@@ -606,6 +601,12 @@ def ndab_settings_check():
 		reset_bar.setEnabled(True)
 		ans_conf.setEnabled(False)
 
+	if macAutoToggle.isChecked() and isMac:
+		macToggle.install(mw)
+	else:
+		macToggle.uninstall(mw)
+
+
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
 addHook("showQuestion", updateBottom) #only needed so that bottom bar updates when Reviewer runs _init/_showQuestion every 100 answers
@@ -644,11 +645,6 @@ windowed.setCheckable(True)
 windowed.setChecked(False)
 menu.addAction(windowed)
 
-if isMac: #uses windowed mode and removes toggle options (FS mode is built in)
-	windowed.setVisible(False)
-	fullscreen.setVisible(False)
-	activate_windowed()
-
 menu.addSeparator()
 
 nd_answerBar = QAction('Enable No Distractions Answer Bar', mw)
@@ -671,13 +667,18 @@ auto_toggle.setChecked(False)
 menu.addAction(auto_toggle)
 auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
 
-if True:
-	macAutoToggle = QAction('Auto-Toggle when Max/Min', mw)
-	macAutoToggle.setCheckable(True)
-	macAutoToggle.setChecked(False)
-	menu.addAction(macAutoToggle)
-	macAutoToggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_mac_max_min': menu_select(state,confVal))
-	macAutoToggle.triggered.connect(toggleMacAutoToggle)
+macAutoToggle = QAction('Auto-Toggle when Max/Min', mw)
+macAutoToggle.setCheckable(True)
+macAutoToggle.setChecked(False)
+menu.addAction(macAutoToggle)
+macAutoToggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_mac_max_min': menu_select(state,confVal))
+macAutoToggle.setVisible(False)
+
+if isMac: #uses windowed mode and removes toggle options (FS mode is built in)
+	windowed.setVisible(False)
+	fullscreen.setVisible(False)
+	macAutoToggle.setVisible(True)
+	activate_windowed()	
 
 keep_on_top = QAction('Always On Top (Windowed mode)', mw)
 keep_on_top.setCheckable(True)
