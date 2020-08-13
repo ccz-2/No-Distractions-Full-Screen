@@ -630,7 +630,7 @@ menu.addAction(toggleNDFS)
 
 if isMac:
 	dummy = QAction('(Use inbuilt green window maximize button to enter fullscreen)', display)
-	dummy.setCheckable(False)
+	dummy.setEnabled(False)
 	menu.addAction(dummy)
 
 fullscreen = QAction('     Full Screen Mode', display)
