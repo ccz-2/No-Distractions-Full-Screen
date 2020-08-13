@@ -629,7 +629,7 @@ toggleNDFS.triggered.connect(toggle)
 menu.addAction(toggleNDFS)
 
 if isMac:
-	dummy = QAction('(Use inbuilt green window maximize button to enter fullscreen)', display)
+	dummy = QAction('(New in NDFS: Use green window maximize button for fullscreen)', mw)
 	dummy.setEnabled(False)
 	menu.addAction(dummy)
 
