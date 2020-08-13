@@ -384,10 +384,8 @@ def toggle():
 class macAutoToggle(QObject):
 	def __init__(self):
 		QObject.__init__(self)
-		self.last_state = mw.windowState()
 
 	def install(self, widget):
-		self.last_state = mw.windowState()
 		widget.installEventFilter(self)
 
 	def uninstall(self, widget):
@@ -399,7 +397,6 @@ class macAutoToggle(QObject):
 				toggle()
 			elif not mw.isFullScreen() and ndfs_enabled:
 				toggle()
-			self.last_state = mw.windowState()
 		return False
 
 macToggle = macAutoToggle()
@@ -620,22 +617,6 @@ def menu_select(state, confVal):
 	mw.addonManager.writeConfig(__name__, config)
 	ndab_settings_check()
 
-
-# if isMac :
-#     config = mw.addonManager.getConfig(__name__)
-#     if config['do_not_show_warnings']:
-#         return
-#     msgBox = QMessageBox(QMessageBox.Warning, 'No Distractions Full Screen', 'Software Rendering was detected!\nThis may cause artifacts with the No Distractions Full Screen addon and is not recommended.\nPlease switch to hardware acceleration via Anki Preferences if possible.');
-#     msgBox.setInformativeText("(If screen is frozen, try resizing the window as a workaround)");
-#     msgBox.setStandardButtons(QMessageBox.Ok);
-#     msgBox.setDefaultButton(QMessageBox.Ok);
-#     doNotShowAgain = QCheckBox('Do not show again')
-#     msgBox.setCheckBox(doNotShowAgain)
-#     msgBox.exec();
-#     if doNotShowAgain.isChecked():
-#         config['do_not_show_warnings'] = True
-#         mw.addonManager.writeConfig(__name__, config)
-
 ########## Menu setup ##########
 addon_view_menu = getMenu(mw, "&View")
 menu = QMenu(('ND Full Screen'), mw)
@@ -646,6 +627,11 @@ display = QActionGroup(mw)
 toggleNDFS = QAction('Toggle No Distractions', mw)
 toggleNDFS.triggered.connect(toggle)
 menu.addAction(toggleNDFS)
+
+if isMac:
+	dummy = QAction('(Use inbuilt green window maximize button to enter fullscreen)', display)
+	dummy.setCheckable(False)
+	menu.addAction(dummy)
 
 fullscreen = QAction('     Full Screen Mode', display)
 fullscreen.triggered.connect(activate_fs)
