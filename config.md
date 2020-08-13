@@ -1,4 +1,4 @@
-## No Distractions Full Screen v4.1.7 Config:
+## No Distractions Full Screen v4.1.8 Config:
 
 #### Thanks for using NDFS! The most useful config is outlined below. (Modifying other values may have unintended consequences - please click "Restore Defaults" if having issues.)  
 

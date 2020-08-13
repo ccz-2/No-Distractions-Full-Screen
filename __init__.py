@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-# v4.1.7 8/12/2020
+# v4.1.8 8/13/2020
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
