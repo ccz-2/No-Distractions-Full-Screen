@@ -395,13 +395,11 @@ class macAutoToggle(QObject):
 
 	def eventFilter(self, obj, event):
 		if event.type() in [QEvent.WindowStateChange]:
-			print(int(self.last_state), mw.isFullScreen())
-			if mw.isFullScreen() and self.last_state in [Qt.WindowNoState] and not ndfs_enabled:
+			if mw.isFullScreen() and not ndfs_enabled:
 				toggle()
-			elif not mw.isFullScreen() and self.last_state in [Qt.WindowFullScreen] and ndfs_enabled:
+			elif not mw.isFullScreen() and ndfs_enabled:
 				toggle()
 			self.last_state = mw.windowState()
-
 		return False
 
 macToggle = macAutoToggle()
@@ -621,6 +619,22 @@ def menu_select(state, confVal):
 	config[confVal] = state
 	mw.addonManager.writeConfig(__name__, config)
 	ndab_settings_check()
+
+
+# if isMac :
+#     config = mw.addonManager.getConfig(__name__)
+#     if config['do_not_show_warnings']:
+#         return
+#     msgBox = QMessageBox(QMessageBox.Warning, 'No Distractions Full Screen', 'Software Rendering was detected!\nThis may cause artifacts with the No Distractions Full Screen addon and is not recommended.\nPlease switch to hardware acceleration via Anki Preferences if possible.');
+#     msgBox.setInformativeText("(If screen is frozen, try resizing the window as a workaround)");
+#     msgBox.setStandardButtons(QMessageBox.Ok);
+#     msgBox.setDefaultButton(QMessageBox.Ok);
+#     doNotShowAgain = QCheckBox('Do not show again')
+#     msgBox.setCheckBox(doNotShowAgain)
+#     msgBox.exec();
+#     if doNotShowAgain.isChecked():
+#         config['do_not_show_warnings'] = True
+#         mw.addonManager.writeConfig(__name__, config)
 
 ########## Menu setup ##########
 addon_view_menu = getMenu(mw, "&View")
