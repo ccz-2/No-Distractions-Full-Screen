@@ -262,10 +262,8 @@ def toggle():
 		global ndfs_inReview
 		global og_adjustHeightToFit
 		global og_reviewer
-		global og_window_flags
 		global og_window_state
 		global og_geometry
-		global window_flags_set
 		global isFullscreen
 		global fs_compat_mode
 		global DPIScaler
@@ -276,9 +274,7 @@ def toggle():
 
 		if not ndfs_enabled:
 			ndfs_enabled = True
-			window_flags_set = False
 			og_window_state = mw.windowState()
-			og_window_flags = mw.windowFlags() #stores initial flags
 			og_reviewer = mw.reviewer._initWeb #stores initial reviewer before wrap
 
 			og_setHtml = AnkiWebView._setHtml
@@ -292,15 +288,12 @@ def toggle():
 			reset_bar.setVisible(True) #menu items visible for context menu
 			lockDrag.setVisible(True)
 
-			if config['last_toggle'] == 'full_screen': #Fullscreen mode
-				if isMac:
-					mw.showFullScreen()
+			if config['last_toggle'] == 'full_screen' and not isMac: #Fullscreen mode
 				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
 					og_geometry = mw.normalGeometry()
 					mw.showNormal() #user reported bug where taskbar would show if maximized (prob not necessary, since changing window geometry automatically changes state to normal)
-					mw.setWindowFlags(mw.windowFlags() | Qt.FramelessWindowHint)
+					applyFlags(Qt.FramelessWindowHint)
 					fs_compat_mode = True
-					window_flags_set = True
 					mw.show()
 					try:
 						screenSize = mw.screen().geometry()
@@ -317,9 +310,7 @@ def toggle():
 				isFullscreen = True
 
 			if (config['stay_on_top_windowed'] and not isFullscreen) : #ontopWindow option
-				mw.setWindowFlags(mw.windowFlags() | Qt.WindowStaysOnTopHint)
-				window_flags_set = True
-				mw.show()
+				applyFlags(Qt.WindowStaysOnTopHint)
 
 			mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
 			mw.toolbar.web.hide()
@@ -353,11 +344,8 @@ def toggle():
 				mw.hide() #prevents ghost window from showing when resizing
 				mw.setGeometry(og_geometry)
 				fs_compat_mode = False
-				window_flags_set = True #should always be true regardless - just reminder
-			if window_flags_set: #helps prevent annoying flickering when toggling
-				mw.setWindowFlags(og_window_flags) #reassigns initial flags
-				window_flags_set = False
-			if isFullscreen: #only change window state if was fullscreen
+			applyFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint, False) #removes applied flags
+			if isFullscreen and not isMac: #only change window state if was fullscreen
 				mw.setWindowState(og_window_state)
 				isFullscreen = False
 
@@ -380,6 +368,15 @@ def toggle():
 		delay = config['rendering_delay']		
 		QTimer.singleShot(delay, lambda:mw.setUpdatesEnabled(True))
 
+def applyFlags(flags, applyBool = True): #applyBool == True -> applies flags, applyBool = False -> removes flags
+	if applyBool:
+		newFlags = mw.windowFlags() | flags
+	else:
+		newFlags = mw.windowFlags() & ~flags
+	if mw.windowFlags() is not newFlags: #helps prevent annoying flickering when toggling
+		mw.setWindowFlags(newFlags)
+		mw.show()
+
 ########## Mac Auto Toggle ##########
 class macAutoToggle(QObject):
 	def __init__(self):
@@ -388,18 +385,25 @@ class macAutoToggle(QObject):
 	def install(self, widget):
 		widget.installEventFilter(self)
 
-	def uninstall(self, widget):
-		widget.removeEventFilter(self)
-
 	def eventFilter(self, obj, event):
+		global isFullscreen
 		if event.type() in [QEvent.WindowStateChange]:
-			if mw.isFullScreen() and not ndfs_enabled:
-				toggle()
-			elif not mw.isFullScreen() and ndfs_enabled:
-				toggle()
+			if mw.isFullScreen():
+				isFullscreen = True
+				if not ndfs_enabled and config['auto_toggle_when_mac_max_min']:
+					toggle()
+				elif config['stay_on_top_windowed']:
+					applyFlags(Qt.WindowStaysOnTopHint)
+			else:
+				isFullscreen = False
+				if ndfs_enabled and config['auto_toggle_when_mac_max_min']:
+					toggle()
+				else:
+					applyFlags(Qt.WindowStaysOnTopHint, False) #remove always on top flag if present
 		return False
 
 macToggle = macAutoToggle()
+macToggle.install(mw)
 
 ########## Idle Cursor Functions ##########
 #Intercepts events to detect when focus is lost to show mouse cursor
@@ -596,11 +600,6 @@ def ndab_settings_check():
 		lockDrag.setEnabled(True)
 		reset_bar.setEnabled(True)
 		ans_conf.setEnabled(False)
-
-	if macAutoToggle.isChecked() and isMac:
-		macToggle.install(mw)
-	else:
-		macToggle.uninstall(mw)
 
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
