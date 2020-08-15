@@ -628,11 +628,6 @@ toggleNDFS = QAction('Toggle No Distractions', mw)
 toggleNDFS.triggered.connect(toggle)
 menu.addAction(toggleNDFS)
 
-if isMac:
-	dummy = QAction('(New in NDFS: Use green window maximize button for fullscreen)', mw)
-	dummy.setEnabled(False)
-	menu.addAction(dummy)
-
 fullscreen = QAction('     Full Screen Mode', display)
 fullscreen.triggered.connect(activate_fs)
 fullscreen.setCheckable(True)
