@@ -378,7 +378,7 @@ def applyFlags(flags, applyBool = True): #applyBool == True -> applies flags, ap
 		mw.show()
 
 ########## Mac Auto Toggle ##########
-class macAutoToggle(QObject):
+class macMaxMinMonitor(QObject):
 	def __init__(self):
 		QObject.__init__(self)
 
@@ -391,19 +391,18 @@ class macAutoToggle(QObject):
 			if mw.isFullScreen():
 				isFullscreen = True
 				if not ndfs_enabled and config['auto_toggle_when_mac_max_min']:
-					toggle()
-				elif config['stay_on_top_windowed']:
-					applyFlags(Qt.WindowStaysOnTopHint)
-			else:
+						toggle()
+			else: #not fullscreen
 				isFullscreen = False
-				if ndfs_enabled and config['auto_toggle_when_mac_max_min']:
-					toggle()
-				else:
-					applyFlags(Qt.WindowStaysOnTopHint, False) #remove always on top flag if present
+				if ndfs_enabled:
+					if config['auto_toggle_when_mac_max_min']:
+						toggle()
+					elif config['stay_on_top_windowed']:
+						applyFlags(Qt.WindowStaysOnTopHint)
 		return False
 
-macToggle = macAutoToggle()
-macToggle.install(mw)
+macWindowMonitor = macMaxMinMonitor()
+macWindowMonitor.install(mw)
 
 ########## Idle Cursor Functions ##########
 #Intercepts events to detect when focus is lost to show mouse cursor
@@ -600,6 +599,9 @@ def ndab_settings_check():
 		lockDrag.setEnabled(True)
 		reset_bar.setEnabled(True)
 		ans_conf.setEnabled(False)
+
+	if not keep_on_top.isChecked() and ndfs_enabled: #only possible on Mac
+		applyFlags(Qt.WindowStaysOnTopHint)
 
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
