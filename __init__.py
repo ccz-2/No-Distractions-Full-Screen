@@ -387,6 +387,7 @@ class macMaxMinMonitor(QObject):
 
 	def eventFilter(self, obj, event):
 		global isFullscreen
+		config = mw.addonManager.getConfig(__name__)
 		if event.type() in [QEvent.WindowStateChange]:
 			if mw.isFullScreen():
 				isFullscreen = True
