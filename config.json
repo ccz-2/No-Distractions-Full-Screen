@@ -6,7 +6,7 @@
 	"MS_Windows_fullscreen_compatibility_mode": true,
 	"answer_button_border_color_normal": "rgba(200, 200, 200, 0.8)",
 	"answer_button_border_color_night": "rgba(130, 130, 130, 0.8)",
-	"fullscreen_hotkey": "F11",
+	"fullscreen_hotkey": "F12",
 	"lock_answer_bar_hotkey": "Ctrl+L",
 	"answer_bar_locked": true,
 	"answer_bar_posX": 0,
