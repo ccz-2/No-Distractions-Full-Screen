@@ -46,7 +46,7 @@ def NDAB_bottomHTML():
         <style> {NDAB_css} </style>
         {NDAB_html}
         <script>
-            time = {mw.reviewer.card.timeTaken()};
+            time = {mw.reviewer.card.time_taken()};
         </script>
         """
 
@@ -127,7 +127,7 @@ def on_ndab_settings():
     if window and window.isVisible():
         window.raise_()
         return
-    css = get_css_settings() 
+    css = get_css_settings()
 
     window = QDialog(mw)
     window.setWindowTitle("No-Distractions-Answer-Bar Appearance Settings")
@@ -144,8 +144,8 @@ def on_ndab_settings():
         <br><span style='color:mediumaquamarine'><b>Toggling No Distractions Mode will apply settings.
         <br>This window can be kept open to make on-the-fly changes eaiser.</b></span>
         <br>
-        <br>Note: To change the background color of the "Show Answer" button equivalent, change the 
-            <code><span style="color:dodgerblue">answer_button_border_color_night</span></code> and 
+        <br>Note: To change the background color of the "Show Answer" button equivalent, change the
+            <code><span style="color:dodgerblue">answer_button_border_color_night</span></code> and
             <code><span style="color:dodgerblue">answer_button_border_color_normal</span></code> values in the <b>addon-config</b> (not here).''')
     msg.setTextFormat(Qt.RichText)
     msg.setWordWrap(True)
@@ -162,7 +162,7 @@ def on_ndab_settings():
         save()
 
     def sizeHintOverload():
-        return QSize(600, 400) 
+        return QSize(600, 400)
 
     buttons.accepted.connect(save)
     buttons.rejected.connect(window.close)

@@ -3,17 +3,17 @@
 # Copyright (c) 2020 Quip13 (random.emailforcrap@gmail.com)
 #
 # MIT License
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limiattion the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -57,7 +57,7 @@ def reviewer_wrapper(func):
 
 		func()
 		mw.reviewer.web.eval(f'window.defaultScale = {getScale()}') #sets scale factor for javascript functions
-		mw.reviewer.web.eval(f'window.NDAB = {NDAB}') #sets scale factor for javascript functions	
+		mw.reviewer.web.eval(f'window.NDAB = {NDAB}') #sets scale factor for javascript functions
 		mw.reviewer.web.eval(interact)
 		mw.reviewer.web.eval(draggable)
 		if not config['ND_AnswerBar_enabled']:
@@ -76,7 +76,7 @@ def reviewer_wrapper(func):
 	return _initReviewerWeb
 
 def getScale():
-	try: 
+	try:
 		scale = mw.screen().devicePixelRatio()
 	except:
 		scale = mw.windowHandle().devicePixelRatio() #support for legacy clients (e.g.)
@@ -135,7 +135,7 @@ def runiFrameJS(): # Mimics Anki reviewer evalWithCallback queue, just for iFram
 		js = i[0]
 		cb = i[1]
 		js = urllib.parse.quote(js, safe='')
-		mw.reviewer.web.evalWithCallback(f"scriptExec(`{js}`);", cb)			
+		mw.reviewer.web.evalWithCallback(f"scriptExec(`{js}`);", cb)
 
 def setupWeb():
 	global js_queue
@@ -150,7 +150,7 @@ def setupWeb():
 		color = config['answer_button_border_color_night']
 	else:
 		color = config['answer_button_border_color_normal']
-	
+
 	drag_hotkey = urllib.parse.quote(config['lock_answer_bar_hotkey'], safe='')
 	def setHtml_wrapper(self, html, _old):
 		if self == mw.reviewer.bottom.web:
@@ -288,11 +288,11 @@ def toggle():
 			reset_bar.setVisible(True) #menu items visible for context menu
 			lockDrag.setVisible(True)
 
-			if config['last_toggle'] == 'full_screen' and not isMac: #Fullscreen mode
-				if isWin and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
+			if config['last_toggle'] == 'full_screen' and not is_mac: #Fullscreen mode
+				if is_win and config['MS_Windows_fullscreen_compatibility_mode']: #Graphical issues on windows when using inbuilt method
 					og_geometry = mw.normalGeometry()
 					mw.showNormal() #user reported bug where taskbar would show if maximized (prob not necessary, since changing window geometry automatically changes state to normal)
-					applyFlags(Qt.FramelessWindowHint)
+					applyFlags(Qt.WindowType.FramelessWindowHint)
 					fs_compat_mode = True
 					mw.show()
 					try:
@@ -310,7 +310,7 @@ def toggle():
 				isFullscreen = True
 
 			if (config['stay_on_top_windowed'] and not isFullscreen) : #ontopWindow option
-				applyFlags(Qt.WindowStaysOnTopHint)
+				applyFlags(Qt.WindowType.WindowStaysOnTopHint)
 
 			mw.menuBar().setMaximumHeight(0) #Removes File Edit etc.
 			mw.toolbar.web.hide()
@@ -344,8 +344,8 @@ def toggle():
 				mw.hide() #prevents ghost window from showing when resizing
 				mw.setGeometry(og_geometry)
 				fs_compat_mode = False
-			applyFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint, False) #removes applied flags
-			if isFullscreen and not isMac: #only change window state if was fullscreen
+			applyFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint, False) #removes applied flags
+			if isFullscreen and not is_mac: #only change window state if was fullscreen
 				mw.setWindowState(og_window_state)
 				isFullscreen = False
 
@@ -365,7 +365,7 @@ def toggle():
 
 			mw.show()
 
-		delay = config['rendering_delay']		
+		delay = config['rendering_delay']
 		QTimer.singleShot(delay, lambda:mw.setUpdatesEnabled(True))
 
 def applyFlags(flags, applyBool = True): #applyBool == True -> applies flags, applyBool = False -> removes flags
@@ -388,7 +388,7 @@ class macMaxMinMonitor(QObject):
 	def eventFilter(self, obj, event):
 		global isFullscreen
 		config = mw.addonManager.getConfig(__name__)
-		if event.type() in [QEvent.WindowStateChange]:
+		if event.type() in [QEvent.Type.WindowStateChange]:
 			if mw.isFullScreen():
 				isFullscreen = True
 				if not ndfs_enabled and config['auto_toggle_when_mac_max_min']:
@@ -399,7 +399,7 @@ class macMaxMinMonitor(QObject):
 					if config['auto_toggle_when_mac_max_min']:
 						toggle()
 					elif config['stay_on_top_windowed']:
-						applyFlags(Qt.WindowStaysOnTopHint)
+						applyFlags(Qt.WindowType.WindowStaysOnTopHint)
 		return False
 
 macWindowMonitor = macMaxMinMonitor()
@@ -435,14 +435,14 @@ class cursorHide(QObject):
 
 	def eventFilter(self, obj, event):
 		if ndfs_inReview:
-			if event.type() in [QEvent.WindowDeactivate]: #Card edit does not trigger these - cursor shown by state change hook
+			if event.type() in [QEvent.Type.WindowDeactivate]: #Card edit does not trigger these - cursor shown by state change hook
 				self.disable()
-			elif event.type() in [QEvent.HoverMove, QEvent.HoverEnter]:
+			elif event.type() in [QEvent.Type.HoverMove, QEvent.Type.HoverEnter]:
 				if self.config['cursor_idle_timer'] > 0:
 					self.showCursor()
 				if self.enabled:
 					self.countdown()
-			elif event.type() in [QEvent.WindowActivate]:
+			elif event.type() in [QEvent.Type.WindowActivate]:
 				self.enable()
 		return False
 
@@ -454,14 +454,14 @@ class cursorHide(QObject):
 		self.timer.stop()
 		if QGuiApplication.overrideCursor() is None:
 			return
-		if QGuiApplication.overrideCursor().shape() == Qt.BlankCursor: #hidden cursor
+		if QGuiApplication.overrideCursor().shape() == Qt.CursorShape.BlankCursor: #hidden cursor
 			QGuiApplication.restoreOverrideCursor()
 			QGuiApplication.restoreOverrideCursor() #need to clear stack, call twice
 
 	def hideCursor(self):
 		self.timer.stop()
 		if QGuiApplication.overrideCursor() is None:
-			QGuiApplication.setOverrideCursor(Qt.BlankCursor)
+			QGuiApplication.setOverrideCursor(Qt.CursorShape.BlankCursor)
 
 ########## Menu actions ##########
 def resetPos():
@@ -602,7 +602,7 @@ def ndab_settings_check():
 		ans_conf.setEnabled(False)
 
 	if not keep_on_top.isChecked() and ndfs_enabled: #only possible on Mac
-		applyFlags(Qt.WindowStaysOnTopHint)
+		applyFlags(Qt.WindowType.WindowStaysOnTopHint)
 
 ########## Hooks ##########
 addHook("afterStateChange", stateChange)
@@ -671,11 +671,11 @@ menu.addAction(macAutoToggle)
 macAutoToggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_mac_max_min': menu_select(state,confVal))
 macAutoToggle.setVisible(False)
 
-if isMac: #uses windowed mode and removes toggle options (FS mode is built in)
+if is_mac: #uses windowed mode and removes toggle options (FS mode is built in)
 	windowed.setVisible(False)
 	fullscreen.setVisible(False)
 	macAutoToggle.setVisible(True)
-	activate_windowed()	
+	activate_windowed()
 
 keep_on_top = QAction('Always On Top (Windowed mode)', mw)
 keep_on_top.setCheckable(True)
