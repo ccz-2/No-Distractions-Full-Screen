@@ -1,5 +1,5 @@
 # No Distractions Full Screen
-### To install download the ankiaddon file from this repository
+### To install download the ankiaddon file from [releases](https://github.com/mobedoor/No-Distractions-Full-Screen/releases)
 
 Eliminates <i>everything</i> unnecessary during reviews giving you maximum usable screen space and a clean, adjustable interface that supports touch.
 
