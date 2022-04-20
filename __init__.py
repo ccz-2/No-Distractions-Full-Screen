@@ -473,16 +473,16 @@ def resetPos():
 
 def on_context_menu_event(web, menu):
 	config = mw.addonManager.getConfig(__name__)
-	menu.addSection('NDFS')
-	menu.addAction(toggleNDFS)
+	menubar.addSection('NDFS')
+	menubar.addAction(toggleNDFS)
 
 	if ndfs_inReview and not config['ND_AnswerBar_enabled']:
-		menu.addAction(lockDrag)
-		menu.addAction(reset_bar)
+		menubar.addAction(lockDrag)
+		menubar.addAction(reset_bar)
 	else:
-		menu.removeAction(lockDrag)
-		menu.removeAction(reset_bar)
-	menu.addSeparator()
+		menubar.removeAction(lockDrag)
+		menubar.removeAction(reset_bar)
+	menubar.addSeparator()
 
 #Qt inverts selection before triggering
 def toggleBar():
@@ -621,53 +621,53 @@ def menu_select(state, confVal):
 
 ########## Menu setup ##########
 addon_view_menu = getMenu(mw, "&View")
-menu = QMenu(('ND Full Screen'), mw)
-addon_view_menu.addMenu(menu)
+menubar = QMenu(('ND Full Screen'), mw)
+addon_view_menu.addMenu(menubar)
 
 display = QActionGroup(mw)
 
 toggleNDFS = QAction('Toggle No Distractions', mw)
 toggleNDFS.triggered.connect(toggle)
-menu.addAction(toggleNDFS)
+menubar.addAction(toggleNDFS)
 
 fullscreen = QAction('     Full Screen Mode', display)
 fullscreen.triggered.connect(activate_fs)
 fullscreen.setCheckable(True)
 fullscreen.setChecked(True)
-menu.addAction(fullscreen)
+menubar.addAction(fullscreen)
 
 windowed = QAction('     Windowed Mode', display)
 windowed.triggered.connect(activate_windowed)
 windowed.setCheckable(True)
 windowed.setChecked(False)
-menu.addAction(windowed)
+menubar.addAction(windowed)
 
-menu.addSeparator()
+menubar.addSeparator()
 
 nd_answerBar = QAction('Enable No Distractions Answer Bar', mw)
 nd_answerBar.setCheckable(True)
 nd_answerBar.setChecked(False)
-menu.addAction(nd_answerBar)
+menubar.addAction(nd_answerBar)
 nd_answerBar.triggered.connect(lambda state, confVal = 'ND_AnswerBar_enabled': menu_select(state,confVal))
 
 ans_conf = QAction('    Disable Answer Confirmation', mw)
 ans_conf.setCheckable(True)
 ans_conf.setChecked(False)
-menu.addAction(ans_conf)
+menubar.addAction(ans_conf)
 ans_conf.triggered.connect(lambda state, confVal = 'answer_conf_time': menu_select(0,confVal) if state else menu_select(0.5,confVal))
 
-menu.addSection('Quick Settings')
+menubar.addSection('Quick Settings')
 
 auto_toggle = QAction('Auto-Toggle when Reviewing', mw)
 auto_toggle.setCheckable(True)
 auto_toggle.setChecked(False)
-menu.addAction(auto_toggle)
+menubar.addAction(auto_toggle)
 auto_toggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_reviewing': menu_select(state,confVal))
 
 macAutoToggle = QAction('Auto-Toggle when Max/Min', mw)
 macAutoToggle.setCheckable(True)
 macAutoToggle.setChecked(False)
-menu.addAction(macAutoToggle)
+menubar.addAction(macAutoToggle)
 macAutoToggle.triggered.connect(lambda state, confVal = 'auto_toggle_when_mac_max_min': menu_select(state,confVal))
 macAutoToggle.setVisible(False)
 
@@ -679,17 +679,17 @@ if is_mac: #uses windowed mode and removes toggle options (FS mode is built in)
 
 keep_on_top = QAction('Always On Top (Windowed mode)', mw)
 keep_on_top.setCheckable(True)
-menu.addAction(keep_on_top)
+menubar.addAction(keep_on_top)
 keep_on_top.triggered.connect(lambda state, confVal = 'stay_on_top_windowed': menu_select(state,confVal))
 
 enable_cursor_hide = QAction('Enable Idle Cursor Hide', mw)
 enable_cursor_hide.setCheckable(True)
 enable_cursor_hide.setChecked(True)
-menu.addAction(enable_cursor_hide)
+menubar.addAction(enable_cursor_hide)
 enable_cursor_hide.triggered.connect(lambda state, confVal = 'cursor_idle_timer': menu_select(10000,confVal) if state else menu_select(-1,confVal))
 
 ABVisMenu = QMenu(('Answer Button Visibility'), mw)
-menu.addMenu(ABVisMenu)
+menubar.addMenu(ABVisMenu)
 
 mouseover = QActionGroup(mw)
 mouseover_default = QAction('Do Not Hide', mouseover)
@@ -708,20 +708,20 @@ mouseover_hidden.setCheckable(True)
 ABVisMenu.addAction(mouseover_hidden)
 mouseover_hidden.triggered.connect(lambda state, confVal = 'answer_button_opacity': menu_select(0,confVal) if state else None)
 
-menu.addSection('Advanced Settings')
+menubar.addSection('Advanced Settings')
 
 advanced_settings = QAction('General Settings (Config)', mw)
-menu.addAction(advanced_settings)
+menubar.addAction(advanced_settings)
 advanced_settings.triggered.connect(on_advanced_settings)
 
 ndab_settings = QAction('ND Answer Bar Appearance Settings', mw)
-menu.addAction(ndab_settings)
+menubar.addAction(ndab_settings)
 ndab_settings.triggered.connect(on_ndab_settings)
 
 #Hidden actions - accessible through right click
 lockDrag = QAction('Lock Answer Bar Position', mw)
 lockDrag.setCheckable(True)
-menu.addAction(lockDrag) #need to add for shortcut
+menubar.addAction(lockDrag) #need to add for shortcut
 lockDrag.setVisible(False)
 lockDrag.triggered.connect(toggleBar)
 
