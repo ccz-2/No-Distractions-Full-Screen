@@ -6,7 +6,7 @@ from aqt import *
 from aqt.webview import AnkiWebView
 from aqt.deckbrowser import DeckBrowser
 from anki.hooks import *
-from anki.utils import isMac, isWin
+from anki.utils import is_mac, is_win
 from aqt.addons import *
 import urllib
 from anki import version as anki_version
