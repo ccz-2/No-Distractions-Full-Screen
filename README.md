@@ -1,10 +1,10 @@
 # No Distractions Full Screen
-### To install, please visit the <a href="https://ankiweb.net/shared/info/1049863218">addon page</a>
-
+### To install download the ankiaddon file from [releases](https://github.com/mobedoor/No-Distractions-Full-Screen/releases)
+### Latest version of Anki comes with a similar feature inbuild albeit not as fancy.
 Eliminates <i>everything</i> unnecessary during reviews giving you maximum usable screen space and a clean, adjustable interface that supports touch.
 
 <b><code>TL;DR:</code></b>  
-<b>Press F11 for fullscreen</b> or use menu option <i>(View -&gt; Full Screen)</i>.
+<b>Press F12 for fullscreen</b> or use menu option <i>(View -&gt; Full Screen)</i>.
 
 <b><code>Features:</code></b>
 - <b>Hides all menu bars</b> including bottom bar ("More, Edit") and both top bars ("File, Edit..." and "Decks, Add...").
