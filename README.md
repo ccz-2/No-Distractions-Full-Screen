@@ -1,6 +1,6 @@
 # No Distractions Full Screen
 ### To install download the ankiaddon file from [releases](https://github.com/mobedoor/No-Distractions-Full-Screen/releases)
-
+### Latest version of Anki comes with a similar feature inbuild albeit not as fancy.
 Eliminates <i>everything</i> unnecessary during reviews giving you maximum usable screen space and a clean, adjustable interface that supports touch.
 
 <b><code>TL;DR:</code></b>  
